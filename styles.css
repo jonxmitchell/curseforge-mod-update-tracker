@@ -5,13 +5,57 @@ body {
 	color: #ffffff;
 }
 
-input,
-button {
+.tab-container {
+	width: 100%;
+	margin: 0 auto;
+}
+
+.tab-buttons {
+	display: flex;
+	margin-bottom: 20px;
+}
+
+.tab-button {
+	flex: 1;
+	padding: 10px;
+	background-color: #333;
+	border: none;
+	color: #fff;
+	cursor: pointer;
+	transition: background-color 0.3s;
+}
+
+.tab-button.active {
+	background-color: #555;
+}
+
+.tab-content {
+	display: none;
+	padding: 20px;
+	background-color: #2a2a2a;
+	border-radius: 5px;
+}
+
+.input-group {
+	display: flex;
 	margin-bottom: 10px;
+}
+
+.input-group input {
+	flex-grow: 1;
+	margin-right: 10px;
 	padding: 5px;
 	background-color: #3a3a3a;
 	color: #ffffff;
 	border: 1px solid #555555;
+}
+
+button {
+	padding: 5px 10px;
+	background-color: #3a3a3a;
+	color: #ffffff;
+	border: 1px solid #555555;
+	cursor: pointer;
 }
 
 #modList {
@@ -19,7 +63,7 @@ button {
 }
 
 .mod-item {
-	background-color: #2a2a2a;
+	background-color: #3a3a3a;
 	padding: 10px;
 	margin-bottom: 10px;
 	border-radius: 5px;
@@ -48,20 +92,8 @@ button {
 	font-size: 1.2em;
 }
 
-#updateStatus {
-	margin-top: 20px;
-	font-style: italic;
-	color: #888;
-}
-
-#webhookSection {
-	margin-top: 20px;
-	border-top: 1px solid #555555;
-	padding-top: 20px;
-}
-
 .webhook-item {
-	background-color: #2a2a2a;
+	background-color: #3a3a3a;
 	padding: 10px;
 	margin-bottom: 10px;
 	border-radius: 5px;
@@ -77,23 +109,13 @@ button {
 	color: #ffffff;
 }
 
-.mod-updated {
-	background-color: #448b5a; /* This is a green color, you can adjust as needed */
-	transition: background-color 0.5s ease;
-}
-
-.input-group {
-	display: flex;
-	margin-bottom: 10px;
-}
-
-.input-group input {
-	flex-grow: 1;
-	margin-right: 10px;
-}
-
 .error-message {
 	color: red;
 	display: none;
 	margin-top: 5px;
+}
+
+.mod-updated {
+	background-color: #4caf50;
+	transition: background-color 0.5s ease;
 }
