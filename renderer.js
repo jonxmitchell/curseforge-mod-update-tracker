@@ -1,6 +1,7 @@
 const { ipcRenderer } = require("electron");
 
 let updatedMods = new Set();
+let allMods = [];
 
 document.getElementById("addModButton").addEventListener("click", () => {
 	const modId = document.getElementById("modSearchInput").value;
@@ -14,6 +15,16 @@ document.getElementById("checkUpdatesButton").addEventListener("click", () => {
 document.getElementById("addWebhookButton").addEventListener("click", () => {
 	const webhookUrl = document.getElementById("webhookInput").value;
 	ipcRenderer.send("add-webhook", webhookUrl);
+});
+
+document.getElementById("filterModInput").addEventListener("input", (e) => {
+	const filterText = e.target.value.toLowerCase();
+	const filteredMods = allMods.filter(
+		(mod) =>
+			mod.name.toLowerCase().includes(filterText) ||
+			mod.mod_id.toLowerCase().includes(filterText)
+	);
+	renderModList(filteredMods);
 });
 
 ipcRenderer.on("add-mod-result", (event, result) => {
@@ -72,38 +83,43 @@ function updateModList() {
 
 ipcRenderer.on("get-mods-result", (event, result) => {
 	if (result.success) {
-		const modList = document.getElementById("modList");
-		modList.innerHTML = "";
-		result.mods.forEach((mod) => {
-			const modElement = document.createElement("div");
-			modElement.className = "mod-item";
-			if (updatedMods.has(mod.mod_id)) {
-				modElement.classList.add("mod-updated");
-			}
-			modElement.innerHTML = `
-        <span class="mod-name">${mod.name} (ID: ${mod.mod_id})</span>
-        <span class="mod-version">Version: ${mod.current_version}</span>
-        <span class="mod-updated">Last Updated: ${new Date(
-					mod.last_updated
-				).toLocaleString()}</span>
-        <a href="https://www.curseforge.com/minecraft/mc-mods/${
-					mod.mod_id
-				}" target="_blank" class="mod-link">🔗</a>
-        <button class="delete-mod" data-mod-id="${mod.mod_id}">🗑️</button>
-      `;
-			modList.appendChild(modElement);
-		});
-
-		document.querySelectorAll(".delete-mod").forEach((button) => {
-			button.addEventListener("click", (e) => {
-				const modId = e.target.getAttribute("data-mod-id");
-				ipcRenderer.send("delete-mod", modId);
-			});
-		});
+		allMods = result.mods;
+		renderModList(allMods);
 	} else {
 		alert(`Failed to get mods: ${result.error}`);
 	}
 });
+
+function renderModList(mods) {
+	const modList = document.getElementById("modList");
+	modList.innerHTML = "";
+	mods.forEach((mod) => {
+		const modElement = document.createElement("div");
+		modElement.className = "mod-item";
+		if (updatedMods.has(mod.mod_id)) {
+			modElement.classList.add("mod-updated");
+		}
+		modElement.innerHTML = `
+      <span class="mod-name">${mod.name} (ID: ${mod.mod_id})</span>
+      <span class="mod-version">Version: ${mod.current_version}</span>
+      <span class="mod-updated">Last Updated: ${new Date(
+				mod.last_updated
+			).toLocaleString()}</span>
+      <a href="https://www.curseforge.com/minecraft/mc-mods/${
+				mod.mod_id
+			}" target="_blank" class="mod-link">🔗</a>
+      <button class="delete-mod" data-mod-id="${mod.mod_id}">🗑️</button>
+    `;
+		modList.appendChild(modElement);
+	});
+
+	document.querySelectorAll(".delete-mod").forEach((button) => {
+		button.addEventListener("click", (e) => {
+			const modId = e.target.getAttribute("data-mod-id");
+			ipcRenderer.send("delete-mod", modId);
+		});
+	});
+}
 
 ipcRenderer.on("delete-mod-result", (event, result) => {
 	if (result.success) {
