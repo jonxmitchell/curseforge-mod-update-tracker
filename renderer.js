@@ -33,12 +33,32 @@ document.getElementById("filterModInput").addEventListener("input", (e) => {
 	renderModList(filteredMods);
 });
 
+document.getElementById("intervalInput").addEventListener("input", (e) => {
+	const intervalInput = e.target;
+	const errorMessage = document.getElementById("intervalError");
+	const setIntervalButton = document.getElementById("setIntervalButton");
+
+	// Only allow positive integers
+	intervalInput.value = intervalInput.value.replace(/[^0-9]/g, "");
+
+	const newInterval = parseInt(intervalInput.value, 10);
+
+	if (newInterval < 1) {
+		errorMessage.textContent = "Interval must be at least 1 second.";
+		errorMessage.style.display = "block";
+		setIntervalButton.disabled = true;
+	} else {
+		errorMessage.style.display = "none";
+		setIntervalButton.disabled = false;
+	}
+});
+
 document
 	.getElementById("setIntervalButton")
 	.addEventListener("click", async () => {
 		const intervalInput = document.getElementById("intervalInput");
 		const newInterval = parseInt(intervalInput.value, 10);
-		if (newInterval > 0) {
+		if (newInterval >= 1) {
 			currentInterval = newInterval;
 			clearInterval(countdownInterval);
 			startCountdown(currentInterval);
@@ -48,8 +68,6 @@ document
 			} catch (error) {
 				console.error("Failed to save interval:", error);
 			}
-		} else {
-			alert("Please enter a valid positive number for the interval.");
 		}
 	});
 
@@ -139,16 +157,16 @@ function renderModList(mods) {
 			modElement.classList.add("mod-updated");
 		}
 		modElement.innerHTML = `
-	<span class="mod-name">${mod.name} (ID: ${mod.mod_id})</span>
-	<span class="mod-version">Version: ${mod.current_version}</span>
-	<span class="mod-updated">Last Updated: ${new Date(
-		mod.last_updated
-	).toLocaleString()}</span>
-	<a href="https://www.curseforge.com/minecraft/mc-mods/${
-		mod.mod_id
-	}" target="_blank" class="mod-link">🔗</a>
-	<button class="delete-mod" data-mod-id="${mod.mod_id}">🗑️</button>
-  `;
+      <span class="mod-name">${mod.name} (ID: ${mod.mod_id})</span>
+      <span class="mod-version">Version: ${mod.current_version}</span>
+      <span class="mod-updated">Last Updated: ${new Date(
+				mod.last_updated
+			).toLocaleString()}</span>
+      <a href="https://www.curseforge.com/minecraft/mc-mods/${
+				mod.mod_id
+			}" target="_blank" class="mod-link">🔗</a>
+      <button class="delete-mod" data-mod-id="${mod.mod_id}">🗑️</button>
+    `;
 		modList.appendChild(modElement);
 	});
 
@@ -180,9 +198,9 @@ ipcRenderer.on("get-webhooks-result", (event, result) => {
 			const webhookElement = document.createElement("div");
 			webhookElement.className = "webhook-item";
 			webhookElement.innerHTML = `
-	  <span class="webhook-url">${webhook.url}</span>
-	  <button class="delete-webhook" data-webhook-id="${webhook.id}">🗑️</button>
-	`;
+        <span class="webhook-url">${webhook.url}</span>
+        <button class="delete-webhook" data-webhook-id="${webhook.id}">🗑️</button>
+      `;
 			webhookList.appendChild(webhookElement);
 		});
 
