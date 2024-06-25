@@ -57,6 +57,12 @@ button {
 	color: #ffffff;
 	border: 1px solid #555555;
 	cursor: pointer;
+	white-space: nowrap;
+	margin-right: 5px;
+}
+
+button:last-child {
+	margin-right: 0;
 }
 
 #modList {
@@ -164,8 +170,4 @@ button {
 #webhookSection .input-group input[type="text"] {
 	flex-grow: 1;
 	margin-right: 10px;
-}
-
-#pauseResumeButton {
-	white-space: nowrap;
 }
