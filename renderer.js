@@ -33,36 +33,46 @@ document.getElementById("filterModInput").addEventListener("input", (e) => {
 	renderModList(filteredMods);
 });
 
-document.getElementById("intervalInput").addEventListener("input", (e) => {
-	const intervalInput = e.target;
+const intervalSlider = document.getElementById("intervalSlider");
+const sliderValue = document.getElementById("sliderValue");
+const intervalInput = document.getElementById("intervalInput");
+
+intervalSlider.addEventListener("input", (e) => {
+	const value = e.target.value;
+	sliderValue.textContent = value;
+	intervalInput.value = value;
+});
+
+intervalInput.addEventListener("input", (e) => {
+	const value = e.target.value;
 	const errorMessage = document.getElementById("intervalError");
 	const setIntervalButton = document.getElementById("setIntervalButton");
 
 	// Only allow positive integers
-	intervalInput.value = intervalInput.value.replace(/[^0-9]/g, "");
+	e.target.value = value.replace(/[^0-9]/g, "");
 
-	const newInterval = parseInt(intervalInput.value, 10);
+	const newInterval = parseInt(value, 10);
 
-	if (newInterval < 1) {
-		errorMessage.textContent = "Interval must be at least 1 second.";
+	if (newInterval < 1 || newInterval > 3600) {
+		errorMessage.textContent = "Interval must be between 1 and 3600 seconds.";
 		errorMessage.style.display = "block";
 		setIntervalButton.disabled = true;
 	} else {
 		errorMessage.style.display = "none";
 		setIntervalButton.disabled = false;
+		intervalSlider.value = newInterval;
+		sliderValue.textContent = newInterval;
 	}
 });
 
 document
 	.getElementById("setIntervalButton")
 	.addEventListener("click", async () => {
-		const intervalInput = document.getElementById("intervalInput");
 		const newInterval = parseInt(intervalInput.value, 10);
-		if (newInterval >= 1) {
+		if (newInterval >= 1 && newInterval <= 3600) {
 			currentInterval = newInterval;
 			clearInterval(countdownInterval);
 			startCountdown(currentInterval);
-			intervalInput.value = "";
 			try {
 				await ipcRenderer.invoke("save-interval", currentInterval);
 			} catch (error) {
@@ -255,6 +265,9 @@ async function loadSavedInterval() {
 		const result = await ipcRenderer.invoke("get-interval");
 		if (result.success) {
 			currentInterval = result.interval;
+			intervalSlider.value = currentInterval;
+			sliderValue.textContent = currentInterval;
+			intervalInput.value = currentInterval;
 			startCountdown(currentInterval);
 		} else {
 			console.error("Failed to load saved interval:", result.error);
