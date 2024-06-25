@@ -124,17 +124,20 @@ button {
 	margin-bottom: 20px;
 }
 
-.slider-container {
+.interval-controls {
 	display: flex;
 	align-items: center;
-	margin-bottom: 10px;
+	gap: 10px;
 }
 
 #intervalSlider {
 	flex-grow: 1;
-	margin-right: 10px;
 }
 
 #sliderValue {
 	min-width: 40px;
+}
+
+#intervalInput {
+	width: 100px;
 }

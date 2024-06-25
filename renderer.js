@@ -53,15 +53,20 @@ intervalInput.addEventListener("input", (e) => {
 
 	const newInterval = parseInt(value, 10);
 
-	if (newInterval < 1 || newInterval > 3600) {
-		errorMessage.textContent = "Interval must be between 1 and 3600 seconds.";
+	if (newInterval < 1) {
+		errorMessage.textContent = "Interval must be at least 1 second.";
 		errorMessage.style.display = "block";
 		setIntervalButton.disabled = true;
 	} else {
 		errorMessage.style.display = "none";
 		setIntervalButton.disabled = false;
-		intervalSlider.value = newInterval;
-		sliderValue.textContent = newInterval;
+		if (newInterval <= 3600) {
+			intervalSlider.value = newInterval;
+			sliderValue.textContent = newInterval;
+		} else {
+			intervalSlider.value = 3600;
+			sliderValue.textContent = "3600+";
+		}
 	}
 });
 
@@ -69,7 +74,7 @@ document
 	.getElementById("setIntervalButton")
 	.addEventListener("click", async () => {
 		const newInterval = parseInt(intervalInput.value, 10);
-		if (newInterval >= 1 && newInterval <= 3600) {
+		if (newInterval >= 1) {
 			currentInterval = newInterval;
 			clearInterval(countdownInterval);
 			startCountdown(currentInterval);
@@ -265,8 +270,9 @@ async function loadSavedInterval() {
 		const result = await ipcRenderer.invoke("get-interval");
 		if (result.success) {
 			currentInterval = result.interval;
-			intervalSlider.value = currentInterval;
-			sliderValue.textContent = currentInterval;
+			intervalSlider.value = Math.min(currentInterval, 3600);
+			sliderValue.textContent =
+				currentInterval > 3600 ? "3600+" : currentInterval;
 			intervalInput.value = currentInterval;
 			startCountdown(currentInterval);
 		} else {
