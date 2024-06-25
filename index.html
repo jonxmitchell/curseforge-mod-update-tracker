@@ -5,40 +5,59 @@
 		<link rel="stylesheet" href="styles.css" />
 	</head>
 	<body>
-		<div class="input-group">
-			<input type="text" id="modSearchInput" placeholder="Enter mod ID" />
-			<button id="addModButton">Add Mod</button>
-		</div>
-		<div class="input-group">
-			<input
-				type="text"
-				id="filterModInput"
-				placeholder="Search tracked mods" />
-		</div>
-		<div id="modList"></div>
-		<button id="checkUpdatesButton">Check for updates</button>
-		<div id="updateStatus"></div>
-		<div id="updateCountdown">
-			Updates checked in: <span id="hours">00</span>:<span id="minutes">00</span
-			>:<span id="seconds">00</span>
-		</div>
-		<div class="input-group">
-			<input
-				type="text"
-				id="intervalInput"
-				placeholder="Set interval (in seconds)" />
-			<button id="setIntervalButton">Set Interval</button>
-			<button id="pauseResumeButton">Pause</button>
-		</div>
-		<div id="intervalError" class="error-message"></div>
-		<div id="webhookSection">
-			<h3>Discord Webhooks</h3>
-			<input
-				type="text"
-				id="webhookInput"
-				placeholder="Enter Discord webhook URL" />
-			<button id="addWebhookButton">Add Webhook</button>
-			<div id="webhookList"></div>
+		<div class="tab-container">
+			<div class="tab-buttons">
+				<button class="tab-button active" data-tab="mods">Mod Tracker</button>
+				<button class="tab-button" data-tab="webhooks">Webhooks</button>
+				<button class="tab-button" data-tab="settings">Settings</button>
+			</div>
+
+			<div class="tab-content active" id="mods-tab">
+				<div class="input-group">
+					<input type="text" id="modSearchInput" placeholder="Enter mod ID" />
+					<button id="addModButton">Add Mod</button>
+				</div>
+				<div class="input-group">
+					<input
+						type="text"
+						id="filterModInput"
+						placeholder="Search tracked mods" />
+				</div>
+				<div id="modList"></div>
+				<button id="checkUpdatesButton">Check for updates</button>
+				<div id="updateStatus"></div>
+				<div id="updateCountdown">
+					Updates checked in: <span id="hours">00</span>:<span id="minutes"
+						>00</span
+					>:<span id="seconds">00</span>
+				</div>
+			</div>
+
+			<div class="tab-content" id="webhooks-tab">
+				<div id="webhookSection">
+					<h3>Discord Webhooks</h3>
+					<input
+						type="text"
+						id="webhookInput"
+						placeholder="Enter Discord webhook URL" />
+					<button id="addWebhookButton">Add Webhook</button>
+					<div id="webhookList"></div>
+				</div>
+			</div>
+
+			<div class="tab-content" id="settings-tab">
+				<h3>Settings</h3>
+				<div class="input-group">
+					<label for="intervalInput">Update Interval (in seconds):</label>
+					<input
+						type="text"
+						id="intervalInput"
+						placeholder="Set interval (in seconds)" />
+					<button id="setIntervalButton">Set Interval</button>
+				</div>
+				<div id="intervalError" class="error-message"></div>
+				<button id="pauseResumeButton">Pause</button>
+			</div>
 		</div>
 		<script src="renderer.js"></script>
 	</body>
