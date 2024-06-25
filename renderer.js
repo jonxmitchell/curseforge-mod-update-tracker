@@ -1,5 +1,7 @@
 const { ipcRenderer } = require("electron");
 
+let updatedMods = new Set();
+
 document.getElementById("addModButton").addEventListener("click", () => {
 	const modId = document.getElementById("modSearchInput").value;
 	ipcRenderer.send("add-mod", modId);
@@ -29,6 +31,17 @@ ipcRenderer.on("mod-updated", (event, mod) => {
 	alert(
 		`Mod ${mod.name} updated from version ${mod.oldVersion} to ${mod.newVersion}`
 	);
+	updatedMods.add(mod.id);
+	updateModList();
+	// Remove the "No updates" message when an update is detected
+	const statusElement = document.getElementById("updateStatus");
+	if (statusElement) {
+		statusElement.textContent = "";
+	}
+});
+
+ipcRenderer.on("update-check-complete", () => {
+	updatedMods.clear();
 	updateModList();
 });
 
@@ -64,6 +77,9 @@ ipcRenderer.on("get-mods-result", (event, result) => {
 		result.mods.forEach((mod) => {
 			const modElement = document.createElement("div");
 			modElement.className = "mod-item";
+			if (updatedMods.has(mod.mod_id)) {
+				modElement.classList.add("mod-updated");
+			}
 			modElement.innerHTML = `
         <span class="mod-name">${mod.name}</span>
         <span class="mod-version">Version: ${mod.current_version}</span>
