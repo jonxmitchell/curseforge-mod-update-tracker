@@ -91,3 +91,9 @@ button {
 	flex-grow: 1;
 	margin-right: 10px;
 }
+
+.error-message {
+	color: red;
+	display: none;
+	margin-top: 5px;
+}
