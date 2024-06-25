@@ -81,3 +81,13 @@ button {
 	background-color: #448b5a; /* This is a green color, you can adjust as needed */
 	transition: background-color 0.5s ease;
 }
+
+.input-group {
+	display: flex;
+	margin-bottom: 10px;
+}
+
+.input-group input {
+	flex-grow: 1;
+	margin-right: 10px;
+}
