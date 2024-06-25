@@ -38,6 +38,11 @@ function initDatabase() {
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     url TEXT UNIQUE
   )`);
+
+	db.run(`CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT
+  )`);
 }
 
 async function checkForUpdates() {
@@ -185,6 +190,39 @@ function getDiscordWebhooks() {
 	});
 }
 
+function saveInterval(interval) {
+	return new Promise((resolve, reject) => {
+		db.run(
+			`INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)`,
+			["update_interval", interval],
+			(err) => {
+				if (err) {
+					console.error("Error saving interval:", err);
+					reject(err);
+				} else {
+					resolve();
+				}
+			}
+		);
+	});
+}
+
+function getInterval() {
+	return new Promise((resolve, reject) => {
+		db.get(
+			`SELECT value FROM settings WHERE key = 'update_interval'`,
+			(err, row) => {
+				if (err) {
+					console.error("Error getting interval:", err);
+					reject(err);
+				} else {
+					resolve(row ? parseInt(row.value) : 3600);
+				}
+			}
+		);
+	});
+}
+
 app.whenReady().then(() => {
 	createWindow();
 	initDatabase();
@@ -285,6 +323,24 @@ ipcMain.on("delete-webhook", (event, id) => {
 			event.reply("delete-webhook-result", { success: true, id: id });
 		}
 	});
+});
+
+ipcMain.handle("save-interval", async (event, interval) => {
+	try {
+		await saveInterval(interval);
+		return { success: true };
+	} catch (error) {
+		return { success: false, error: error.message };
+	}
+});
+
+ipcMain.handle("get-interval", async (event) => {
+	try {
+		const interval = await getInterval();
+		return { success: true, interval };
+	} catch (error) {
+		return { success: false, error: error.message };
+	}
 });
 
 app.on("window-all-closed", () => {
