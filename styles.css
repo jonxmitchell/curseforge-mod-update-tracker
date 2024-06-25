@@ -41,7 +41,8 @@ body {
 	margin-bottom: 10px;
 }
 
-.input-group input {
+input[type="text"],
+input[type="range"] {
 	flex-grow: 1;
 	margin-right: 10px;
 	padding: 5px;
@@ -140,4 +141,27 @@ button {
 
 #intervalInput {
 	width: 100px;
+}
+
+#intervalInput,
+#webhookInput {
+	background-color: #3a3a3a;
+	color: #ffffff;
+	border: 1px solid #555555;
+	padding: 5px;
+}
+
+#webhookSection {
+	display: flex;
+	flex-direction: column;
+}
+
+#webhookSection .input-group {
+	display: flex;
+	margin-bottom: 10px;
+}
+
+#webhookSection .input-group input[type="text"] {
+	flex-grow: 1;
+	margin-right: 10px;
 }
