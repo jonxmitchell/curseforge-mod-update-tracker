@@ -5,9 +5,17 @@
 		<link rel="stylesheet" href="styles.css" />
 	</head>
 	<body>
-		<input type="text" id="modSearchInput" placeholder="Enter mod ID" />
+		<div class="input-group">
+			<input type="text" id="modSearchInput" placeholder="Enter mod ID" />
+			<button id="addModButton">Add Mod</button>
+		</div>
+		<div class="input-group">
+			<input
+				type="text"
+				id="filterModInput"
+				placeholder="Search tracked mods" />
+		</div>
 		<div id="modList"></div>
-		<button id="addModButton">Add Mod</button>
 		<button id="checkUpdatesButton">Check for updates</button>
 		<div id="updateStatus"></div>
 		<div id="updateCountdown">
