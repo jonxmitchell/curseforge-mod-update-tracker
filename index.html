@@ -48,13 +48,24 @@
 
 			<div class="tab-content" id="settings-tab">
 				<h3>Settings</h3>
-				<div class="input-group">
-					<label for="intervalInput">Update Interval (in seconds):</label>
-					<input
-						type="text"
-						id="intervalInput"
-						placeholder="Set interval (in seconds)" />
-					<button id="setIntervalButton">Set Interval</button>
+				<div class="setting-group">
+					<label for="intervalSlider">Update Interval (in seconds):</label>
+					<div class="slider-container">
+						<input
+							type="range"
+							id="intervalSlider"
+							min="1"
+							max="3600"
+							value="3600" />
+						<span id="sliderValue">3600</span>
+					</div>
+					<div class="input-group">
+						<input
+							type="text"
+							id="intervalInput"
+							placeholder="Custom interval" />
+						<button id="setIntervalButton">Set Interval</button>
+					</div>
 				</div>
 				<div id="intervalError" class="error-message"></div>
 			</div>
