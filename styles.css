@@ -1,0 +1,72 @@
+body {
+	font-family: Arial, sans-serif;
+	padding: 20px;
+	background-color: #1e1e1e;
+	color: #ffffff;
+}
+
+input,
+button {
+	margin-bottom: 10px;
+	padding: 5px;
+	background-color: #3a3a3a;
+	color: #ffffff;
+	border: 1px solid #555555;
+}
+
+#modList {
+	margin-top: 20px;
+}
+
+.mod-item {
+	background-color: #2a2a2a;
+	padding: 10px;
+	margin-bottom: 10px;
+	border-radius: 5px;
+}
+
+.mod-name {
+	font-weight: bold;
+}
+
+.mod-version,
+.mod-updated {
+	margin-left: 10px;
+	font-size: 0.9em;
+}
+
+.mod-link,
+.delete-mod {
+	float: right;
+	margin-left: 10px;
+	text-decoration: none;
+	color: #ffffff;
+}
+
+#updateCountdown {
+	margin-top: 20px;
+	font-size: 1.2em;
+}
+
+#webhookSection {
+	margin-top: 20px;
+	border-top: 1px solid #555555;
+	padding-top: 20px;
+}
+
+.webhook-item {
+	background-color: #2a2a2a;
+	padding: 10px;
+	margin-bottom: 10px;
+	border-radius: 5px;
+}
+
+.webhook-url {
+	word-break: break-all;
+}
+
+.delete-webhook {
+	float: right;
+	text-decoration: none;
+	color: #ffffff;
+}

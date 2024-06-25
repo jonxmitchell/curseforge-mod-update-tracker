@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Mod Update Tracker</title>
+		<link rel="stylesheet" href="styles.css" />
+	</head>
+	<body>
+		<input type="text" id="modSearchInput" placeholder="Enter mod ID" />
+		<div id="modList"></div>
+		<button id="addModButton">Add Mod</button>
+		<button id="checkUpdatesButton">Check for updates</button>
+		<div id="updateCountdown">
+			Updates checked in: <span id="hours">00</span>:<span id="minutes">00</span
+			>:<span id="seconds">00</span>
+		</div>
+		<div id="webhookSection">
+			<h3>Discord Webhooks</h3>
+			<input
+				type="text"
+				id="webhookInput"
+				placeholder="Enter Discord webhook URL" />
+			<button id="addWebhookButton">Add Webhook</button>
+			<div id="webhookList"></div>
+		</div>
+		<script src="renderer.js"></script>
+	</body>
+</html>
