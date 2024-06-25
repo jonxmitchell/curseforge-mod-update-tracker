@@ -65,6 +65,23 @@ button:last-child {
 	margin-right: 0;
 }
 
+#updateCountdown {
+	margin: 20px 0;
+	font-size: 1.2em;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.time-box {
+	display: inline-block;
+	background-color: #3a3a3a;
+	padding: 5px 10px;
+	margin: 0 5px;
+	border-radius: 5px;
+	font-weight: bold;
+}
+
 #modList {
 	margin-top: 20px;
 }
@@ -92,11 +109,6 @@ button:last-child {
 	margin-left: 10px;
 	text-decoration: none;
 	color: #ffffff;
-}
-
-#updateCountdown {
-	margin-top: 20px;
-	font-size: 1.2em;
 }
 
 .webhook-item {
