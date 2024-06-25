@@ -5,10 +5,13 @@ let allMods = [];
 let countdownInterval;
 let timer = 3600; // Default to 1 hour
 let isPaused = false;
+let currentInterval = 3600;
 
 document.getElementById("addModButton").addEventListener("click", () => {
-	const modId = document.getElementById("modSearchInput").value;
+	const modIdInput = document.getElementById("modSearchInput");
+	const modId = modIdInput.value;
 	ipcRenderer.send("add-mod", modId);
+	modIdInput.value = ""; // Clear the input after adding
 });
 
 document.getElementById("checkUpdatesButton").addEventListener("click", () => {
@@ -30,18 +33,25 @@ document.getElementById("filterModInput").addEventListener("input", (e) => {
 	renderModList(filteredMods);
 });
 
-document.getElementById("setIntervalButton").addEventListener("click", () => {
-	const intervalInput = document.getElementById("intervalInput");
-	const newInterval = parseInt(intervalInput.value, 10);
-	if (newInterval > 0) {
-		timer = newInterval;
-		clearInterval(countdownInterval);
-		startCountdown(timer);
-		intervalInput.value = "";
-	} else {
-		alert("Please enter a valid positive number for the interval.");
-	}
-});
+document
+	.getElementById("setIntervalButton")
+	.addEventListener("click", async () => {
+		const intervalInput = document.getElementById("intervalInput");
+		const newInterval = parseInt(intervalInput.value, 10);
+		if (newInterval > 0) {
+			currentInterval = newInterval;
+			clearInterval(countdownInterval);
+			startCountdown(currentInterval);
+			intervalInput.value = "";
+			try {
+				await ipcRenderer.invoke("save-interval", currentInterval);
+			} catch (error) {
+				console.error("Failed to save interval:", error);
+			}
+		} else {
+			alert("Please enter a valid positive number for the interval.");
+		}
+	});
 
 document.getElementById("pauseResumeButton").addEventListener("click", () => {
 	const button = document.getElementById("pauseResumeButton");
@@ -129,16 +139,16 @@ function renderModList(mods) {
 			modElement.classList.add("mod-updated");
 		}
 		modElement.innerHTML = `
-      <span class="mod-name">${mod.name} (ID: ${mod.mod_id})</span>
-      <span class="mod-version">Version: ${mod.current_version}</span>
-      <span class="mod-updated">Last Updated: ${new Date(
-				mod.last_updated
-			).toLocaleString()}</span>
-      <a href="https://www.curseforge.com/minecraft/mc-mods/${
-				mod.mod_id
-			}" target="_blank" class="mod-link">🔗</a>
-      <button class="delete-mod" data-mod-id="${mod.mod_id}">🗑️</button>
-    `;
+	<span class="mod-name">${mod.name} (ID: ${mod.mod_id})</span>
+	<span class="mod-version">Version: ${mod.current_version}</span>
+	<span class="mod-updated">Last Updated: ${new Date(
+		mod.last_updated
+	).toLocaleString()}</span>
+	<a href="https://www.curseforge.com/minecraft/mc-mods/${
+		mod.mod_id
+	}" target="_blank" class="mod-link">🔗</a>
+	<button class="delete-mod" data-mod-id="${mod.mod_id}">🗑️</button>
+  `;
 		modList.appendChild(modElement);
 	});
 
@@ -170,9 +180,9 @@ ipcRenderer.on("get-webhooks-result", (event, result) => {
 			const webhookElement = document.createElement("div");
 			webhookElement.className = "webhook-item";
 			webhookElement.innerHTML = `
-        <span class="webhook-url">${webhook.url}</span>
-        <button class="delete-webhook" data-webhook-id="${webhook.id}">🗑️</button>
-      `;
+	  <span class="webhook-url">${webhook.url}</span>
+	  <button class="delete-webhook" data-webhook-id="${webhook.id}">🗑️</button>
+	`;
 			webhookList.appendChild(webhookElement);
 		});
 
@@ -198,6 +208,7 @@ ipcRenderer.on("delete-webhook-result", (event, result) => {
 function startCountdown(duration) {
 	clearInterval(countdownInterval);
 	timer = duration;
+	currentInterval = duration;
 	countdownInterval = setInterval(() => {
 		const hours = Math.floor(timer / 3600);
 		const minutes = Math.floor((timer % 3600) / 60);
@@ -216,12 +227,26 @@ function startCountdown(duration) {
 		if (--timer < 0) {
 			clearInterval(countdownInterval);
 			ipcRenderer.send("check-updates");
-			startCountdown(duration); // Restart countdown with the same duration
+			startCountdown(currentInterval); // Restart countdown with the current interval
 		}
 	}, 1000);
 }
 
-startCountdown(300); // Start initial countdown for 1 hour
+async function loadSavedInterval() {
+	try {
+		const result = await ipcRenderer.invoke("get-interval");
+		if (result.success) {
+			currentInterval = result.interval;
+			startCountdown(currentInterval);
+		} else {
+			console.error("Failed to load saved interval:", result.error);
+		}
+	} catch (error) {
+		console.error("Error loading saved interval:", error);
+	}
+}
 
-updateModList(); // Initial mod list update
-updateWebhookList(); // Initial webhook list update
+// Initialize the application
+loadSavedInterval();
+updateModList();
+updateWebhookList();
