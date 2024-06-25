@@ -41,6 +41,9 @@ function initDatabase() {
 }
 
 async function checkForUpdates() {
+	let updatesFound = false;
+	const checkTime = new Date().toISOString();
+
 	db.all(`SELECT * FROM mods`, async (err, rows) => {
 		if (err) {
 			console.error(err);
@@ -58,37 +61,66 @@ async function checkForUpdates() {
 					}
 				);
 				const data = await response.json();
-				const latestVersion = data.data.latestFilesIndexes[0].fileId;
+				const latestVersion = data.data.latestFilesIndexes[0].fileId.toString();
 
-				if (latestVersion !== mod.last_checked_version) {
+				console.log(
+					`Checking mod ${mod.name}: Current version: ${mod.current_version}, Latest version: ${latestVersion}`
+				);
+
+				if (latestVersion !== mod.current_version) {
+					console.log(
+						`Update found for ${mod.name}: ${mod.current_version} -> ${latestVersion}`
+					);
+					updatesFound = true;
 					db.run(
-						`UPDATE mods SET last_checked_version = ?, last_updated = ? WHERE mod_id = ?`,
-						[latestVersion, new Date().toISOString(), mod.mod_id]
+						`UPDATE mods SET current_version = ?, last_checked_version = ?, last_updated = ? WHERE mod_id = ?`,
+						[latestVersion, latestVersion, checkTime, mod.mod_id]
 					);
 
-					if (latestVersion !== mod.current_version) {
-						db.run(`UPDATE mods SET current_version = ? WHERE mod_id = ?`, [
-							latestVersion,
-							mod.mod_id,
-						]);
+					mainWindow.webContents.send("mod-updated", {
+						name: mod.name,
+						newVersion: latestVersion,
+						oldVersion: mod.current_version,
+					});
 
-						mainWindow.webContents.send("mod-updated", {
-							name: mod.name,
-							newVersion: latestVersion,
-						});
-
-						await sendDiscordNotifications(mod.name, latestVersion);
-					}
+					await sendDiscordNotifications(
+						mod.name,
+						latestVersion,
+						mod.current_version
+					);
+				} else {
+					console.log(
+						`No update for ${mod.name}: Current version matches latest (${latestVersion})`
+					);
+					// Only update last_checked_version
+					db.run(`UPDATE mods SET last_checked_version = ? WHERE mod_id = ?`, [
+						latestVersion,
+						mod.mod_id,
+					]);
 				}
 			} catch (error) {
 				console.error(`Error checking update for mod ${mod.mod_id}:`, error);
 			}
 		}
+
+		if (!updatesFound) {
+			console.log("No updates found for any mods");
+			sendNoUpdatesMessage(checkTime);
+		}
 		mainWindow.webContents.send("update-check-complete");
 	});
 }
 
-async function sendDiscordNotifications(modName, newVersion) {
+function sendNoUpdatesMessage(checkTime) {
+	mainWindow.webContents.send("no-updates", {
+		message: `No mod updates detected as of ${new Date(
+			checkTime
+		).toLocaleString()}`,
+		checkTime: checkTime,
+	});
+}
+
+async function sendDiscordNotifications(modName, newVersion, oldVersion) {
 	const webhooks = await getDiscordWebhooks();
 
 	if (webhooks.length === 0) {
@@ -101,7 +133,7 @@ async function sendDiscordNotifications(modName, newVersion) {
 		embeds: [
 			{
 				title: `${modName} has been updated!`,
-				description: `A new version (${newVersion}) is available.`,
+				description: `New version: ${newVersion}\nPrevious version: ${oldVersion}`,
 				color: 5814783,
 				timestamp: new Date().toISOString(),
 			},
@@ -158,7 +190,7 @@ ipcMain.on("add-mod", async (event, modId) => {
 			}
 		);
 		const data = await response.json();
-		const latestVersion = data.data.latestFilesIndexes[0].fileId;
+		const latestVersion = data.data.latestFilesIndexes[0].fileId.toString();
 
 		db.run(
 			`INSERT INTO mods (mod_id, name, current_version, last_checked_version, last_updated) VALUES (?, ?, ?, ?, ?)`,

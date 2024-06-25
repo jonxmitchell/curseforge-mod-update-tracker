@@ -23,8 +23,25 @@ ipcRenderer.on("add-mod-result", (event, result) => {
 });
 
 ipcRenderer.on("mod-updated", (event, mod) => {
-	alert(`Mod ${mod.name} updated to version ${mod.newVersion}`);
+	console.log(
+		`Mod update received: ${mod.name} from ${mod.oldVersion} to ${mod.newVersion}`
+	);
+	alert(
+		`Mod ${mod.name} updated from version ${mod.oldVersion} to ${mod.newVersion}`
+	);
 	updateModList();
+});
+
+ipcRenderer.on("no-updates", (event, data) => {
+	const statusElement = document.getElementById("updateStatus");
+	if (statusElement) {
+		statusElement.textContent = data.message;
+	} else {
+		const newStatusElement = document.createElement("div");
+		newStatusElement.id = "updateStatus";
+		newStatusElement.textContent = data.message;
+		document.body.appendChild(newStatusElement);
+	}
 });
 
 ipcRenderer.on("add-webhook-result", (event, result) => {
@@ -138,12 +155,12 @@ function startCountdown(duration) {
 		if (--timer < 0) {
 			clearInterval(countdownInterval);
 			ipcRenderer.send("check-updates");
-			startCountdown(3600); // Restart countdown for 1 hour
+			startCountdown(10); // Restart countdown for 1 hour
 		}
 	}, 1000);
 }
 
-startCountdown(3600); // Start initial countdown for 1 hour
+startCountdown(10); // Start initial countdown for 1 hour
 
 updateModList(); // Initial mod list update
 updateWebhookList(); // Initial webhook list update

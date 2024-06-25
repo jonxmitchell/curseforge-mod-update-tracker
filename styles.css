@@ -48,6 +48,12 @@ button {
 	font-size: 1.2em;
 }
 
+#updateStatus {
+	margin-top: 20px;
+	font-style: italic;
+	color: #888;
+}
+
 #webhookSection {
 	margin-top: 20px;
 	border-top: 1px solid #555555;
