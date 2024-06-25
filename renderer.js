@@ -2,6 +2,9 @@ const { ipcRenderer } = require("electron");
 
 let updatedMods = new Set();
 let allMods = [];
+let countdownInterval;
+let timer = 3600; // Default to 1 hour
+let isPaused = false;
 
 document.getElementById("addModButton").addEventListener("click", () => {
 	const modId = document.getElementById("modSearchInput").value;
@@ -25,6 +28,32 @@ document.getElementById("filterModInput").addEventListener("input", (e) => {
 			mod.mod_id.toLowerCase().includes(filterText)
 	);
 	renderModList(filteredMods);
+});
+
+document.getElementById("setIntervalButton").addEventListener("click", () => {
+	const intervalInput = document.getElementById("intervalInput");
+	const newInterval = parseInt(intervalInput.value, 10);
+	if (newInterval > 0) {
+		timer = newInterval;
+		clearInterval(countdownInterval);
+		startCountdown(timer);
+		intervalInput.value = "";
+	} else {
+		alert("Please enter a valid positive number for the interval.");
+	}
+});
+
+document.getElementById("pauseResumeButton").addEventListener("click", () => {
+	const button = document.getElementById("pauseResumeButton");
+	if (isPaused) {
+		startCountdown(timer);
+		button.textContent = "Pause";
+		isPaused = false;
+	} else {
+		clearInterval(countdownInterval);
+		button.textContent = "Resume";
+		isPaused = true;
+	}
 });
 
 ipcRenderer.on("add-mod-result", (event, result) => {
@@ -166,13 +195,13 @@ ipcRenderer.on("delete-webhook-result", (event, result) => {
 	}
 });
 
-let countdownInterval;
 function startCountdown(duration) {
-	let timer = duration;
+	clearInterval(countdownInterval);
+	timer = duration;
 	countdownInterval = setInterval(() => {
-		const hours = parseInt(timer / 3600, 10);
-		const minutes = parseInt((timer % 3600) / 60, 10);
-		const seconds = parseInt(timer % 60, 10);
+		const hours = Math.floor(timer / 3600);
+		const minutes = Math.floor((timer % 3600) / 60);
+		const seconds = timer % 60;
 
 		document.getElementById("hours").textContent = hours
 			.toString()
@@ -187,12 +216,12 @@ function startCountdown(duration) {
 		if (--timer < 0) {
 			clearInterval(countdownInterval);
 			ipcRenderer.send("check-updates");
-			startCountdown(10); // Restart countdown for 1 hour
+			startCountdown(duration); // Restart countdown with the same duration
 		}
 	}, 1000);
 }
 
-startCountdown(10); // Start initial countdown for 1 hour
+startCountdown(300); // Start initial countdown for 1 hour
 
 updateModList(); // Initial mod list update
 updateWebhookList(); // Initial webhook list update
