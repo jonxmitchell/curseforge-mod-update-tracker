@@ -264,7 +264,34 @@ async function loadSavedInterval() {
 	}
 }
 
+// Tab functionality
+document.querySelectorAll(".tab-button").forEach((button) => {
+	button.addEventListener("click", () => {
+		const tabName = button.getAttribute("data-tab");
+		openTab(tabName);
+	});
+});
+
+function openTab(tabName) {
+	const tabContents = document.querySelectorAll(".tab-content");
+	const tabButtons = document.querySelectorAll(".tab-button");
+
+	tabContents.forEach((tab) => {
+		tab.style.display = "none";
+	});
+
+	tabButtons.forEach((button) => {
+		button.classList.remove("active");
+	});
+
+	document.getElementById(`${tabName}-tab`).style.display = "block";
+	document
+		.querySelector(`.tab-button[data-tab="${tabName}"]`)
+		.classList.add("active");
+}
+
 // Initialize the application
 loadSavedInterval();
 updateModList();
 updateWebhookList();
+openTab("mods"); // Open the mods tab by default
