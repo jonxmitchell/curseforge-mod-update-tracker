@@ -81,7 +81,7 @@ ipcRenderer.on("get-mods-result", (event, result) => {
 				modElement.classList.add("mod-updated");
 			}
 			modElement.innerHTML = `
-        <span class="mod-name">${mod.name}</span>
+        <span class="mod-name">${mod.name} (ID: ${mod.mod_id})</span>
         <span class="mod-version">Version: ${mod.current_version}</span>
         <span class="mod-updated">Last Updated: ${new Date(
 					mod.last_updated
