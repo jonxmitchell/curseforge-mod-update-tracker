@@ -62,6 +62,7 @@ async function checkForUpdates() {
 				);
 				const data = await response.json();
 				const latestVersion = data.data.latestFilesIndexes[0].fileId.toString();
+				const lastUpdated = new Date(data.data.dateModified).toISOString();
 
 				console.log(
 					`Checking mod ${mod.name}: Current version: ${mod.current_version}, Latest version: ${latestVersion}`
@@ -74,19 +75,22 @@ async function checkForUpdates() {
 					updatesFound = true;
 					db.run(
 						`UPDATE mods SET current_version = ?, last_checked_version = ?, last_updated = ? WHERE mod_id = ?`,
-						[latestVersion, latestVersion, checkTime, mod.mod_id]
+						[latestVersion, latestVersion, lastUpdated, mod.mod_id]
 					);
 
 					mainWindow.webContents.send("mod-updated", {
+						id: mod.mod_id,
 						name: mod.name,
 						newVersion: latestVersion,
 						oldVersion: mod.current_version,
+						lastUpdated: lastUpdated,
 					});
 
 					await sendDiscordNotifications(
 						mod.name,
 						latestVersion,
-						mod.current_version
+						mod.current_version,
+						lastUpdated
 					);
 				} else {
 					console.log(
@@ -120,7 +124,12 @@ function sendNoUpdatesMessage(checkTime) {
 	});
 }
 
-async function sendDiscordNotifications(modName, newVersion, oldVersion) {
+async function sendDiscordNotifications(
+	modName,
+	newVersion,
+	oldVersion,
+	lastUpdated
+) {
 	const webhooks = await getDiscordWebhooks();
 
 	if (webhooks.length === 0) {
@@ -133,7 +142,9 @@ async function sendDiscordNotifications(modName, newVersion, oldVersion) {
 		embeds: [
 			{
 				title: `${modName} has been updated!`,
-				description: `New version: ${newVersion}\nPrevious version: ${oldVersion}`,
+				description: `New version: ${newVersion}\nPrevious version: ${oldVersion}\nLast Updated: ${new Date(
+					lastUpdated
+				).toLocaleString()}`,
 				color: 5814783,
 				timestamp: new Date().toISOString(),
 			},
@@ -191,16 +202,11 @@ ipcMain.on("add-mod", async (event, modId) => {
 		);
 		const data = await response.json();
 		const latestVersion = data.data.latestFilesIndexes[0].fileId.toString();
+		const lastUpdated = new Date(data.data.dateModified).toISOString();
 
 		db.run(
 			`INSERT INTO mods (mod_id, name, current_version, last_checked_version, last_updated) VALUES (?, ?, ?, ?, ?)`,
-			[
-				modId,
-				data.data.name,
-				latestVersion,
-				latestVersion,
-				new Date().toISOString(),
-			],
+			[modId, data.data.name, latestVersion, latestVersion, lastUpdated],
 			(err) => {
 				if (err) {
 					console.error(err);
