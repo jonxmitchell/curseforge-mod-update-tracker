@@ -52,8 +52,7 @@ input[type="range"] {
 	border: 1px solid #555555;
 }
 
-button,
-select {
+button {
 	padding: 5px 10px;
 	background-color: #3a3a3a;
 	color: #ffffff;
@@ -211,7 +210,7 @@ button:last-child {
 }
 
 #intervalInput {
-	width: 7%; /* Reduced width for smaller input box */
+	width: 7%;
 }
 
 #webhookSection {
@@ -274,11 +273,72 @@ button:last-child {
 
 .mod-item .mod-game,
 .mod-item .mod-updated {
-	color: #888; /* or any color to distinguish the game information */
-	display: block; /* ensure it is displayed on a new line */
-	margin-top: 5px; /* add some space between the game info and other text */
+	color: #888;
+	display: block;
+	margin-top: 5px;
 }
 
 .mod-item .mod-info {
-	margin-bottom: 10px; /* ensure spacing between mod items */
+	margin-bottom: 10px;
+}
+
+/* Custom dropdown styles */
+.custom-select {
+	position: relative;
+	font-family: Arial;
+	width: 200px;
+}
+
+.select-selected {
+	background-color: #3a3a3a;
+	border: 1px solid #555555;
+	padding: 8px 16px;
+	cursor: pointer;
+	user-select: none;
+}
+
+.select-selected:after {
+	position: absolute;
+	content: "";
+	top: 14px;
+	right: 10px;
+	width: 0;
+	height: 0;
+	border: 6px solid transparent;
+	border-color: #fff transparent transparent transparent;
+}
+
+.select-selected.select-arrow-active:after {
+	border-color: transparent transparent #fff transparent;
+	top: 7px;
+}
+
+.select-items {
+	position: absolute;
+	background-color: #3a3a3a;
+	top: 100%;
+	left: 0;
+	right: 0;
+	z-index: 99;
+	max-height: 200px;
+	overflow-y: auto;
+}
+
+.select-items div {
+	color: #ffffff;
+	padding: 8px 16px;
+	cursor: pointer;
+	user-select: none;
+}
+
+.select-items div:hover {
+	background-color: #4a4a4a;
+}
+
+.select-hide {
+	display: none;
+}
+
+.custom-select input[type="checkbox"] {
+	margin-right: 8px;
 }

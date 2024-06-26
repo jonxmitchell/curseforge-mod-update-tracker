@@ -9,30 +9,37 @@ function initDatabase() {
 
 	db.serialize(() => {
 		db.run(`CREATE TABLE IF NOT EXISTS mods (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      mod_id TEXT UNIQUE,
-      name TEXT,
-      game TEXT,
-      description TEXT,
-      author TEXT,
-      download_count INTEGER,
-      website_url TEXT,
-      current_released TEXT, /* Changed */
-      last_checked_released TEXT, /* Changed */
-      last_updated TEXT,
-      webhook_id INTEGER
-    )`);
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            mod_id TEXT UNIQUE,
+            name TEXT,
+            game TEXT,
+            description TEXT,
+            author TEXT,
+            download_count INTEGER,
+            website_url TEXT,
+            current_released TEXT,
+            last_checked_released TEXT,
+            last_updated TEXT
+        )`);
 
 		db.run(`CREATE TABLE IF NOT EXISTS webhooks (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT UNIQUE,
-      url TEXT UNIQUE
-    )`);
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT UNIQUE,
+            url TEXT UNIQUE
+        )`);
 
 		db.run(`CREATE TABLE IF NOT EXISTS settings (
-      key TEXT PRIMARY KEY,
-      value TEXT
-    )`);
+            key TEXT PRIMARY KEY,
+            value TEXT
+        )`);
+
+		db.run(`CREATE TABLE IF NOT EXISTS mod_webhooks (
+            mod_id TEXT,
+            webhook_id INTEGER,
+            PRIMARY KEY (mod_id, webhook_id),
+            FOREIGN KEY (mod_id) REFERENCES mods(mod_id),
+            FOREIGN KEY (webhook_id) REFERENCES webhooks(id)
+        )`);
 	});
 }
 
@@ -197,17 +204,57 @@ function deleteWebhook(id) {
 	});
 }
 
-function assignWebhook(modId, webhookId) {
+function assignWebhooks(modId, webhookIds) {
 	return new Promise((resolve, reject) => {
-		db.run(
-			`UPDATE mods SET webhook_id = ? WHERE mod_id = ?`,
-			[webhookId, modId],
-			(err) => {
+		db.run("BEGIN TRANSACTION", (err) => {
+			if (err) {
+				reject(err);
+				return;
+			}
+
+			db.run("DELETE FROM mod_webhooks WHERE mod_id = ?", [modId], (err) => {
 				if (err) {
-					console.error("Error assigning webhook:", err);
+					db.run("ROLLBACK");
+					reject(err);
+					return;
+				}
+
+				const stmt = db.prepare(
+					"INSERT INTO mod_webhooks (mod_id, webhook_id) VALUES (?, ?)"
+				);
+				for (const webhookId of webhookIds) {
+					stmt.run(modId, webhookId, (err) => {
+						if (err) {
+							db.run("ROLLBACK");
+							reject(err);
+							return;
+						}
+					});
+				}
+				stmt.finalize();
+
+				db.run("COMMIT", (err) => {
+					if (err) {
+						reject(err);
+					} else {
+						resolve();
+					}
+				});
+			});
+		});
+	});
+}
+
+function getModWebhooks(modId) {
+	return new Promise((resolve, reject) => {
+		db.all(
+			"SELECT webhook_id FROM mod_webhooks WHERE mod_id = ?",
+			[modId],
+			(err, rows) => {
+				if (err) {
 					reject(err);
 				} else {
-					resolve();
+					resolve(rows.map((row) => row.webhook_id));
 				}
 			}
 		);
@@ -225,5 +272,6 @@ module.exports = {
 	deleteMod,
 	addWebhook,
 	deleteWebhook,
-	assignWebhook,
+	assignWebhooks,
+	getModWebhooks,
 };

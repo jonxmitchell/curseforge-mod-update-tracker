@@ -12,7 +12,8 @@ const {
 	deleteMod,
 	addWebhook,
 	deleteWebhook,
-	assignWebhook,
+	assignWebhooks,
+	getModWebhooks,
 } = require("./database");
 
 let mainWindow;
@@ -78,10 +79,9 @@ async function checkForUpdates() {
 					mod.name,
 					latestReleased,
 					mod.current_released,
-					mod.webhook_id
+					mod.mod_id
 				);
 			} else {
-				// Only update last_checked_released
 				await updateMod(
 					mod.mod_id,
 					mod.current_released,
@@ -113,51 +113,48 @@ async function sendDiscordNotifications(
 	modName,
 	newReleased,
 	oldReleased,
-	webhookId
+	modId
 ) {
-	if (!webhookId) {
-		console.log(`No webhook assigned for mod ${modName}`);
-		return;
-	}
-
 	try {
+		const webhookIds = await getModWebhooks(modId);
 		const webhooks = await getWebhooks();
-		const webhook = webhooks.find((w) => w.id === webhookId);
 
-		if (!webhook) {
-			console.error(`No webhook found with id ${webhookId}`);
-			return;
+		for (const webhookId of webhookIds) {
+			const webhook = webhooks.find((w) => w.id === webhookId);
+			if (webhook) {
+				const message = {
+					content: `Mod Update Alert!`,
+					embeds: [
+						{
+							title: `${modName} has been updated!`,
+							description: `New release date: ${formatDate(
+								newReleased
+							)}\nPrevious release date: ${formatDate(oldReleased)}`,
+							color: 5814783,
+							timestamp: new Date().toISOString(),
+						},
+					],
+				};
+
+				const response = await fetch(webhook.url, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify(message),
+				});
+
+				if (!response.ok) {
+					throw new Error(`HTTP error! status: ${response.status}`);
+				}
+
+				console.log(
+					`Notification sent for ${modName} to webhook ${webhook.url}`
+				);
+			}
 		}
-
-		const message = {
-			content: `Mod Update Alert!`,
-			embeds: [
-				{
-					title: `${modName} has been updated!`,
-					description: `New release date: ${formatDate(
-						newReleased
-					)}\nPrevious release date: ${formatDate(oldReleased)}`,
-					color: 5814783,
-					timestamp: new Date().toISOString(),
-				},
-			],
-		};
-
-		const response = await fetch(webhook.url, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(message),
-		});
-
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
-		}
-
-		console.log(`Notification sent for ${modName} to webhook ${webhook.url}`);
 	} catch (error) {
-		console.error(`Error sending Discord notification:`, error);
+		console.error(`Error sending Discord notifications:`, error);
 	}
 }
 
@@ -182,7 +179,7 @@ function startCountdown(duration) {
 		if (--timer < 0) {
 			clearInterval(countdownInterval);
 			checkForUpdates();
-			startCountdown(duration); // Restart countdown with the same interval
+			startCountdown(duration);
 		}
 
 		remainingTime = timer;
@@ -212,7 +209,6 @@ app.whenReady().then(() => {
 	createWindow();
 	initDatabase();
 	initializeSettings();
-	// Initialize the pause/resume button state
 	mainWindow.webContents.on("did-finish-load", () => {
 		mainWindow.webContents.send("initialize-pause-resume-button");
 	});
@@ -251,7 +247,6 @@ ipcMain.on("add-mod", async (event, modId) => {
 		const websiteUrl =
 			data.data.links?.websiteUrl || "https://www.curseforge.com";
 
-		// Fetch the game details using the gameId
 		const gameResponse = await fetch(
 			`https://api.curseforge.com/v1/games/${gameId}`,
 			{
@@ -355,13 +350,13 @@ ipcMain.on("delete-webhook", async (event, id) => {
 	}
 });
 
-ipcMain.on("assign-webhook", async (event, { modId, webhookId }) => {
+ipcMain.on("assign-webhooks", async (event, { modId, webhookIds }) => {
 	try {
-		await assignWebhook(modId, webhookId);
-		event.reply("assign-webhook-result", { success: true });
+		await assignWebhooks(modId, webhookIds);
+		event.reply("assign-webhooks-result", { success: true });
 	} catch (error) {
-		console.error("Error assigning webhook:", error);
-		event.reply("assign-webhook-result", {
+		console.error("Error assigning webhooks:", error);
+		event.reply("assign-webhooks-result", {
 			success: false,
 			error: error.message,
 		});
@@ -371,7 +366,7 @@ ipcMain.on("assign-webhook", async (event, { modId, webhookId }) => {
 ipcMain.handle("save-interval", async (event, interval) => {
 	try {
 		await saveSetting("update_interval", interval);
-		startCountdown(interval); // Reset countdown with the new interval
+		startCountdown(interval);
 		return { success: true };
 	} catch (error) {
 		return { success: false, error: error.message };
@@ -455,6 +450,16 @@ ipcMain.on("pause-timer", () => {
 
 ipcMain.on("resume-timer", () => {
 	resumeCountdown();
+});
+
+ipcMain.handle("get-mod-webhooks", async (event, modId) => {
+	try {
+		const webhookIds = await getModWebhooks(modId);
+		return webhookIds;
+	} catch (error) {
+		console.error("Error getting mod webhooks:", error);
+		return [];
+	}
 });
 
 app.on("window-all-closed", () => {
