@@ -67,20 +67,16 @@ async function checkForUpdates() {
 				);
 				const data = await response.json();
 				const latestVersion = data.data.latestFilesIndexes[0].fileId.toString();
-				const lastUpdated = new Date(data.data.dateModified).toISOString();
 
 				console.log(
 					`Checking mod ${mod.name}: Current version: ${mod.current_version}, Latest version: ${latestVersion}`
 				);
 
 				if (latestVersion !== mod.current_version) {
-					console.log(
-						`Update found for ${mod.name}: ${mod.current_version} -> ${latestVersion}`
-					);
 					updatesFound = true;
 					db.run(
 						`UPDATE mods SET current_version = ?, last_checked_version = ?, last_updated = ? WHERE mod_id = ?`,
-						[latestVersion, latestVersion, lastUpdated, mod.mod_id]
+						[latestVersion, latestVersion, checkTime, mod.mod_id]
 					);
 
 					mainWindow.webContents.send("mod-updated", {
@@ -88,14 +84,12 @@ async function checkForUpdates() {
 						name: mod.name,
 						newVersion: latestVersion,
 						oldVersion: mod.current_version,
-						lastUpdated: lastUpdated,
 					});
 
 					await sendDiscordNotifications(
 						mod.name,
 						latestVersion,
-						mod.current_version,
-						lastUpdated
+						mod.current_version
 					);
 				} else {
 					console.log(
@@ -112,29 +106,11 @@ async function checkForUpdates() {
 			}
 		}
 
-		if (!updatesFound) {
-			console.log("No updates found for any mods");
-			sendNoUpdatesMessage(checkTime);
-		}
-		mainWindow.webContents.send("update-check-complete");
+		mainWindow.webContents.send("update-check-complete", { updatesFound });
 	});
 }
 
-function sendNoUpdatesMessage(checkTime) {
-	mainWindow.webContents.send("no-updates", {
-		message: `No mod updates detected as of ${new Date(
-			checkTime
-		).toLocaleString()}`,
-		checkTime: checkTime,
-	});
-}
-
-async function sendDiscordNotifications(
-	modName,
-	newVersion,
-	oldVersion,
-	lastUpdated
-) {
+async function sendDiscordNotifications(modName, newVersion, oldVersion) {
 	const webhooks = await getDiscordWebhooks();
 
 	if (webhooks.length === 0) {
@@ -147,9 +123,7 @@ async function sendDiscordNotifications(
 		embeds: [
 			{
 				title: `${modName} has been updated!`,
-				description: `New version: ${newVersion}\nPrevious version: ${oldVersion}\nLast Updated: ${new Date(
-					lastUpdated
-				).toLocaleString()}`,
+				description: `New version: ${newVersion}\nPrevious version: ${oldVersion}`,
 				color: 5814783,
 				timestamp: new Date().toISOString(),
 			},
@@ -240,11 +214,16 @@ ipcMain.on("add-mod", async (event, modId) => {
 		);
 		const data = await response.json();
 		const latestVersion = data.data.latestFilesIndexes[0].fileId.toString();
-		const lastUpdated = new Date(data.data.dateModified).toISOString();
 
 		db.run(
 			`INSERT INTO mods (mod_id, name, current_version, last_checked_version, last_updated) VALUES (?, ?, ?, ?, ?)`,
-			[modId, data.data.name, latestVersion, latestVersion, lastUpdated],
+			[
+				modId,
+				data.data.name,
+				latestVersion,
+				latestVersion,
+				new Date().toISOString(),
+			],
 			(err) => {
 				if (err) {
 					console.error(err);

@@ -1,4 +1,5 @@
 const { ipcRenderer } = require("electron");
+const Toastify = require("toastify-js");
 
 let updatedMods = new Set();
 let allMods = [];
@@ -34,19 +35,15 @@ document.getElementById("filterModInput").addEventListener("input", (e) => {
 });
 
 const intervalSlider = document.getElementById("intervalSlider");
-const sliderValue = document.getElementById("sliderValue");
 const intervalInput = document.getElementById("intervalInput");
 
 intervalSlider.addEventListener("input", (e) => {
 	const value = e.target.value;
-	sliderValue.textContent = value;
 	intervalInput.value = value;
 });
 
 intervalInput.addEventListener("input", (e) => {
 	const value = e.target.value;
-	const errorMessage = document.getElementById("intervalError");
-	const setIntervalButton = document.getElementById("setIntervalButton");
 
 	// Only allow positive integers
 	e.target.value = value.replace(/[^0-9]/g, "");
@@ -54,18 +51,14 @@ intervalInput.addEventListener("input", (e) => {
 	const newInterval = parseInt(value, 10);
 
 	if (newInterval < 1) {
-		errorMessage.textContent = "Interval must be at least 1 second.";
-		errorMessage.style.display = "block";
-		setIntervalButton.disabled = true;
+		showToast("Interval must be at least 1 second.", "error");
+		document.getElementById("setIntervalButton").disabled = true;
 	} else {
-		errorMessage.style.display = "none";
-		setIntervalButton.disabled = false;
+		document.getElementById("setIntervalButton").disabled = false;
 		if (newInterval <= 3600) {
 			intervalSlider.value = newInterval;
-			sliderValue.textContent = newInterval;
 		} else {
 			intervalSlider.value = 3600;
-			sliderValue.textContent = "3600+";
 		}
 	}
 });
@@ -80,8 +73,10 @@ document
 			startCountdown(currentInterval);
 			try {
 				await ipcRenderer.invoke("save-interval", currentInterval);
+				showToast("Update interval set successfully", "success");
 			} catch (error) {
 				console.error("Failed to save interval:", error);
+				showToast("Failed to save interval", "error");
 			}
 		}
 	});
@@ -101,9 +96,10 @@ document.getElementById("pauseResumeButton").addEventListener("click", () => {
 
 ipcRenderer.on("add-mod-result", (event, result) => {
 	if (result.success) {
+		showToast("Mod added successfully", "success");
 		updateModList();
 	} else {
-		alert(`Failed to add mod: ${result.error}`);
+		showToast(`Failed to add mod: ${result.error}`, "error");
 	}
 });
 
@@ -111,24 +107,31 @@ ipcRenderer.on("mod-updated", (event, mod) => {
 	console.log(
 		`Mod update received: ${mod.name} from ${mod.oldVersion} to ${mod.newVersion}`
 	);
-	alert(
-		`Mod ${mod.name} updated from version ${mod.oldVersion} to ${mod.newVersion}`
+	showToast(
+		`Mod ${mod.name} updated from version ${mod.oldVersion} to ${mod.newVersion}`,
+		"success"
 	);
 	updatedMods.add(mod.id);
 	updateModList();
 });
 
-ipcRenderer.on("update-check-complete", () => {
+ipcRenderer.on("update-check-complete", (event, result) => {
 	updatedMods.clear();
 	updateModList();
+
+	if (result.updatesFound) {
+		showToast("Mod updates found and applied!", "success");
+	} else {
+		showToast("No mod updates detected", "info");
+	}
 });
 
 ipcRenderer.on("add-webhook-result", (event, result) => {
 	if (result.success) {
-		alert("Webhook added successfully");
+		showToast("Webhook added successfully", "success");
 		updateWebhookList();
 	} else {
-		alert(`Failed to add webhook: ${result.error}`);
+		showToast(`Failed to add webhook: ${result.error}`, "error");
 	}
 });
 
@@ -141,7 +144,7 @@ ipcRenderer.on("get-mods-result", (event, result) => {
 		allMods = result.mods;
 		renderModList(allMods);
 	} else {
-		alert(`Failed to get mods: ${result.error}`);
+		showToast(`Failed to get mods: ${result.error}`, "error");
 	}
 });
 
@@ -178,9 +181,10 @@ function renderModList(mods) {
 
 ipcRenderer.on("delete-mod-result", (event, result) => {
 	if (result.success) {
+		showToast("Mod deleted successfully", "success");
 		updateModList();
 	} else {
-		alert(`Failed to delete mod: ${result.error}`);
+		showToast(`Failed to delete mod: ${result.error}`, "error");
 	}
 });
 
@@ -209,15 +213,16 @@ ipcRenderer.on("get-webhooks-result", (event, result) => {
 			});
 		});
 	} else {
-		alert(`Failed to get webhooks: ${result.error}`);
+		showToast(`Failed to get webhooks: ${result.error}`, "error");
 	}
 });
 
 ipcRenderer.on("delete-webhook-result", (event, result) => {
 	if (result.success) {
+		showToast("Webhook removed successfully", "success");
 		updateWebhookList();
 	} else {
-		alert(`Failed to delete webhook: ${result.error}`);
+		showToast(`Failed to delete webhook: ${result.error}`, "error");
 	}
 });
 
@@ -254,8 +259,6 @@ async function loadSavedInterval() {
 		if (result.success) {
 			currentInterval = result.interval;
 			intervalSlider.value = Math.min(currentInterval, 3600);
-			sliderValue.textContent =
-				currentInterval > 3600 ? "3600+" : currentInterval;
 			intervalInput.value = currentInterval;
 			startCountdown(currentInterval);
 		} else {
@@ -264,6 +267,30 @@ async function loadSavedInterval() {
 	} catch (error) {
 		console.error("Error loading saved interval:", error);
 	}
+}
+
+function showToast(message, type = "info") {
+	let backgroundColor;
+	switch (type) {
+		case "success":
+			backgroundColor = "linear-gradient(to right, #00b09b, #96c93d)";
+			break;
+		case "error":
+			backgroundColor = "linear-gradient(to right, #ff5f6d, #ffc371)";
+			break;
+		default:
+			backgroundColor = "linear-gradient(to right, #00b4db, #0083b0)";
+	}
+
+	Toastify({
+		text: message,
+		duration: 3000,
+		close: true,
+		gravity: "top",
+		position: "center",
+		backgroundColor: backgroundColor,
+		stopOnFocus: true,
+	}).showToast();
 }
 
 // Tab functionality
