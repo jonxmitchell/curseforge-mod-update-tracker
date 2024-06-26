@@ -151,13 +151,14 @@ button:last-child {
 	margin-bottom: 10px;
 	border-radius: 5px;
 	display: flex;
-	justify-content: space-between;
-	align-items: center;
+	flex-direction: column;
 }
 
 .webhook-info {
-	flex: 1;
-	min-width: 0;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 5px;
 }
 
 .webhook-name {
@@ -166,10 +167,16 @@ button:last-child {
 
 .webhook-url {
 	word-break: break-all;
+	margin-bottom: 5px;
 }
 
-.delete-webhook {
-	margin-left: 10px;
+.webhook-actions {
+	display: flex;
+	justify-content: flex-end;
+}
+
+.webhook-actions button {
+	margin-left: 5px;
 }
 
 .error-message {
@@ -232,7 +239,7 @@ button:last-child {
 
 /* Modern scrollbar styles */
 ::-webkit-scrollbar {
-	width: 10px;
+	width: 3px;
 }
 
 ::-webkit-scrollbar-track {
@@ -256,7 +263,7 @@ button:last-child {
 	}
 
 	.mod-actions,
-	.delete-webhook {
+	.webhook-actions {
 		margin-top: 10px;
 	}
 }
