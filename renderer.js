@@ -279,14 +279,40 @@ ipcRenderer.on("get-webhooks-result", (event, result) => {
 		result.webhooks.forEach((webhook) => {
 			const webhookElement = document.createElement("div");
 			webhookElement.className = "webhook-item";
+			const truncatedUrl =
+				webhook.url.length > 60
+					? webhook.url.substring(0, 60) + "..."
+					: webhook.url;
 			webhookElement.innerHTML = `
-		  <div class="webhook-info">
-			<span class="webhook-name">${webhook.name}</span>
-			<span class="webhook-url">${webhook.url}</span>
-		  </div>
-		  <button class="delete-webhook" data-webhook-id="${webhook.id}"><i class="fas fa-trash"></i></button>
-		`;
+        <div class="webhook-info">
+          <span class="webhook-name">${webhook.name}</span>
+        </div>
+        <div class="webhook-url">${truncatedUrl}</div>
+        <div class="webhook-actions">
+          <button class="show-full-webhook">Show Full Webhook</button>
+          <button class="test-webhook">Test</button>
+          <button class="delete-webhook" data-webhook-id="${webhook.id}"><i class="fas fa-trash"></i></button>
+        </div>
+      `;
 			webhookList.appendChild(webhookElement);
+
+			const showFullWebhookButton =
+				webhookElement.querySelector(".show-full-webhook");
+			showFullWebhookButton.addEventListener("click", () => {
+				const webhookUrlElement = webhookElement.querySelector(".webhook-url");
+				if (webhookUrlElement.textContent === truncatedUrl) {
+					webhookUrlElement.textContent = webhook.url;
+					showFullWebhookButton.textContent = "Hide Full Webhook";
+				} else {
+					webhookUrlElement.textContent = truncatedUrl;
+					showFullWebhookButton.textContent = "Show Full Webhook";
+				}
+			});
+
+			const testWebhookButton = webhookElement.querySelector(".test-webhook");
+			testWebhookButton.addEventListener("click", () => {
+				ipcRenderer.send("test-webhook", webhook.id);
+			});
 		});
 
 		document.querySelectorAll(".delete-webhook").forEach((button) => {
@@ -308,6 +334,14 @@ ipcRenderer.on("delete-webhook-result", (event, result) => {
 		updateWebhookList();
 	} else {
 		showToast(`Failed to delete webhook: ${result.error}`, "error");
+	}
+});
+
+ipcRenderer.on("test-webhook-result", (event, result) => {
+	if (result.success) {
+		showToast("Webhook test successful", "success");
+	} else {
+		showToast(`Webhook test failed: ${result.error}`, "error");
 	}
 });
 
