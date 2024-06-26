@@ -272,7 +272,8 @@ button:last-child {
 	}
 }
 
-.mod-item .mod-game {
+.mod-item .mod-game,
+.mod-item .mod-updated {
 	color: #888; /* or any color to distinguish the game information */
 	display: block; /* ensure it is displayed on a new line */
 	margin-top: 5px; /* add some space between the game info and other text */
