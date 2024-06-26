@@ -70,14 +70,33 @@ button:last-child {
 	font-size: 1.2em;
 	display: flex;
 	align-items: center;
+	justify-content: space-between;
+}
+
+.countdown-wrapper {
+	display: flex;
+	align-items: center;
 }
 
 .time-box {
 	display: inline-block;
 	background-color: #3a3a3a;
 	padding: 5px 10px;
-	margin: 0 5px;
+	margin: 0 2px;
 	border-radius: 5px;
+	font-weight: bold;
+}
+
+.total-mods {
+	font-size: 0.9em;
+}
+
+.mod-count {
+	display: inline-block;
+	background-color: #3a3a3a;
+	padding: 2px 8px;
+	margin-left: 5px;
+	border-radius: 10px;
 	font-weight: bold;
 }
 
@@ -152,20 +171,8 @@ button:last-child {
 	flex-grow: 1;
 }
 
-#sliderValue {
-	min-width: 40px;
-}
-
 #intervalInput {
 	width: 100px;
-}
-
-#intervalInput,
-#webhookInput {
-	background-color: #3a3a3a;
-	color: #ffffff;
-	border: 1px solid #555555;
-	padding: 5px;
 }
 
 #webhookSection {

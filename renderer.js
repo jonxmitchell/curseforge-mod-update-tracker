@@ -143,10 +143,18 @@ ipcRenderer.on("get-mods-result", (event, result) => {
 	if (result.success) {
 		allMods = result.mods;
 		renderModList(allMods);
+		updateModCount(allMods.length);
 	} else {
 		showToast(`Failed to get mods: ${result.error}`, "error");
 	}
 });
+
+function updateModCount(count) {
+	const modCountElement = document.querySelector(".mod-count");
+	if (modCountElement) {
+		modCountElement.textContent = count;
+	}
+}
 
 function renderModList(mods) {
 	const modList = document.getElementById("modList");
