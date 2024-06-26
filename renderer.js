@@ -7,12 +7,17 @@ let countdownInterval;
 let timer = 3600; // Default to 1 hour
 let isPaused = false;
 let currentInterval = 3600;
+let consoleLines = [];
 
 document.getElementById("addModButton").addEventListener("click", () => {
 	const modIdInput = document.getElementById("modSearchInput");
-	const modId = modIdInput.value;
-	ipcRenderer.send("add-mod", modId);
-	modIdInput.value = ""; // Clear the input after adding
+	const modId = modIdInput.value.trim();
+	if (modId) {
+		ipcRenderer.send("add-mod", modId);
+		modIdInput.value = ""; // Clear the input after adding
+	} else {
+		showToast("Please enter a mod ID", "error");
+	}
 });
 
 document.getElementById("checkUpdatesButton").addEventListener("click", () => {
@@ -20,8 +25,17 @@ document.getElementById("checkUpdatesButton").addEventListener("click", () => {
 });
 
 document.getElementById("addWebhookButton").addEventListener("click", () => {
-	const webhookUrl = document.getElementById("webhookInput").value;
-	ipcRenderer.send("add-webhook", webhookUrl);
+	const webhookNameInput = document.getElementById("webhookNameInput");
+	const webhookInput = document.getElementById("webhookInput");
+	const webhookName = webhookNameInput.value.trim();
+	const webhookUrl = webhookInput.value.trim();
+	if (webhookName && webhookUrl) {
+		ipcRenderer.send("add-webhook", { name: webhookName, url: webhookUrl });
+		webhookNameInput.value = "";
+		webhookInput.value = "";
+	} else {
+		showToast("Please enter both webhook name and URL", "error");
+	}
 });
 
 document.getElementById("filterModInput").addEventListener("input", (e) => {
@@ -68,6 +82,12 @@ document
 	.addEventListener("click", async () => {
 		const newInterval = parseInt(intervalInput.value, 10);
 		if (newInterval >= 1) {
+			if (newInterval < 300) {
+				showToast(
+					"It is recommended to set the interval to at least 300 seconds",
+					"warning"
+				);
+			}
 			currentInterval = newInterval;
 			clearInterval(countdownInterval);
 			startCountdown(currentInterval);
@@ -92,6 +112,12 @@ document.getElementById("pauseResumeButton").addEventListener("click", () => {
 		button.textContent = "Resume";
 		isPaused = true;
 	}
+});
+
+document.getElementById("clearConsoleButton").addEventListener("click", () => {
+	consoleLines = [];
+	updateConsoleOutput();
+	showToast("Console cleared", "info");
 });
 
 ipcRenderer.on("add-mod-result", (event, result) => {
@@ -166,26 +192,72 @@ function renderModList(mods) {
 			modElement.classList.add("mod-updated");
 		}
 		modElement.innerHTML = `
-      <span class="mod-name">${mod.name} (ID: ${mod.mod_id})</span>
-      <span class="mod-version">Version: ${mod.current_version}</span>
-      <span class="mod-updated">Last Updated: ${new Date(
-				mod.last_updated
-			).toLocaleString()}</span>
-      <a href="https://www.curseforge.com/minecraft/mc-mods/${
-				mod.mod_id
-			}" target="_blank" class="mod-link">🔗</a>
-      <button class="delete-mod" data-mod-id="${mod.mod_id}">🗑️</button>
+      <div class="mod-info">
+        <span class="mod-name">${mod.name} (ID: ${mod.mod_id})</span>
+        <span class="mod-version">Version: ${mod.current_version}</span>
+        <span class="mod-updated">Last Updated: ${new Date(
+					mod.last_updated
+				).toLocaleString()}</span>
+      </div>
+      <div class="mod-actions">
+        <select class="webhook-select" data-mod-id="${mod.mod_id}">
+          <option value="">Select Webhook</option>
+        </select>
+        <a href="https://www.curseforge.com/minecraft/mc-mods/${
+					mod.mod_id
+				}" target="_blank" class="mod-link"><i class="fas fa-external-link-alt"></i></a>
+        <button class="delete-mod" data-mod-id="${
+					mod.mod_id
+				}"><i class="fas fa-trash"></i></button>
+      </div>
     `;
 		modList.appendChild(modElement);
 	});
 
 	document.querySelectorAll(".delete-mod").forEach((button) => {
 		button.addEventListener("click", (e) => {
-			const modId = e.target.getAttribute("data-mod-id");
+			const modId = e.target.closest(".delete-mod").getAttribute("data-mod-id");
 			ipcRenderer.send("delete-mod", modId);
 		});
 	});
+
+	updateWebhookSelects();
 }
+
+function updateWebhookSelects() {
+	ipcRenderer.send("get-webhooks");
+}
+
+ipcRenderer.on("get-webhooks-result", (event, result) => {
+	if (result.success) {
+		const webhooks = result.webhooks;
+		document.querySelectorAll(".webhook-select").forEach((select) => {
+			const modId = select.getAttribute("data-mod-id");
+			select.innerHTML = '<option value="">Select Webhook</option>';
+			webhooks.forEach((webhook) => {
+				const option = document.createElement("option");
+				option.value = webhook.id;
+				option.textContent = webhook.name;
+				select.appendChild(option);
+			});
+			// Set the selected webhook if any
+			const mod = allMods.find((m) => m.mod_id === modId);
+			if (mod && mod.webhook_id) {
+				select.value = mod.webhook_id;
+			}
+		});
+
+		document.querySelectorAll(".webhook-select").forEach((select) => {
+			select.addEventListener("change", (e) => {
+				const modId = e.target.getAttribute("data-mod-id");
+				const webhookId = e.target.value;
+				ipcRenderer.send("assign-webhook", { modId, webhookId });
+			});
+		});
+	} else {
+		showToast(`Failed to get webhooks: ${result.error}`, "error");
+	}
+});
 
 ipcRenderer.on("delete-mod-result", (event, result) => {
 	if (result.success) {
@@ -208,15 +280,20 @@ ipcRenderer.on("get-webhooks-result", (event, result) => {
 			const webhookElement = document.createElement("div");
 			webhookElement.className = "webhook-item";
 			webhookElement.innerHTML = `
-        <span class="webhook-url">${webhook.url}</span>
-        <button class="delete-webhook" data-webhook-id="${webhook.id}">🗑️</button>
-      `;
+		  <div class="webhook-info">
+			<span class="webhook-name">${webhook.name}</span>
+			<span class="webhook-url">${webhook.url}</span>
+		  </div>
+		  <button class="delete-webhook" data-webhook-id="${webhook.id}"><i class="fas fa-trash"></i></button>
+		`;
 			webhookList.appendChild(webhookElement);
 		});
 
 		document.querySelectorAll(".delete-webhook").forEach((button) => {
 			button.addEventListener("click", (e) => {
-				const webhookId = e.target.getAttribute("data-webhook-id");
+				const webhookId = e.target
+					.closest(".delete-webhook")
+					.getAttribute("data-webhook-id");
 				ipcRenderer.send("delete-webhook", webhookId);
 			});
 		});
@@ -286,6 +363,9 @@ function showToast(message, type = "info") {
 		case "error":
 			backgroundColor = "linear-gradient(to right, #ff5f6d, #ffc371)";
 			break;
+		case "warning":
+			backgroundColor = "linear-gradient(to right, #f2994a, #f2c94c)";
+			break;
 		default:
 			backgroundColor = "linear-gradient(to right, #00b4db, #0083b0)";
 	}
@@ -300,6 +380,24 @@ function showToast(message, type = "info") {
 		stopOnFocus: true,
 	}).showToast();
 }
+
+function updateConsoleOutput() {
+	const consoleOutput = document.getElementById("consoleOutput");
+	consoleOutput.textContent = consoleLines.join("\n");
+	consoleOutput.scrollTop = consoleOutput.scrollHeight;
+}
+
+// Override console.log to update the in-app console
+const originalConsoleLog = console.log;
+console.log = function () {
+	originalConsoleLog.apply(console, arguments);
+	const logMessage = Array.from(arguments).join(" ");
+	consoleLines.push(logMessage);
+	if (consoleLines.length > 200) {
+		consoleLines.shift();
+	}
+	updateConsoleOutput();
+};
 
 // Tab functionality
 document.querySelectorAll(".tab-button").forEach((button) => {
@@ -332,3 +430,6 @@ loadSavedInterval();
 updateModList();
 updateWebhookList();
 openTab("mods"); // Open the mods tab by default
+
+// Log a message to test the console
+console.log("Application initialized");

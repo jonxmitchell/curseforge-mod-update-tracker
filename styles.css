@@ -51,7 +51,8 @@ input[type="range"] {
 	border: 1px solid #555555;
 }
 
-button {
+button,
+select {
 	padding: 5px 10px;
 	background-color: #3a3a3a;
 	color: #ffffff;
@@ -59,6 +60,7 @@ button {
 	cursor: pointer;
 	white-space: nowrap;
 	margin-right: 5px;
+	flex-shrink: 0;
 }
 
 button:last-child {
@@ -82,7 +84,7 @@ button:last-child {
 	display: inline-block;
 	background-color: #3a3a3a;
 	padding: 5px 10px;
-	margin: 0 2px;
+	margin: 0 8px;
 	border-radius: 5px;
 	font-weight: bold;
 }
@@ -109,21 +111,35 @@ button:last-child {
 	padding: 10px;
 	margin-bottom: 10px;
 	border-radius: 5px;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.mod-info {
+	flex: 1;
+	min-width: 0;
 }
 
 .mod-name {
 	font-weight: bold;
+	display: inline-block;
 }
 
 .mod-version,
 .mod-updated {
-	margin-left: 10px;
 	font-size: 0.9em;
+	display: block;
+}
+
+.mod-actions {
+	display: flex;
+	align-items: center;
 }
 
 .mod-link,
 .delete-mod {
-	float: right;
 	margin-left: 10px;
 	text-decoration: none;
 	color: #ffffff;
@@ -134,6 +150,18 @@ button:last-child {
 	padding: 10px;
 	margin-bottom: 10px;
 	border-radius: 5px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.webhook-info {
+	flex: 1;
+	min-width: 0;
+}
+
+.webhook-name {
+	font-weight: bold;
 }
 
 .webhook-url {
@@ -141,9 +169,7 @@ button:last-child {
 }
 
 .delete-webhook {
-	float: right;
-	text-decoration: none;
-	color: #ffffff;
+	margin-left: 10px;
 }
 
 .error-message {
@@ -152,8 +178,10 @@ button:last-child {
 	margin-top: 5px;
 }
 
-.mod-updated {
+.mod-updated .mod-name {
 	background-color: #4caf50;
+	padding: 2px 5px;
+	border-radius: 3px;
 	transition: background-color 0.5s ease;
 }
 
@@ -188,4 +216,47 @@ button:last-child {
 #webhookSection .input-group input[type="text"] {
 	flex-grow: 1;
 	margin-right: 10px;
+}
+
+#consoleOutput {
+	background-color: #1a1a1a;
+	color: #ffffff;
+	padding: 10px;
+	border-radius: 5px;
+	height: 300px;
+	overflow-y: auto;
+	font-family: monospace;
+	white-space: pre-wrap;
+	margin-bottom: 10px;
+}
+
+/* Modern scrollbar styles */
+::-webkit-scrollbar {
+	width: 10px;
+}
+
+::-webkit-scrollbar-track {
+	background: #1e1e1e;
+}
+
+::-webkit-scrollbar-thumb {
+	background: #888;
+	border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: #555;
+}
+
+@media (max-width: 600px) {
+	.mod-item,
+	.webhook-item {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.mod-actions,
+	.delete-webhook {
+		margin-top: 10px;
+	}
 }

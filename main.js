@@ -31,11 +31,13 @@ function initDatabase() {
     name TEXT,
     current_version TEXT,
     last_checked_version TEXT,
-    last_updated TEXT
+    last_updated TEXT,
+    webhook_id INTEGER
   )`);
 
 	db.run(`CREATE TABLE IF NOT EXISTS webhooks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
     url TEXT UNIQUE
   )`);
 
@@ -73,6 +75,9 @@ async function checkForUpdates() {
 				);
 
 				if (latestVersion !== mod.current_version) {
+					console.log(
+						`Update found for ${mod.name}: ${mod.current_version} -> ${latestVersion}`
+					);
 					updatesFound = true;
 					db.run(
 						`UPDATE mods SET current_version = ?, last_checked_version = ?, last_updated = ? WHERE mod_id = ?`,
@@ -89,7 +94,8 @@ async function checkForUpdates() {
 					await sendDiscordNotifications(
 						mod.name,
 						latestVersion,
-						mod.current_version
+						mod.current_version,
+						mod.webhook_id
 					);
 				} else {
 					console.log(
@@ -110,58 +116,66 @@ async function checkForUpdates() {
 	});
 }
 
-async function sendDiscordNotifications(modName, newVersion, oldVersion) {
-	const webhooks = await getDiscordWebhooks();
-
-	if (webhooks.length === 0) {
-		console.error("No Discord webhooks set");
+async function sendDiscordNotifications(
+	modName,
+	newVersion,
+	oldVersion,
+	webhookId
+) {
+	if (!webhookId) {
+		console.log(`No webhook assigned for mod ${modName}`);
 		return;
 	}
 
-	const message = {
-		content: `Mod Update Alert!`,
-		embeds: [
-			{
-				title: `${modName} has been updated!`,
-				description: `New version: ${newVersion}\nPrevious version: ${oldVersion}`,
-				color: 5814783,
-				timestamp: new Date().toISOString(),
-			},
-		],
-	};
-
-	for (const webhook of webhooks) {
-		try {
-			const response = await fetch(webhook, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(message),
-			});
-
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
-			}
-
-			console.log(`Notification sent for ${modName} to webhook ${webhook}`);
-		} catch (error) {
-			console.error(`Error sending Discord notification to ${webhook}:`, error);
-		}
-	}
-}
-
-function getDiscordWebhooks() {
-	return new Promise((resolve) => {
-		db.all("SELECT url FROM webhooks", (err, rows) => {
+	db.get(
+		"SELECT url FROM webhooks WHERE id = ?",
+		[webhookId],
+		async (err, row) => {
 			if (err) {
-				console.error("Error fetching Discord webhooks:", err);
-				resolve([]);
-			} else {
-				resolve(rows.map((row) => row.url));
+				console.error("Error fetching webhook:", err);
+				return;
 			}
-		});
-	});
+
+			if (!row) {
+				console.error(`No webhook found with id ${webhookId}`);
+				return;
+			}
+
+			const webhook = row.url;
+			const message = {
+				content: `Mod Update Alert!`,
+				embeds: [
+					{
+						title: `${modName} has been updated!`,
+						description: `New version: ${newVersion}\nPrevious version: ${oldVersion}`,
+						color: 5814783,
+						timestamp: new Date().toISOString(),
+					},
+				],
+			};
+
+			try {
+				const response = await fetch(webhook, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify(message),
+				});
+
+				if (!response.ok) {
+					throw new Error(`HTTP error! status: ${response.status}`);
+				}
+
+				console.log(`Notification sent for ${modName} to webhook ${webhook}`);
+			} catch (error) {
+				console.error(
+					`Error sending Discord notification to ${webhook}:`,
+					error
+				);
+			}
+		}
+	);
 }
 
 function saveInterval(interval) {
@@ -265,19 +279,26 @@ ipcMain.on("delete-mod", (event, modId) => {
 	});
 });
 
-ipcMain.on("add-webhook", (event, url) => {
-	db.run(`INSERT OR IGNORE INTO webhooks (url) VALUES (?)`, [url], (err) => {
-		if (err) {
-			console.error("Error saving Discord webhook URL:", err);
-			event.reply("add-webhook-result", { success: false, error: err.message });
-		} else {
-			event.reply("add-webhook-result", { success: true });
+ipcMain.on("add-webhook", (event, { name, url }) => {
+	db.run(
+		`INSERT INTO webhooks (name, url) VALUES (?, ?)`,
+		[name, url],
+		(err) => {
+			if (err) {
+				console.error("Error saving Discord webhook:", err);
+				event.reply("add-webhook-result", {
+					success: false,
+					error: err.message,
+				});
+			} else {
+				event.reply("add-webhook-result", { success: true });
+			}
 		}
-	});
+	);
 });
 
 ipcMain.on("get-webhooks", (event) => {
-	db.all(`SELECT * FROM webhooks`, (err, rows) => {
+	db.all(`SELECT id, name, url FROM webhooks`, (err, rows) => {
 		if (err) {
 			console.error(err);
 			event.reply("get-webhooks-result", {
@@ -302,6 +323,24 @@ ipcMain.on("delete-webhook", (event, id) => {
 			event.reply("delete-webhook-result", { success: true, id: id });
 		}
 	});
+});
+
+ipcMain.on("assign-webhook", (event, { modId, webhookId }) => {
+	db.run(
+		`UPDATE mods SET webhook_id = ? WHERE mod_id = ?`,
+		[webhookId, modId],
+		(err) => {
+			if (err) {
+				console.error(err);
+				event.reply("assign-webhook-result", {
+					success: false,
+					error: err.message,
+				});
+			} else {
+				event.reply("assign-webhook-result", { success: true });
+			}
+		}
+	);
 });
 
 ipcMain.handle("save-interval", async (event, interval) => {
