@@ -42,6 +42,7 @@ body {
 }
 
 input[type="text"],
+input[type="password"],
 input[type="range"] {
 	flex-grow: 1;
 	margin-right: 10px;
@@ -156,27 +157,25 @@ button:last-child {
 
 .webhook-info {
 	display: flex;
-	justify-content: space-between;
-	align-items: center;
+	flex-direction: column;
 	margin-bottom: 5px;
 }
 
 .webhook-name {
 	font-weight: bold;
+	margin-bottom: 5px;
 }
 
 .webhook-url {
+	color: #aaa;
 	word-break: break-all;
 	margin-bottom: 5px;
 }
 
 .webhook-actions {
 	display: flex;
-	justify-content: flex-end;
-}
-
-.webhook-actions button {
-	margin-left: 5px;
+	justify-content: flex-start;
+	flex-wrap: wrap;
 }
 
 .error-message {
@@ -196,6 +195,11 @@ button:last-child {
 	margin-bottom: 20px;
 }
 
+.setting-group label {
+	margin-bottom: 10px;
+	display: block;
+}
+
 .interval-controls {
 	display: flex;
 	align-items: center;
@@ -207,7 +211,7 @@ button:last-child {
 }
 
 #intervalInput {
-	width: 100px;
+	width: 7%; /* Reduced width for smaller input box */
 }
 
 #webhookSection {
@@ -266,4 +270,14 @@ button:last-child {
 	.webhook-actions {
 		margin-top: 10px;
 	}
+}
+
+.mod-item .mod-game {
+	color: #888; /* or any color to distinguish the game information */
+	display: block; /* ensure it is displayed on a new line */
+	margin-top: 5px; /* add some space between the game info and other text */
+}
+
+.mod-item .mod-info {
+	margin-bottom: 10px; /* ensure spacing between mod items */
 }

@@ -3,8 +3,6 @@ const Toastify = require("toastify-js");
 
 let updatedMods = new Set();
 let allMods = [];
-let countdownInterval;
-let timer = 3600; // Default to 1 hour
 let isPaused = false;
 let currentInterval = 3600;
 let consoleLines = [];
@@ -89,8 +87,6 @@ document
 				);
 			}
 			currentInterval = newInterval;
-			clearInterval(countdownInterval);
-			startCountdown(currentInterval);
 			try {
 				await ipcRenderer.invoke("save-interval", currentInterval);
 				showToast("Update interval set successfully", "success");
@@ -101,24 +97,66 @@ document
 		}
 	});
 
-document.getElementById("pauseResumeButton").addEventListener("click", () => {
+function handlePauseResume() {
 	const button = document.getElementById("pauseResumeButton");
+	console.log("Pause/Resume button clicked. Current state:", isPaused);
 	if (isPaused) {
-		startCountdown(timer);
+		ipcRenderer.send("resume-timer");
 		button.textContent = "Pause";
 		isPaused = false;
+		console.log("Resuming timer.");
 	} else {
-		clearInterval(countdownInterval);
+		ipcRenderer.send("pause-timer");
 		button.textContent = "Resume";
 		isPaused = true;
+		console.log("Pausing timer.");
 	}
-});
+}
+
+document
+	.getElementById("pauseResumeButton")
+	.addEventListener("click", handlePauseResume);
 
 document.getElementById("clearConsoleButton").addEventListener("click", () => {
 	consoleLines = [];
 	updateConsoleOutput();
 	showToast("Console cleared", "info");
 });
+
+document
+	.getElementById("toggleApiKeyVisibility")
+	.addEventListener("click", () => {
+		const apiKeyInput = document.getElementById("apiKeyInput");
+		const toggleButton = document.getElementById("toggleApiKeyVisibility");
+		if (apiKeyInput.type === "password") {
+			apiKeyInput.type = "text";
+			toggleButton.innerHTML = '<i class="fas fa-eye-slash"></i>';
+		} else {
+			apiKeyInput.type = "password";
+			toggleButton.innerHTML = '<i class="fas fa-eye"></i>';
+		}
+	});
+
+document
+	.getElementById("saveApiKeyButton")
+	.addEventListener("click", async () => {
+		const apiKeyInput = document.getElementById("apiKeyInput").value.trim();
+		if (apiKeyInput) {
+			try {
+				const result = await ipcRenderer.invoke("save-api-key", apiKeyInput);
+				if (result.success) {
+					showToast("API key saved successfully", "success");
+				} else {
+					showToast(`Failed to save API key: ${result.error}`, "error");
+				}
+			} catch (error) {
+				console.error("Failed to save API key:", error);
+				showToast("Failed to save API key", "error");
+			}
+		} else {
+			showToast("Please enter an API key", "error");
+		}
+	});
 
 ipcRenderer.on("add-mod-result", (event, result) => {
 	if (result.success) {
@@ -194,6 +232,7 @@ function renderModList(mods) {
 		modElement.innerHTML = `
       <div class="mod-info">
         <span class="mod-name">${mod.name} (ID: ${mod.mod_id})</span>
+        <span class="mod-game">Game: ${mod.game}</span>
         <span class="mod-version">Version: ${mod.current_version}</span>
         <span class="mod-updated">Last Updated: ${new Date(
 					mod.last_updated
@@ -286,8 +325,8 @@ ipcRenderer.on("get-webhooks-result", (event, result) => {
 			webhookElement.innerHTML = `
         <div class="webhook-info">
           <span class="webhook-name">${webhook.name}</span>
+          <span class="webhook-url">${truncatedUrl}</span>
         </div>
-        <div class="webhook-url">${truncatedUrl}</div>
         <div class="webhook-actions">
           <button class="show-full-webhook">Show Full Webhook</button>
           <button class="test-webhook">Test</button>
@@ -345,32 +384,11 @@ ipcRenderer.on("test-webhook-result", (event, result) => {
 	}
 });
 
-function startCountdown(duration) {
-	clearInterval(countdownInterval);
-	timer = duration;
-	currentInterval = duration;
-	countdownInterval = setInterval(() => {
-		const hours = Math.floor(timer / 3600);
-		const minutes = Math.floor((timer % 3600) / 60);
-		const seconds = timer % 60;
-
-		document.getElementById("hours").textContent = hours
-			.toString()
-			.padStart(2, "0");
-		document.getElementById("minutes").textContent = minutes
-			.toString()
-			.padStart(2, "0");
-		document.getElementById("seconds").textContent = seconds
-			.toString()
-			.padStart(2, "0");
-
-		if (--timer < 0) {
-			clearInterval(countdownInterval);
-			ipcRenderer.send("check-updates");
-			startCountdown(currentInterval); // Restart countdown with the current interval
-		}
-	}, 1000);
-}
+ipcRenderer.on("countdown-tick", (event, { hours, minutes, seconds }) => {
+	document.getElementById("hours").textContent = hours;
+	document.getElementById("minutes").textContent = minutes;
+	document.getElementById("seconds").textContent = seconds;
+});
 
 async function loadSavedInterval() {
 	try {
@@ -379,12 +397,25 @@ async function loadSavedInterval() {
 			currentInterval = result.interval;
 			intervalSlider.value = Math.min(currentInterval, 3600);
 			intervalInput.value = currentInterval;
-			startCountdown(currentInterval);
 		} else {
 			console.error("Failed to load saved interval:", result.error);
 		}
 	} catch (error) {
 		console.error("Error loading saved interval:", error);
+	}
+}
+
+async function loadApiKey() {
+	try {
+		const result = await ipcRenderer.invoke("get-api-key");
+		if (result.success) {
+			const apiKeyInput = document.getElementById("apiKeyInput");
+			apiKeyInput.value = result.apiKey;
+		} else {
+			console.error("Failed to load API key:", result.error);
+		}
+	} catch (error) {
+		console.error("Error loading API key:", error);
 	}
 }
 
@@ -460,10 +491,25 @@ function openTab(tabName) {
 }
 
 // Initialize the application
-loadSavedInterval();
-updateModList();
-updateWebhookList();
-openTab("mods"); // Open the mods tab by default
+document.addEventListener("DOMContentLoaded", () => {
+	const pauseResumeButton = document.getElementById("pauseResumeButton");
 
-// Log a message to test the console
-console.log("Application initialized");
+	// Ensure the click event is only bound once
+	pauseResumeButton.removeEventListener("click", handlePauseResume);
+	pauseResumeButton.addEventListener("click", handlePauseResume);
+
+	ipcRenderer.on("initialize-pause-resume-button", () => {
+		console.log("Initializing pause/resume button");
+		pauseResumeButton.textContent = "Pause"; // Ensure the initial state is set to "Pause"
+		isPaused = false;
+	});
+
+	loadSavedInterval();
+	loadApiKey();
+	updateModList();
+	updateWebhookList();
+	openTab("mods"); // Open the mods tab by default
+
+	// Log a message to test the console
+	console.log("Application initialized");
+});
