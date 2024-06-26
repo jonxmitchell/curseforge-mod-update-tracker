@@ -57,31 +57,35 @@ async function checkForUpdates() {
 				}
 			);
 			const data = await response.json();
-			const latestVersion =
-				data.data.latestFilesIndexes?.[0]?.fileId?.toString() || "N/A";
+			const latestReleased = data.data.dateReleased || "N/A";
 			const lastUpdated = data.data.dateModified || new Date().toISOString();
 
-			if (latestVersion !== mod.current_version) {
+			if (latestReleased !== mod.current_released) {
 				updatesFound = true;
-				await updateMod(mod.mod_id, latestVersion, latestVersion, lastUpdated);
+				await updateMod(
+					mod.mod_id,
+					latestReleased,
+					latestReleased,
+					lastUpdated
+				);
 				mainWindow.webContents.send("mod-updated", {
 					id: mod.mod_id,
 					name: mod.name,
-					newVersion: latestVersion,
-					oldVersion: mod.current_version,
+					newReleased: latestReleased,
+					oldReleased: mod.current_released,
 				});
 				await sendDiscordNotifications(
 					mod.name,
-					latestVersion,
-					mod.current_version,
+					latestReleased,
+					mod.current_released,
 					mod.webhook_id
 				);
 			} else {
-				// Only update last_checked_version
+				// Only update last_checked_released
 				await updateMod(
 					mod.mod_id,
-					mod.current_version,
-					latestVersion,
+					mod.current_released,
+					latestReleased,
 					mod.last_updated
 				);
 			}
@@ -93,10 +97,22 @@ async function checkForUpdates() {
 	}
 }
 
+function formatDate(dateString) {
+	const date = new Date(dateString);
+	return new Intl.DateTimeFormat("en-GB", {
+		day: "2-digit",
+		month: "2-digit",
+		year: "numeric",
+		hour: "2-digit",
+		minute: "2-digit",
+		second: "2-digit",
+	}).format(date);
+}
+
 async function sendDiscordNotifications(
 	modName,
-	newVersion,
-	oldVersion,
+	newReleased,
+	oldReleased,
 	webhookId
 ) {
 	if (!webhookId) {
@@ -118,7 +134,9 @@ async function sendDiscordNotifications(
 			embeds: [
 				{
 					title: `${modName} has been updated!`,
-					description: `New version: ${newVersion}\nPrevious version: ${oldVersion}`,
+					description: `New release date: ${formatDate(
+						newReleased
+					)}\nPrevious release date: ${formatDate(oldReleased)}`,
 					color: 5814783,
 					timestamp: new Date().toISOString(),
 				},
@@ -228,8 +246,7 @@ ipcMain.on("add-mod", async (event, modId) => {
 			);
 		}
 
-		const latestVersion =
-			data.data.latestFilesIndexes?.[0]?.fileId?.toString() || "N/A";
+		const latestReleased = data.data.dateReleased || "N/A";
 		const gameId = data.data.gameId;
 		const websiteUrl =
 			data.data.links?.websiteUrl || "https://www.curseforge.com";
@@ -262,8 +279,8 @@ ipcMain.on("add-mod", async (event, modId) => {
 			data.data.authors[0].name,
 			data.data.downloadCount,
 			websiteUrl,
-			latestVersion,
-			latestVersion,
+			latestReleased,
+			latestReleased,
 			lastUpdated
 		);
 		event.reply("add-mod-result", { success: true, mod: data.data });

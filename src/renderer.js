@@ -169,10 +169,10 @@ ipcRenderer.on("add-mod-result", (event, result) => {
 
 ipcRenderer.on("mod-updated", (event, mod) => {
 	console.log(
-		`Mod update received: ${mod.name} from ${mod.oldVersion} to ${mod.newVersion}`
+		`Mod update received: ${mod.name} from ${mod.oldReleased} to ${mod.newReleased}`
 	);
 	showToast(
-		`Mod ${mod.name} updated from version ${mod.oldVersion} to ${mod.newVersion}`,
+		`Mod ${mod.name} updated from release date ${mod.oldReleased} to ${mod.newReleased}`,
 		"success"
 	);
 	updatedMods.add(mod.id);
@@ -233,9 +233,8 @@ function renderModList(mods) {
       <div class="mod-info">
         <span class="mod-name">${mod.name} (ID: ${mod.mod_id})</span>
         <span class="mod-game">Game: ${mod.game}</span>
-        <span class="mod-version">Version: ${mod.current_version}</span>
         <span class="mod-updated">Last Updated: ${new Date(
-					mod.last_updated
+					mod.last_checked_released
 				).toLocaleString()}</span>
       </div>
       <div class="mod-actions">
@@ -420,19 +419,19 @@ async function loadApiKey() {
 }
 
 function showToast(message, type = "info") {
-	let backgroundColor;
+	let background;
 	switch (type) {
 		case "success":
-			backgroundColor = "linear-gradient(to right, #00b09b, #96c93d)";
+			background = "linear-gradient(to right, #00b09b, #96c93d)";
 			break;
 		case "error":
-			backgroundColor = "linear-gradient(to right, #ff5f6d, #ffc371)";
+			background = "linear-gradient(to right, #ff5f6d, #ffc371)";
 			break;
 		case "warning":
-			backgroundColor = "linear-gradient(to right, #f2994a, #f2c94c)";
+			background = "linear-gradient(to right, #f2994a, #f2c94c)";
 			break;
 		default:
-			backgroundColor = "linear-gradient(to right, #00b4db, #0083b0)";
+			background = "linear-gradient(to right, #00b4db, #0083b0)";
 	}
 
 	Toastify({
@@ -441,7 +440,7 @@ function showToast(message, type = "info") {
 		close: true,
 		gravity: "top",
 		position: "center",
-		backgroundColor: backgroundColor,
+		style: { background: background },
 		stopOnFocus: true,
 	}).showToast();
 }

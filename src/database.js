@@ -16,9 +16,9 @@ function initDatabase() {
       description TEXT,
       author TEXT,
       download_count INTEGER,
-      website_url TEXT, /* Change here */
-      current_version TEXT,
-      last_checked_version TEXT,
+      website_url TEXT,
+      current_released TEXT, /* Changed */
+      last_checked_released TEXT, /* Changed */
       last_updated TEXT,
       webhook_id INTEGER
     )`);
@@ -100,13 +100,16 @@ async function addMod(
 	author,
 	downloadCount,
 	websiteUrl,
-	currentVersion,
-	lastCheckedVersion,
+	currentReleased,
+	lastCheckedReleased,
 	lastUpdated
 ) {
 	return new Promise((resolve, reject) => {
+		console.log(
+			`Adding mod: ${modId}, Current Released: ${currentReleased}, Last Checked Released: ${lastCheckedReleased}`
+		);
 		db.run(
-			`INSERT INTO mods (mod_id, name, game, description, author, download_count, website_url, current_version, last_checked_version, last_updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			`INSERT INTO mods (mod_id, name, game, description, author, download_count, website_url, current_released, last_checked_released, last_updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			[
 				modId,
 				name,
@@ -115,8 +118,8 @@ async function addMod(
 				author,
 				downloadCount,
 				websiteUrl,
-				currentVersion,
-				lastCheckedVersion,
+				currentReleased,
+				lastCheckedReleased,
 				lastUpdated,
 			],
 			(err) => {
@@ -131,11 +134,14 @@ async function addMod(
 	});
 }
 
-function updateMod(modId, currentVersion, lastCheckedVersion, lastUpdated) {
+function updateMod(modId, currentReleased, lastCheckedReleased, lastUpdated) {
 	return new Promise((resolve, reject) => {
+		console.log(
+			`Updating mod: ${modId}, Current Released: ${currentReleased}, Last Checked Released: ${lastCheckedReleased}`
+		);
 		db.run(
-			`UPDATE mods SET current_version = ?, last_checked_version = ?, last_updated = ? WHERE mod_id = ?`,
-			[currentVersion, lastCheckedVersion, lastUpdated, modId],
+			`UPDATE mods SET current_released = ?, last_checked_released = ?, last_updated = ? WHERE mod_id = ?`,
+			[currentReleased, lastCheckedReleased, lastUpdated, modId],
 			(err) => {
 				if (err) {
 					console.error("Error updating mod:", err);
