@@ -231,6 +231,8 @@ ipcMain.on("add-mod", async (event, modId) => {
 		const latestVersion =
 			data.data.latestFilesIndexes?.[0]?.fileId?.toString() || "N/A";
 		const gameId = data.data.gameId;
+		const websiteUrl =
+			data.data.links?.websiteUrl || "https://www.curseforge.com";
 
 		// Fetch the game details using the gameId
 		const gameResponse = await fetch(
@@ -256,6 +258,10 @@ ipcMain.on("add-mod", async (event, modId) => {
 			modId,
 			data.data.name,
 			game,
+			data.data.summary,
+			data.data.authors[0].name,
+			data.data.downloadCount,
+			websiteUrl,
 			latestVersion,
 			latestVersion,
 			lastUpdated

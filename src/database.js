@@ -9,26 +9,30 @@ function initDatabase() {
 
 	db.serialize(() => {
 		db.run(`CREATE TABLE IF NOT EXISTS mods (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            mod_id TEXT UNIQUE,
-            name TEXT,
-            game TEXT,
-            current_version TEXT,
-            last_checked_version TEXT,
-            last_updated TEXT,
-            webhook_id INTEGER
-        )`);
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      mod_id TEXT UNIQUE,
+      name TEXT,
+      game TEXT,
+      description TEXT,
+      author TEXT,
+      download_count INTEGER,
+      website_url TEXT, /* Change here */
+      current_version TEXT,
+      last_checked_version TEXT,
+      last_updated TEXT,
+      webhook_id INTEGER
+    )`);
 
 		db.run(`CREATE TABLE IF NOT EXISTS webhooks (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT UNIQUE,
-            url TEXT UNIQUE
-        )`);
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT UNIQUE,
+      url TEXT UNIQUE
+    )`);
 
 		db.run(`CREATE TABLE IF NOT EXISTS settings (
-            key TEXT PRIMARY KEY,
-            value TEXT
-        )`);
+      key TEXT PRIMARY KEY,
+      value TEXT
+    )`);
 	});
 }
 
@@ -88,18 +92,33 @@ function getWebhooks() {
 	});
 }
 
-function addMod(
+async function addMod(
 	modId,
 	name,
 	game,
+	description,
+	author,
+	downloadCount,
+	websiteUrl,
 	currentVersion,
 	lastCheckedVersion,
 	lastUpdated
 ) {
 	return new Promise((resolve, reject) => {
 		db.run(
-			`INSERT INTO mods (mod_id, name, game, current_version, last_checked_version, last_updated) VALUES (?, ?, ?, ?, ?, ?)`,
-			[modId, name, game, currentVersion, lastCheckedVersion, lastUpdated],
+			`INSERT INTO mods (mod_id, name, game, description, author, download_count, website_url, current_version, last_checked_version, last_updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			[
+				modId,
+				name,
+				game,
+				description,
+				author,
+				downloadCount,
+				websiteUrl,
+				currentVersion,
+				lastCheckedVersion,
+				lastUpdated,
+			],
 			(err) => {
 				if (err) {
 					console.error("Error adding mod:", err);

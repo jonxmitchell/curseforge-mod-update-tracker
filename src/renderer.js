@@ -242,8 +242,8 @@ function renderModList(mods) {
         <select class="webhook-select" data-mod-id="${mod.mod_id}">
           <option value="">Select Webhook</option>
         </select>
-        <a href="https://www.curseforge.com/minecraft/mc-mods/${
-					mod.mod_id
+        <a href="${
+					mod.website_url
 				}" target="_blank" class="mod-link"><i class="fas fa-external-link-alt"></i></a>
         <button class="delete-mod" data-mod-id="${
 					mod.mod_id
