@@ -116,28 +116,11 @@ ipcRenderer.on("mod-updated", (event, mod) => {
 	);
 	updatedMods.add(mod.id);
 	updateModList();
-	// Remove the "No updates" message when an update is detected
-	const statusElement = document.getElementById("updateStatus");
-	if (statusElement) {
-		statusElement.textContent = "";
-	}
 });
 
 ipcRenderer.on("update-check-complete", () => {
 	updatedMods.clear();
 	updateModList();
-});
-
-ipcRenderer.on("no-updates", (event, data) => {
-	const statusElement = document.getElementById("updateStatus");
-	if (statusElement) {
-		statusElement.textContent = data.message;
-	} else {
-		const newStatusElement = document.createElement("div");
-		newStatusElement.id = "updateStatus";
-		newStatusElement.textContent = data.message;
-		document.body.appendChild(newStatusElement);
-	}
 });
 
 ipcRenderer.on("add-webhook-result", (event, result) => {
