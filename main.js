@@ -361,6 +361,61 @@ ipcMain.handle("get-interval", async (event) => {
 	}
 });
 
+ipcMain.on("test-webhook", async (event, webhookId) => {
+	try {
+		const webhook = await getWebhookById(webhookId);
+		if (!webhook) {
+			throw new Error("Webhook not found");
+		}
+
+		const message = {
+			content:
+				"This is a test message from the Mod Update Tracker application.",
+			embeds: [
+				{
+					title: "Webhook Test",
+					description:
+						"If you can see this message, your webhook is working correctly.",
+					color: 5814783,
+					timestamp: new Date().toISOString(),
+				},
+			],
+		};
+
+		const response = await fetch(webhook.url, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(message),
+		});
+
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+
+		event.reply("test-webhook-result", { success: true });
+	} catch (error) {
+		console.error("Error testing webhook:", error);
+		event.reply("test-webhook-result", {
+			success: false,
+			error: error.message,
+		});
+	}
+});
+
+function getWebhookById(id) {
+	return new Promise((resolve, reject) => {
+		db.get("SELECT * FROM webhooks WHERE id = ?", [id], (err, row) => {
+			if (err) {
+				reject(err);
+			} else {
+				resolve(row);
+			}
+		});
+	});
+}
+
 app.on("window-all-closed", () => {
 	if (process.platform !== "darwin") {
 		app.quit();
