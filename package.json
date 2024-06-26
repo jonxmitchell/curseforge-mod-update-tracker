@@ -9,9 +9,10 @@
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
+		"dotenv": "^10.0.0",
 		"electron": "^13.0.0",
-		"sqlite3": "^5.0.2",
 		"node-fetch": "^2.6.1",
-		"dotenv": "^10.0.0"
+		"sqlite3": "^5.0.2",
+		"toastify-js": "^1.12.0"
 	}
 }
