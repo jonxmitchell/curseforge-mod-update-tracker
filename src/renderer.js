@@ -326,6 +326,12 @@ ipcRenderer.on("get-webhooks-result", async (event, result) => {
                     <input type="checkbox" id="${modId}-${webhook.id}" value="${webhook.id}">
                     <label for="${modId}-${webhook.id}">${webhook.name}</label>
                 `;
+				option.addEventListener("click", () => {
+					const checkbox = option.querySelector('input[type="checkbox"]');
+					checkbox.checked = !checkbox.checked;
+					const event = new Event("change", { bubbles: true });
+					checkbox.dispatchEvent(event);
+				});
 				selectItems.appendChild(option);
 			});
 
