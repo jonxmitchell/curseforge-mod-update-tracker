@@ -163,12 +163,23 @@ function updateMod(modId, currentReleased, lastCheckedReleased, lastUpdated) {
 
 function deleteMod(modId) {
 	return new Promise((resolve, reject) => {
+		db.run("BEGIN TRANSACTION");
 		db.run(`DELETE FROM mods WHERE mod_id = ?`, [modId], (err) => {
 			if (err) {
 				console.error("Error deleting mod:", err);
+				db.run("ROLLBACK");
 				reject(err);
 			} else {
-				resolve();
+				db.run(`DELETE FROM mod_webhooks WHERE mod_id = ?`, [modId], (err) => {
+					if (err) {
+						console.error("Error deleting mod_webhooks:", err);
+						db.run("ROLLBACK");
+						reject(err);
+					} else {
+						db.run("COMMIT");
+						resolve();
+					}
+				});
 			}
 		});
 	});
@@ -204,41 +215,69 @@ function deleteWebhook(id) {
 	});
 }
 
-function assignWebhooks(modId, webhookIds) {
+async function assignWebhooks(modId, webhookIds) {
 	return new Promise((resolve, reject) => {
-		db.run("BEGIN TRANSACTION", (err) => {
-			if (err) {
-				reject(err);
-				return;
-			}
-
-			db.run("DELETE FROM mod_webhooks WHERE mod_id = ?", [modId], (err) => {
+		db.serialize(() => {
+			db.run("BEGIN TRANSACTION", (err) => {
 				if (err) {
-					db.run("ROLLBACK");
 					reject(err);
 					return;
 				}
 
-				const stmt = db.prepare(
-					"INSERT INTO mod_webhooks (mod_id, webhook_id) VALUES (?, ?)"
-				);
-				for (const webhookId of webhookIds) {
-					stmt.run(modId, webhookId, (err) => {
-						if (err) {
-							db.run("ROLLBACK");
+				db.run("DELETE FROM mod_webhooks WHERE mod_id = ?", [modId], (err) => {
+					if (err) {
+						db.run("ROLLBACK", (rollbackErr) => {
+							if (rollbackErr) {
+								console.error("Rollback error:", rollbackErr);
+							}
 							reject(err);
+						});
+						return;
+					}
+
+					const stmt = db.prepare(
+						"INSERT INTO mod_webhooks (mod_id, webhook_id) VALUES (?, ?)"
+					);
+
+					for (const webhookId of webhookIds) {
+						stmt.run(modId, webhookId, (err) => {
+							if (err) {
+								db.run("ROLLBACK", (rollbackErr) => {
+									if (rollbackErr) {
+										console.error("Rollback error:", rollbackErr);
+									}
+									reject(err);
+								});
+								return;
+							}
+						});
+					}
+
+					stmt.finalize((err) => {
+						if (err) {
+							db.run("ROLLBACK", (rollbackErr) => {
+								if (rollbackErr) {
+									console.error("Rollback error:", rollbackErr);
+								}
+								reject(err);
+							});
 							return;
 						}
-					});
-				}
-				stmt.finalize();
 
-				db.run("COMMIT", (err) => {
-					if (err) {
-						reject(err);
-					} else {
-						resolve();
-					}
+						db.run("COMMIT", (err) => {
+							if (err) {
+								db.run("ROLLBACK", (rollbackErr) => {
+									if (rollbackErr) {
+										console.error("Rollback error:", rollbackErr);
+									}
+									reject(err);
+								});
+								return;
+							}
+
+							resolve();
+						});
+					});
 				});
 			});
 		});
