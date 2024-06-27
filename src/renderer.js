@@ -393,8 +393,14 @@ function updateSelectedText(select) {
 		(checkbox) => checkbox.nextElementSibling.textContent
 	);
 	const selectedText = select.querySelector(".select-selected");
+	selectedText.innerHTML = "";
 	if (selectedWebhooks.length > 0) {
-		selectedText.textContent = selectedWebhooks.join(", ");
+		selectedWebhooks.forEach((webhook) => {
+			const bubble = document.createElement("span");
+			bubble.className = "webhook-bubble";
+			bubble.textContent = webhook;
+			selectedText.appendChild(bubble);
+		});
 	} else {
 		selectedText.textContent = "Select Webhooks";
 	}
@@ -520,6 +526,7 @@ async function loadSavedInterval() {
 			currentInterval = result.interval;
 			intervalSlider.value = Math.min(currentInterval, 3600);
 			intervalInput.value = currentInterval;
+			startCountdown(currentInterval);
 		} else {
 			console.error("Failed to load saved interval:", result.error);
 		}

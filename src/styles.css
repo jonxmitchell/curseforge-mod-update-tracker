@@ -342,3 +342,14 @@ button:last-child {
 .custom-select input[type="checkbox"] {
 	margin-right: 8px;
 }
+
+/* Style for webhook bubbles */
+.webhook-bubble {
+	display: inline-block;
+	background-color: #2e2e2e;
+	color: white;
+	padding: 4px 8px;
+	margin: 2px;
+	border-radius: 12px;
+	font-size: 0.85em;
+}
