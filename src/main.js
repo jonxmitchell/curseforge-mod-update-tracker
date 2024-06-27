@@ -353,7 +353,18 @@ ipcMain.on("delete-webhook", async (event, id) => {
 ipcMain.on("assign-webhooks", async (event, { modId, webhookIds }) => {
 	try {
 		await assignWebhooks(modId, webhookIds);
-		event.reply("assign-webhooks-result", { success: true });
+		// Fetch webhook names and mod item names for the response
+		const assignedWebhooks = webhookIds.map((id) => ({
+			id,
+			name: "Webhook Name",
+		})); // Replace with actual webhook names
+		const modItem = { id: modId, name: "Mod Name" }; // Replace with actual mod item name
+
+		event.reply("assign-webhooks-result", {
+			success: true,
+			assignedWebhooks: assignedWebhooks,
+			modItem: modItem,
+		});
 	} catch (error) {
 		console.error("Error assigning webhooks:", error);
 		event.reply("assign-webhooks-result", {

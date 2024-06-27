@@ -43,7 +43,7 @@ document.getElementById("addModButton").addEventListener("click", () => {
 });
 
 document.getElementById("checkUpdatesButton").addEventListener("click", () => {
-	ipcRenderer.send("check-updates");
+	checkForUpdates();
 });
 
 document.getElementById("addWebhookButton").addEventListener("click", () => {
@@ -340,20 +340,40 @@ ipcRenderer.on("get-webhooks-result", async (event, result) => {
 
 			updateSelectedText(select);
 
-			selectItems.addEventListener("change", (e) => {
-				const modId = select.getAttribute("data-mod-id");
-				const webhookIds = Array.from(
-					selectItems.querySelectorAll('input[type="checkbox"]:checked'),
-					(checkbox) => parseInt(checkbox.value)
-				);
-				ipcRenderer.send("assign-webhooks", { modId, webhookIds });
-				updateSelectedText(select);
-			});
+			selectItems.removeEventListener("change", handleWebhookChange); // Remove any previous listener
+			selectItems.addEventListener("change", handleWebhookChange);
 		}
 	} else {
 		showToast(`Failed to get webhooks: ${result.error}`, "error");
 	}
 });
+
+async function handleWebhookChange(e) {
+	const checkbox = e.target;
+	const modId = checkbox.closest(".custom-select").getAttribute("data-mod-id");
+	const select = checkbox.closest(".custom-select");
+	const webhookIds = Array.from(
+		checkbox
+			.closest(".select-items")
+			.querySelectorAll('input[type="checkbox"]:checked'),
+		(checkbox) => parseInt(checkbox.value)
+	);
+	const webhookName = checkbox.nextElementSibling.textContent;
+	const isChecked = checkbox.checked;
+
+	await ipcRenderer.send("assign-webhooks", { modId, webhookIds });
+
+	if (isChecked) {
+		showToast(`${webhookName} webhook was assigned to mod ${modId}`, "success");
+	} else {
+		showToast(
+			`${webhookName} webhook was unassigned from mod ${modId}`,
+			"success"
+		);
+	}
+
+	updateSelectedText(select);
+}
 
 function updateSelectedText(select) {
 	const selectedWebhooks = Array.from(
@@ -581,10 +601,21 @@ function openTab(tabName) {
 		.classList.add("active");
 }
 
-ipcRenderer.on("assign-webhooks-result", (event, result) => {
+ipcRenderer.on("unassign-webhooks-result", (event, result) => {
 	if (result.success) {
-		showToast("Webhooks assigned successfully", "success");
+		result.unassignedWebhooks.forEach((webhook) => {
+			showToast(
+				`${webhook.name} webhook was unassigned from ${result.modItem.name}`,
+				"success"
+			);
+		});
 	} else {
-		showToast(`Failed to assign webhooks: ${result.error}`, "error");
+		showToast(`Failed to unassign webhooks: ${result.error}`, "error");
 	}
 });
+
+async function checkForUpdates() {
+	ipcRenderer.send("check-updates");
+	await updateModList();
+	await updateWebhookList();
+}
