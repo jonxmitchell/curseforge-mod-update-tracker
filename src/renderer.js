@@ -291,9 +291,13 @@ function initializeWebhookSelects() {
 
 		selectSelected.addEventListener("click", function (e) {
 			e.stopPropagation();
-			closeAllSelect(this);
 			selectItems.classList.toggle("select-hide");
 			this.classList.toggle("select-arrow-active");
+		});
+
+		// Prevent the dropdown from closing when clicking on an option
+		selectItems.addEventListener("click", (e) => {
+			e.stopPropagation();
 		});
 	});
 
@@ -373,6 +377,8 @@ async function handleWebhookChange(e) {
 	}
 
 	updateSelectedText(select);
+	// Prevent dropdown from closing
+	e.stopPropagation();
 }
 
 function updateSelectedText(select) {
