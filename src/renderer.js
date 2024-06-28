@@ -377,9 +377,12 @@ async function handleWebhookChange(e) {
 	await ipcRenderer.send("assign-webhooks", { modId, webhookIds });
 
 	if (isChecked) {
-		showToast(`${webhookName} webhook was assigned to mod ${modId}`, "success");
+		showToastDebounced(
+			`${webhookName} webhook was assigned to mod ${modId}`,
+			"success"
+		);
 	} else {
-		showToast(
+		showToastDebounced(
 			`${webhookName} webhook was unassigned from mod ${modId}`,
 			"success"
 		);
@@ -552,7 +555,7 @@ async function loadApiKey() {
 	}
 }
 
-function showToast(message, type = "info") {
+function showToastDebounced(message, type = "info") {
 	if (toastTimeout) {
 		clearTimeout(toastTimeout);
 	}
@@ -586,6 +589,33 @@ function showToast(message, type = "info") {
 	toastTimeout = setTimeout(() => {
 		lastToastMessage = "";
 	}, 3000);
+}
+
+function showToast(message, type = "info") {
+	let background;
+	switch (type) {
+		case "success":
+			background = "linear-gradient(to right, #00b09b, #96c93d)";
+			break;
+		case "error":
+			background = "linear-gradient(to right, #ff5f6d, #ffc371)";
+			break;
+		case "warning":
+			background = "linear-gradient(to right, #f2994a, #f2c94c)";
+			break;
+		default:
+			background = "linear-gradient(to right, #00b4db, #0083b0)";
+	}
+
+	Toastify({
+		text: message,
+		duration: 3000,
+		close: true,
+		gravity: "top",
+		position: "center",
+		style: { background: background },
+		stopOnFocus: true,
+	}).showToast();
 }
 
 function updateConsoleOutput() {
@@ -635,13 +665,13 @@ function openTab(tabName) {
 ipcRenderer.on("unassign-webhooks-result", (event, result) => {
 	if (result.success) {
 		result.unassignedWebhooks.forEach((webhook) => {
-			showToast(
+			showToastDebounced(
 				`${webhook.name} webhook was unassigned from ${result.modItem.name}`,
 				"success"
 			);
 		});
 	} else {
-		showToast(`Failed to unassign webhooks: ${result.error}`, "error");
+		showToastDebounced(`Failed to unassign webhooks: ${result.error}`, "error");
 	}
 });
 
