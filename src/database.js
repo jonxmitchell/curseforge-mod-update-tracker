@@ -1,6 +1,8 @@
 const sqlite3 = require("sqlite3").verbose();
 
 let db;
+let transactionQueue = [];
+let transactionInProgress = false;
 
 function initDatabase() {
 	db = new sqlite3.Database("./mods.db", (err) => {
@@ -41,6 +43,18 @@ function initDatabase() {
             FOREIGN KEY (webhook_id) REFERENCES webhooks(id)
         )`);
 	});
+}
+
+function runNextTransaction() {
+	if (transactionQueue.length > 0 && !transactionInProgress) {
+		const transaction = transactionQueue.shift();
+		transaction();
+	}
+}
+
+function addTransaction(transaction) {
+	transactionQueue.push(transaction);
+	runNextTransaction();
 }
 
 function saveSetting(key, value) {
@@ -163,24 +177,77 @@ function updateMod(modId, currentReleased, lastCheckedReleased, lastUpdated) {
 
 function deleteMod(modId) {
 	return new Promise((resolve, reject) => {
-		db.run("BEGIN TRANSACTION");
-		db.run(`DELETE FROM mods WHERE mod_id = ?`, [modId], (err) => {
-			if (err) {
-				console.error("Error deleting mod:", err);
-				db.run("ROLLBACK");
-				reject(err);
-			} else {
-				db.run(`DELETE FROM mod_webhooks WHERE mod_id = ?`, [modId], (err) => {
-					if (err) {
-						console.error("Error deleting mod_webhooks:", err);
-						db.run("ROLLBACK");
-						reject(err);
-					} else {
-						db.run("COMMIT");
-						resolve();
-					}
-				});
+		addTransaction(() => {
+			if (transactionInProgress) {
+				console.error("Transaction already in progress for deleteMod");
+				reject(new Error("Transaction already in progress"));
+				runNextTransaction();
+				return;
 			}
+			transactionInProgress = true;
+
+			db.serialize(() => {
+				db.run("BEGIN TRANSACTION", (err) => {
+					if (err) {
+						console.error("Error starting transaction:", err);
+						transactionInProgress = false;
+						reject(err);
+						runNextTransaction();
+						return;
+					}
+
+					db.run(`DELETE FROM mods WHERE mod_id = ?`, [modId], (err) => {
+						if (err) {
+							console.error("Error deleting mod:", err);
+							db.run("ROLLBACK", (rollbackErr) => {
+								if (rollbackErr) {
+									console.error("Rollback error:", rollbackErr);
+								}
+								transactionInProgress = false;
+								reject(err);
+								runNextTransaction();
+							});
+							return;
+						}
+
+						db.run(
+							`DELETE FROM mod_webhooks WHERE mod_id = ?`,
+							[modId],
+							(err) => {
+								if (err) {
+									console.error("Error deleting mod_webhooks:", err);
+									db.run("ROLLBACK", (rollbackErr) => {
+										if (rollbackErr) {
+											console.error("Rollback error:", rollbackErr);
+										}
+										transactionInProgress = false;
+										reject(err);
+										runNextTransaction();
+									});
+									return;
+								}
+
+								db.run("COMMIT", (err) => {
+									transactionInProgress = false;
+									if (err) {
+										console.error("Error committing transaction:", err);
+										db.run("ROLLBACK", (rollbackErr) => {
+											if (rollbackErr) {
+												console.error("Rollback error:", rollbackErr);
+											}
+											reject(err);
+											runNextTransaction();
+										});
+									} else {
+										resolve();
+										runNextTransaction();
+									}
+								});
+							}
+						);
+					});
+				});
+			});
 		});
 	});
 }
@@ -204,80 +271,186 @@ function addWebhook(name, url) {
 
 function deleteWebhook(id) {
 	return new Promise((resolve, reject) => {
-		db.run(`DELETE FROM webhooks WHERE id = ?`, [id], (err) => {
-			if (err) {
-				console.error("Error deleting webhook:", err);
-				reject(err);
-			} else {
-				resolve();
+		addTransaction(() => {
+			if (transactionInProgress) {
+				console.error("Transaction already in progress for deleteWebhook");
+				reject(new Error("Transaction already in progress"));
+				runNextTransaction();
+				return;
 			}
+			transactionInProgress = true;
+
+			db.serialize(() => {
+				db.run("BEGIN TRANSACTION", (err) => {
+					if (err) {
+						console.error("Error starting transaction:", err);
+						transactionInProgress = false;
+						reject(err);
+						runNextTransaction();
+						return;
+					}
+
+					db.run(`DELETE FROM webhooks WHERE id = ?`, [id], (err) => {
+						if (err) {
+							console.error("Error deleting webhook:", err);
+							db.run("ROLLBACK", (rollbackErr) => {
+								if (rollbackErr) {
+									console.error("Rollback error:", rollbackErr);
+								}
+								transactionInProgress = false;
+								reject(err);
+								runNextTransaction();
+							});
+							return;
+						}
+
+						db.run(
+							`DELETE FROM mod_webhooks WHERE webhook_id = ?`,
+							[id],
+							(err) => {
+								if (err) {
+									console.error("Error deleting mod_webhooks:", err);
+									db.run("ROLLBACK", (rollbackErr) => {
+										if (rollbackErr) {
+											console.error("Rollback error:", rollbackErr);
+										}
+										transactionInProgress = false;
+										reject(err);
+										runNextTransaction();
+									});
+									return;
+								}
+
+								db.run("COMMIT", (err) => {
+									transactionInProgress = false;
+									if (err) {
+										console.error("Error committing transaction:", err);
+										db.run("ROLLBACK", (rollbackErr) => {
+											if (rollbackErr) {
+												console.error("Rollback error:", rollbackErr);
+											}
+											reject(err);
+											runNextTransaction();
+										});
+									} else {
+										resolve();
+										runNextTransaction();
+									}
+								});
+							}
+						);
+					});
+				});
+			});
 		});
 	});
 }
 
 async function assignWebhooks(modId, webhookIds) {
 	return new Promise((resolve, reject) => {
-		db.serialize(() => {
-			db.run("BEGIN TRANSACTION", (err) => {
-				if (err) {
-					reject(err);
-					return;
-				}
+		addTransaction(() => {
+			if (transactionInProgress) {
+				console.error("Transaction already in progress for assignWebhooks");
+				reject(new Error("Transaction already in progress"));
+				runNextTransaction();
+				return;
+			}
+			transactionInProgress = true;
 
-				db.run("DELETE FROM mod_webhooks WHERE mod_id = ?", [modId], (err) => {
+			db.serialize(() => {
+				db.run("BEGIN TRANSACTION", (err) => {
 					if (err) {
-						db.run("ROLLBACK", (rollbackErr) => {
-							if (rollbackErr) {
-								console.error("Rollback error:", rollbackErr);
-							}
-							reject(err);
-						});
+						console.error("Error starting transaction:", err);
+						transactionInProgress = false;
+						reject(err);
+						runNextTransaction();
 						return;
 					}
 
-					const stmt = db.prepare(
-						"INSERT INTO mod_webhooks (mod_id, webhook_id) VALUES (?, ?)"
-					);
-
-					for (const webhookId of webhookIds) {
-						stmt.run(modId, webhookId, (err) => {
+					db.run(
+						"DELETE FROM mod_webhooks WHERE mod_id = ?",
+						[modId],
+						(err) => {
 							if (err) {
+								console.error("Error deleting mod_webhooks:", err);
 								db.run("ROLLBACK", (rollbackErr) => {
 									if (rollbackErr) {
 										console.error("Rollback error:", rollbackErr);
 									}
+									transactionInProgress = false;
 									reject(err);
+									runNextTransaction();
 								});
 								return;
 							}
-						});
-					}
 
-					stmt.finalize((err) => {
-						if (err) {
-							db.run("ROLLBACK", (rollbackErr) => {
-								if (rollbackErr) {
-									console.error("Rollback error:", rollbackErr);
+							const stmt = db.prepare(
+								"INSERT INTO mod_webhooks (mod_id, webhook_id) VALUES (?, ?)"
+							);
+
+							const runInsert = (webhookId, callback) => {
+								stmt.run(modId, webhookId, (err) => {
+									callback(err);
+								});
+							};
+
+							let i = 0;
+							const next = (err) => {
+								if (err) {
+									console.error("Error inserting into mod_webhooks:", err);
+									stmt.finalize((finalizeErr) => {
+										if (finalizeErr) {
+											console.error("Error finalizing statement:", finalizeErr);
+										}
+										db.run("ROLLBACK", (rollbackErr) => {
+											if (rollbackErr) {
+												console.error("Rollback error:", rollbackErr);
+											}
+											transactionInProgress = false;
+											reject(err);
+											runNextTransaction();
+										});
+									});
+									return;
 								}
-								reject(err);
-							});
-							return;
+								if (i < webhookIds.length) {
+									runInsert(webhookIds[i++], next);
+								} else {
+									stmt.finalize((err) => {
+										if (err) {
+											console.error("Error finalizing statement:", err);
+											db.run("ROLLBACK", (rollbackErr) => {
+												if (rollbackErr) {
+													console.error("Rollback error:", rollbackErr);
+												}
+												transactionInProgress = false;
+												reject(err);
+												runNextTransaction();
+											});
+											return;
+										}
+										db.run("COMMIT", (err) => {
+											transactionInProgress = false;
+											if (err) {
+												console.error("Error committing transaction:", err);
+												db.run("ROLLBACK", (rollbackErr) => {
+													if (rollbackErr) {
+														console.error("Rollback error:", rollbackErr);
+													}
+													reject(err);
+													runNextTransaction();
+												});
+												return;
+											}
+											resolve();
+											runNextTransaction();
+										});
+									});
+								}
+							};
+							next();
 						}
-
-						db.run("COMMIT", (err) => {
-							if (err) {
-								db.run("ROLLBACK", (rollbackErr) => {
-									if (rollbackErr) {
-										console.error("Rollback error:", rollbackErr);
-									}
-									reject(err);
-								});
-								return;
-							}
-
-							resolve();
-						});
-					});
+					);
 				});
 			});
 		});
