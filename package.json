@@ -2,7 +2,7 @@
 	"name": "curseforge-mod-tracker",
 	"version": "1.0.0",
 	"description": "An application to track and notify updates for CurseForge mods",
-	"main": "src/main.js",
+	"main": "src/main/main.js",
 	"scripts": {
 		"start": "electron .",
 		"test": "echo \"Error: no test specified\" && exit 1"

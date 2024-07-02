@@ -14,14 +14,12 @@ const {
 	deleteWebhook,
 	assignWebhooks,
 	getModWebhooks,
-} = require("./database");
+} = require("../database/database");
 
 let mainWindow;
 let countdownInterval;
 let isPaused = false;
 let remainingTime = 0;
-
-const DEFAULT_INTERVAL = 3600; // Default to 1 hour
 
 function createWindow() {
 	mainWindow = new BrowserWindow({
@@ -33,7 +31,7 @@ function createWindow() {
 		},
 	});
 
-	mainWindow.loadFile(path.join(__dirname, "index.html"));
+	mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"));
 }
 
 async function checkForUpdates() {
@@ -199,7 +197,7 @@ function resumeCountdown() {
 async function initializeSettings() {
 	let interval = await getSetting("update_interval");
 	if (!interval) {
-		interval = DEFAULT_INTERVAL;
+		interval = 3600; // Default to 1 hour
 		await saveSetting("update_interval", interval);
 	}
 	startCountdown(interval);
@@ -353,18 +351,7 @@ ipcMain.on("delete-webhook", async (event, id) => {
 ipcMain.on("assign-webhooks", async (event, { modId, webhookIds }) => {
 	try {
 		await assignWebhooks(modId, webhookIds);
-		// Fetch webhook names and mod item names for the response
-		const assignedWebhooks = webhookIds.map((id) => ({
-			id,
-			name: "Webhook Name",
-		})); // Replace with actual webhook names
-		const modItem = { id: modId, name: "Mod Name" }; // Replace with actual mod item name
-
-		event.reply("assign-webhooks-result", {
-			success: true,
-			assignedWebhooks: assignedWebhooks,
-			modItem: modItem,
-		});
+		event.reply("assign-webhooks-result", { success: true });
 	} catch (error) {
 		console.error("Error assigning webhooks:", error);
 		event.reply("assign-webhooks-result", {
