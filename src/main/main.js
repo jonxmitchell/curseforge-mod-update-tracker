@@ -1,20 +1,15 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const fetch = require("node-fetch");
+const { initDatabase } = require("../database/connection");
+const { getMods, addMod, updateMod, deleteMod } = require("../database/modsDB");
 const {
-	initDatabase,
-	saveSetting,
-	getSetting,
-	getMods,
 	getWebhooks,
-	addMod,
-	updateMod,
-	deleteMod,
 	addWebhook,
 	deleteWebhook,
-	assignWebhooks,
-	getModWebhooks,
-} = require("../database/database");
+} = require("../database/webhooksDB");
+const { saveSetting, getSetting } = require("../database/settingsDB");
+const { assignWebhooks, getModWebhooks } = require("../database/modWebhooksDB");
 
 let mainWindow;
 let countdownInterval;
