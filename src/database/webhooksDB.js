@@ -17,15 +17,30 @@ function getWebhooks() {
 function addWebhook(name, url) {
 	return new Promise((resolve, reject) => {
 		const db = getDb();
-		db.run(
-			`INSERT INTO webhooks (name, url) VALUES (?, ?)`,
+		db.get(
+			`SELECT * FROM webhooks WHERE name = ? OR url = ?`,
 			[name, url],
-			(err) => {
+			(err, row) => {
 				if (err) {
-					console.error("Error adding webhook:", err);
 					reject(err);
+				} else if (row) {
+					if (row.name === name) {
+						reject(new Error("Webhook name already exists"));
+					} else {
+						reject(new Error("Webhook URL already exists"));
+					}
 				} else {
-					resolve();
+					db.run(
+						`INSERT INTO webhooks (name, url) VALUES (?, ?)`,
+						[name, url],
+						(err) => {
+							if (err) {
+								reject(err);
+							} else {
+								resolve();
+							}
+						}
+					);
 				}
 			}
 		);

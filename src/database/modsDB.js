@@ -28,41 +28,42 @@ async function addMod(
 ) {
 	return new Promise((resolve, reject) => {
 		const db = getDb();
-		console.log(
-			`Adding mod: ${modId}, Current Released: ${currentReleased}, Last Checked Released: ${lastCheckedReleased}`
-		);
-		db.run(
-			`INSERT INTO mods (mod_id, name, game, description, author, download_count, website_url, current_released, last_checked_released, last_updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-			[
-				modId,
-				name,
-				game,
-				description,
-				author,
-				downloadCount,
-				websiteUrl,
-				currentReleased,
-				lastCheckedReleased,
-				lastUpdated,
-			],
-			(err) => {
-				if (err) {
-					console.error("Error adding mod:", err);
-					reject(err);
-				} else {
-					resolve();
-				}
+		db.get(`SELECT * FROM mods WHERE mod_id = ?`, [modId], (err, row) => {
+			if (err) {
+				reject(err);
+			} else if (row) {
+				reject(new Error("Mod already exists"));
+			} else {
+				db.run(
+					`INSERT INTO mods (mod_id, name, game, description, author, download_count, website_url, current_released, last_checked_released, last_updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+					[
+						modId,
+						name,
+						game,
+						description,
+						author,
+						downloadCount,
+						websiteUrl,
+						currentReleased,
+						lastCheckedReleased,
+						lastUpdated,
+					],
+					(err) => {
+						if (err) {
+							reject(err);
+						} else {
+							resolve();
+						}
+					}
+				);
 			}
-		);
+		});
 	});
 }
 
 function updateMod(modId, currentReleased, lastCheckedReleased, lastUpdated) {
 	return new Promise((resolve, reject) => {
 		const db = getDb();
-		console.log(
-			`Updating mod: ${modId}, Current Released: ${currentReleased}, Last Checked Released: ${lastCheckedReleased}`
-		);
 		db.run(
 			`UPDATE mods SET current_released = ?, last_checked_released = ?, last_updated = ? WHERE mod_id = ?`,
 			[currentReleased, lastCheckedReleased, lastUpdated, modId],

@@ -278,7 +278,11 @@ function handleAddModResult(event, result) {
 		showToast("Mod added successfully", "success");
 		updateModList();
 	} else {
-		showToast(`Failed to add mod: ${result.error}`, "error");
+		if (result.error === "Mod already exists") {
+			showToast("This mod is already in your list", "warning");
+		} else {
+			showToast(`Failed to add mod: ${result.error}`, "error");
+		}
 	}
 }
 
@@ -287,7 +291,15 @@ function handleAddWebhookResult(event, result) {
 		showToast("Webhook added successfully", "success");
 		updateWebhookList();
 	} else {
-		showToast(`Failed to add webhook: ${result.error}`, "error");
+		if (result.error === "Webhook name already exists") {
+			showToast("A webhook with this name already exists", "warning");
+		} else if (result.error === "Webhook URL already exists") {
+			showToast("This webhook URL is already in your list", "warning");
+		} else if (result.error === "Webhook already exists") {
+			showToast("This webhook is already in your list", "warning");
+		} else {
+			showToast(`Failed to add webhook: ${result.error}`, "error");
+		}
 	}
 }
 
