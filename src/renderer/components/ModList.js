@@ -108,12 +108,18 @@ async function handleWebhookChange(e) {
 			if (isChecked) {
 				showToast(
 					`${webhookName} webhook was assigned to mod ${modId}`,
-					"success"
+					"success",
+					{
+						background: "linear-gradient(to right, #00b09b, #96c93d)",
+					}
 				);
 			} else {
 				showToast(
 					`${webhookName} webhook was unassigned from mod ${modId}`,
-					"success"
+					"info",
+					{
+						background: "linear-gradient(to right, #2193b0, #6dd5ed)",
+					}
 				);
 			}
 		} else {
