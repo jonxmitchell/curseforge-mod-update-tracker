@@ -105,7 +105,6 @@ function setupIpcListeners() {
 	ipcRenderer.on("delete-webhook-result", handleDeleteWebhookResult);
 	ipcRenderer.on("test-webhook-result", handleTestWebhookResult);
 	ipcRenderer.on("countdown-tick", updateCountdown);
-	ipcRenderer.on("unassign-webhooks-result", handleUnassignWebhooksResult);
 }
 
 function handlePauseResume() {
@@ -300,7 +299,6 @@ function handleGetWebhooksResult(event, result) {
 		customSelects.forEach(async (select) => {
 			const modId = select.getAttribute("data-mod-id");
 			const selectItems = select.querySelector(".select-items");
-			const selectSelected = select.querySelector(".select-selected");
 			selectItems.innerHTML = "";
 
 			webhooks.forEach((webhook) => {
@@ -309,11 +307,11 @@ function handleGetWebhooksResult(event, result) {
                     <input type="checkbox" id="${modId}-${webhook.id}" value="${webhook.id}">
                     <label for="${modId}-${webhook.id}">${webhook.name}</label>
                 `;
-				option.addEventListener("click", () => {
+				option.addEventListener("click", (e) => {
+					e.stopPropagation();
 					const checkbox = option.querySelector('input[type="checkbox"]');
 					checkbox.checked = !checkbox.checked;
-					const event = new Event("change", { bubbles: true });
-					checkbox.dispatchEvent(event);
+					handleWebhookChange({ target: checkbox });
 				});
 				selectItems.appendChild(option);
 			});
@@ -332,9 +330,6 @@ function handleGetWebhooksResult(event, result) {
 				});
 
 			updateSelectedText(select);
-
-			selectItems.removeEventListener("change", handleWebhookChange);
-			selectItems.addEventListener("change", handleWebhookChange);
 		});
 	} else {
 		showToast(`Failed to get webhooks: ${result.error}`, "error");
@@ -371,19 +366,6 @@ function updateCountdown(event, { hours, minutes, seconds }) {
 	document.getElementById("hours").textContent = hours;
 	document.getElementById("minutes").textContent = minutes;
 	document.getElementById("seconds").textContent = seconds;
-}
-
-function handleUnassignWebhooksResult(event, result) {
-	if (result.success) {
-		result.unassignedWebhooks.forEach((webhook) => {
-			showToastDebounced(
-				`${webhook.name} webhook was unassigned from ${result.modItem.name}`,
-				"success"
-			);
-		});
-	} else {
-		showToastDebounced(`Failed to unassign webhooks: ${result.error}`, "error");
-	}
 }
 
 async function updateModList() {

@@ -98,18 +98,31 @@ async function handleWebhookChange(e) {
 	const webhookName = checkbox.nextElementSibling.textContent;
 	const isChecked = checkbox.checked;
 
-	await ipcRenderer.send("assign-webhooks", { modId, webhookIds });
-
-	if (isChecked) {
-		showToast(`${webhookName} webhook was assigned to mod ${modId}`, "success");
-	} else {
-		showToast(
-			`${webhookName} webhook was unassigned from mod ${modId}`,
-			"success"
-		);
+	try {
+		const result = await ipcRenderer.invoke("assign-webhooks", {
+			modId,
+			webhookIds,
+		});
+		if (result.success) {
+			updateSelectedText(select);
+			if (isChecked) {
+				showToast(
+					`${webhookName} webhook was assigned to mod ${modId}`,
+					"success"
+				);
+			} else {
+				showToast(
+					`${webhookName} webhook was unassigned from mod ${modId}`,
+					"success"
+				);
+			}
+		} else {
+			showToast(`Failed to update webhooks: ${result.error}`, "error");
+		}
+	} catch (error) {
+		showToast(`Error updating webhooks: ${error.message}`, "error");
 	}
 
-	updateSelectedText(select);
 	e.stopPropagation();
 }
 
