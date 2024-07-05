@@ -245,6 +245,9 @@ button:last-child {
 
 .setting-group {
 	margin-bottom: 20px;
+	background-color: #3a3a3a;
+	padding: 15px;
+	border-radius: 5px;
 }
 
 .setting-group label {
