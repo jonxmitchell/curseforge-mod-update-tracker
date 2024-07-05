@@ -85,14 +85,12 @@ function closeAllSelect(elmnt) {
 	}
 }
 
-async function handleWebhookChange(e) {
-	const checkbox = e.target;
+async function handleWebhookChange(event) {
+	const checkbox = event.target;
 	const modId = checkbox.closest(".custom-select").getAttribute("data-mod-id");
 	const select = checkbox.closest(".custom-select");
 	const webhookIds = Array.from(
-		checkbox
-			.closest(".select-items")
-			.querySelectorAll('input[type="checkbox"]:checked'),
+		select.querySelectorAll('input[type="checkbox"]:checked'),
 		(checkbox) => parseInt(checkbox.value)
 	);
 	const webhookName = checkbox.nextElementSibling.textContent;
@@ -128,8 +126,6 @@ async function handleWebhookChange(e) {
 	} catch (error) {
 		showToast(`Error updating webhooks: ${error.message}`, "error");
 	}
-
-	e.stopPropagation();
 }
 
 function updateSelectedText(select) {
