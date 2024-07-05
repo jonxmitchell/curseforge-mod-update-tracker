@@ -54,6 +54,7 @@ function initializeWebhookSelects() {
 
 		selectSelected.addEventListener("click", function (e) {
 			e.stopPropagation();
+			closeAllSelect(this);
 			selectItems.classList.toggle("select-hide");
 			this.classList.toggle("select-arrow-active");
 		});
@@ -77,13 +78,6 @@ function closeAllSelect(elmnt) {
 	for (let i = 0; i < selectSelected.length; i++) {
 		if (elmnt !== selectSelected[i]) {
 			selectSelected[i].classList.remove("select-arrow-active");
-		}
-	}
-	for (let i = 0; i < selectItems.length; i++) {
-		if (
-			elmnt !== selectItems[i] &&
-			elmnt.parentNode !== selectItems[i].parentNode
-		) {
 			selectItems[i].classList.add("select-hide");
 		}
 	}
