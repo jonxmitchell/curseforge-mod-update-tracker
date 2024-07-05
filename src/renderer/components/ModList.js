@@ -9,24 +9,28 @@ function renderModList(mods) {
 		const modElement = document.createElement("div");
 		modElement.className = "mod-item";
 		modElement.innerHTML = `
-            <div class="mod-info">
-                <span class="mod-name">${mod.name} (ID: ${mod.mod_id})</span>
-                <span class="mod-game">Game: ${mod.game}</span>
-                <span class="mod-updated">Last Updated: ${new Date(
-									mod.last_checked_released
-								).toLocaleString()}</span>
-            </div>
-            <div class="mod-actions">
-                <div class="custom-select" data-mod-id="${mod.mod_id}">
-                    <div class="select-selected">Select Webhooks</div>
-                    <div class="select-items select-hide"></div>
+            <div class="mod-content">
+                <div class="mod-info">
+                    <span class="mod-name">${mod.name} (ID: ${
+			mod.mod_id
+		})</span>
+                    <span class="mod-game">Game: ${mod.game}</span>
+                    <span class="mod-updated">Last Updated: ${new Date(
+											mod.last_checked_released
+										).toLocaleString()}</span>
                 </div>
-                <a href="${
-									mod.website_url
-								}" target="_blank" class="mod-link"><i class="fas fa-external-link-alt"></i></a>
-                <button class="delete-mod" data-mod-id="${
-									mod.mod_id
-								}"><i class="fas fa-trash"></i></button>
+                <div class="mod-actions">
+                    <a href="${
+											mod.website_url
+										}" target="_blank" class="mod-link"><i class="fas fa-external-link-alt"></i></a>
+                    <button class="delete-mod" data-mod-id="${
+											mod.mod_id
+										}"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+            <div class="custom-select" data-mod-id="${mod.mod_id}">
+                <div class="select-selected">Select Webhooks</div>
+                <div class="select-items select-hide"></div>
             </div>
         `;
 		modList.appendChild(modElement);
