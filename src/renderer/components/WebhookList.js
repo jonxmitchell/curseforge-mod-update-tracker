@@ -6,20 +6,28 @@ function renderWebhookList(webhooks) {
 	webhookList.innerHTML = "";
 	webhooks.forEach((webhook) => {
 		const webhookElement = document.createElement("div");
-		webhookElement.className = "webhook-item";
+		webhookElement.className = "bg-lighter-black p-4 rounded mb-4";
 		const truncatedUrl =
 			webhook.url.length > 60
 				? webhook.url.substring(0, 60) + "..."
 				: webhook.url;
 		webhookElement.innerHTML = `
-            <div class="webhook-info">
-                <span class="webhook-name">${webhook.name}</span>
-                <span class="webhook-url">${truncatedUrl}</span>
-            </div>
-            <div class="webhook-actions">
-                <button class="show-full-webhook">Show Full Webhook</button>
-                <button class="test-webhook">Test</button>
-                <button class="delete-webhook" data-webhook-id="${webhook.id}"><i class="fas fa-trash"></i></button>
+            <div class="flex justify-between items-center">
+                <div class="space-y-1 flex-grow pr-4">
+                    <span class="font-bold text-lg">${webhook.name}</span>
+                    <div class="text-gray-400 break-all webhook-url">${truncatedUrl}</div>
+                </div>
+                <div class="flex space-x-2">
+                    <button class="icon-button show-full-webhook">
+                        <i class="fas fa-expand-alt"></i>
+                    </button>
+                    <button class="icon-button test-webhook">
+                        <i class="fas fa-vial"></i>
+                    </button>
+                    <button class="icon-button delete-webhook" data-webhook-id="${webhook.id}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
             </div>
         `;
 		webhookList.appendChild(webhookElement);
@@ -30,10 +38,10 @@ function renderWebhookList(webhooks) {
 			const webhookUrlElement = webhookElement.querySelector(".webhook-url");
 			if (webhookUrlElement.textContent === truncatedUrl) {
 				webhookUrlElement.textContent = webhook.url;
-				showFullWebhookButton.textContent = "Hide Full Webhook";
+				showFullWebhookButton.innerHTML = '<i class="fas fa-compress-alt"></i>';
 			} else {
 				webhookUrlElement.textContent = truncatedUrl;
-				showFullWebhookButton.textContent = "Show Full Webhook";
+				showFullWebhookButton.innerHTML = '<i class="fas fa-expand-alt"></i>';
 			}
 		});
 

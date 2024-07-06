@@ -1,0 +1,105 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+	.input-floating {
+		@apply block px-2.5 pb-2.5 pt-4 w-full text-sm text-white bg-transparent rounded-lg border border-gray-600 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600;
+	}
+
+	.input-floating-label {
+		@apply absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-modern-black px-2 peer-placeholder-shown:px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 start-1;
+	}
+
+	.tab-button {
+		@apply text-gray-500 hover:text-gray-300 hover:border-gray-300 dark:hover:text-gray-300;
+	}
+
+	.tab-button.active {
+		@apply text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500;
+	}
+
+	.custom-select {
+		@apply relative w-full;
+	}
+
+	.select-selected {
+		@apply bg-gray-700 py-2 px-4 cursor-pointer select-none rounded transition-colors;
+	}
+
+	.select-items {
+		@apply absolute bg-gray-700 w-full z-10 max-h-60 overflow-y-auto rounded-b;
+	}
+
+	.select-item {
+		@apply py-2 px-4 cursor-pointer hover:bg-gray-600;
+	}
+
+	.webhook-bubble {
+		@apply inline-block bg-gray-600 text-white px-2 py-1 m-1 rounded-full text-sm;
+	}
+
+	.input {
+		@apply block px-2.5 py-2 w-full text-sm text-white bg-gray-600 rounded-lg border border-gray-500 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600;
+	}
+
+	.custom-button {
+		@apply text-blue-500 border border-blue-500 hover:text-white hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:hover:bg-blue-500 dark:focus:ring-blue-800;
+	}
+
+	.icon-button {
+		@apply text-blue-500 border border-blue-500 hover:text-white hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm p-2.5 text-center inline-flex items-center justify-center w-10 h-10 dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:hover:bg-blue-500 dark:focus:ring-blue-800;
+	}
+}
+
+/* Custom checkbox styles */
+.select-item input[type="checkbox"] {
+	@apply w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600;
+}
+
+.select-item label {
+	@apply ms-2 text-sm font-medium text-gray-300;
+}
+
+/* Custom range input styles */
+input[type="range"] {
+	@apply appearance-none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+	@apply appearance-none w-4 h-4 bg-blue-600 rounded-full cursor-pointer -mt-1;
+}
+
+input[type="range"]::-moz-range-thumb {
+	@apply appearance-none w-4 h-4 bg-blue-600 rounded-full cursor-pointer;
+}
+
+input[type="range"]::-ms-thumb {
+	@apply appearance-none w-4 h-4 bg-blue-600 rounded-full cursor-pointer;
+}
+
+::-webkit-scrollbar {
+	width: 3px;
+}
+
+::-webkit-scrollbar-track {
+	background: #1e1e1e;
+}
+
+::-webkit-scrollbar-thumb {
+	background: #888;
+	border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: #555;
+}
+
+@layer utilities {
+	.bg-modern-black {
+		background-color: #1e1e1e;
+	}
+	.bg-lighter-black {
+		background-color: #2a2a2a;
+	}
+}

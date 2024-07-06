@@ -7,30 +7,34 @@ function renderModList(mods) {
 	modList.innerHTML = "";
 	mods.forEach((mod) => {
 		const modElement = document.createElement("div");
-		modElement.className = "mod-item";
+		modElement.className = "bg-lighter-black p-4 rounded mb-4";
 		modElement.innerHTML = `
-            <div class="mod-content">
-                <div class="mod-info">
-                    <span class="mod-name">${mod.name} (ID: ${
+            <div class="flex justify-between items-center mb-2">
+                <div class="space-y-1">
+                    <span class="font-bold text-lg">${mod.name} (ID: ${
 			mod.mod_id
 		})</span>
-                    <span class="mod-game">Game: ${mod.game}</span>
-                    <span class="mod-updated">Last Updated: ${new Date(
+                    <span class="text-gray-400 block">Game: ${mod.game}</span>
+                    <span class="text-gray-400 block">Last Updated: ${new Date(
 											mod.last_checked_released
 										).toLocaleString()}</span>
                 </div>
-                <div class="mod-actions">
+                <div class="flex items-center space-x-2">
                     <a href="${
 											mod.website_url
-										}" target="_blank" class="mod-link"><i class="fas fa-external-link-alt"></i></a>
-                    <button class="delete-mod" data-mod-id="${
+										}" target="_blank" class="icon-button">
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                    <button class="icon-button delete-mod" data-mod-id="${
 											mod.mod_id
-										}"><i class="fas fa-trash"></i></button>
+										}">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </div>
             </div>
             <div class="custom-select" data-mod-id="${mod.mod_id}">
                 <div class="select-selected">Select Webhooks</div>
-                <div class="select-items select-hide"></div>
+                <div class="select-items hidden"></div>
             </div>
         `;
 		modList.appendChild(modElement);
@@ -55,7 +59,7 @@ function initializeWebhookSelects() {
 		selectSelected.addEventListener("click", function (e) {
 			e.stopPropagation();
 			closeAllSelect(this);
-			selectItems.classList.toggle("select-hide");
+			selectItems.classList.toggle("hidden");
 			this.classList.toggle("select-arrow-active");
 		});
 
@@ -68,19 +72,19 @@ function initializeWebhookSelects() {
 	updateWebhookSelects();
 }
 
-function updateWebhookSelects() {
-	ipcRenderer.send("get-webhooks");
-}
-
 function closeAllSelect(elmnt) {
 	const selectItems = document.getElementsByClassName("select-items");
 	const selectSelected = document.getElementsByClassName("select-selected");
 	for (let i = 0; i < selectSelected.length; i++) {
 		if (elmnt !== selectSelected[i]) {
 			selectSelected[i].classList.remove("select-arrow-active");
-			selectItems[i].classList.add("select-hide");
+			selectItems[i].classList.add("hidden");
 		}
 	}
+}
+
+function updateWebhookSelects() {
+	ipcRenderer.send("get-webhooks");
 }
 
 async function handleWebhookChange(event) {
@@ -91,7 +95,9 @@ async function handleWebhookChange(event) {
 		select.querySelectorAll('input[type="checkbox"]:checked'),
 		(checkbox) => parseInt(checkbox.value)
 	);
-	const webhookName = checkbox.nextElementSibling.textContent;
+	const webhookName = checkbox.nextElementSibling.textContent
+		.trim()
+		.replace(/\s+/g, " ");
 	const isChecked = checkbox.checked;
 
 	try {
@@ -103,19 +109,13 @@ async function handleWebhookChange(event) {
 			updateSelectedText(select);
 			if (isChecked) {
 				showToast(
-					`${webhookName} webhook was assigned to mod ${modId}`,
-					"success",
-					{
-						background: "linear-gradient(to right, #00b09b, #96c93d)",
-					}
+					`Webhook "${webhookName}" was assigned to mod ${modId}`,
+					"success"
 				);
 			} else {
 				showToast(
-					`${webhookName} webhook was unassigned from mod ${modId}`,
-					"info",
-					{
-						background: "linear-gradient(to right, #2193b0, #6dd5ed)",
-					}
+					`Webhook "${webhookName}" was unassigned from mod ${modId}`,
+					"info"
 				);
 			}
 		} else {
@@ -129,7 +129,8 @@ async function handleWebhookChange(event) {
 function updateSelectedText(select) {
 	const selectedWebhooks = Array.from(
 		select.querySelectorAll('input[type="checkbox"]:checked'),
-		(checkbox) => checkbox.nextElementSibling.textContent
+		(checkbox) =>
+			checkbox.nextElementSibling.textContent.trim().replace(/\s+/g, " ")
 	);
 	const selectedText = select.querySelector(".select-selected");
 	selectedText.innerHTML = "";

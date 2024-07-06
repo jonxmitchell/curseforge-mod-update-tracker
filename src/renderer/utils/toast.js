@@ -1,8 +1,5 @@
 const Toastify = require("toastify-js");
 
-let toastTimeout;
-let lastToastMessage = "";
-
 function showToast(message, type = "info") {
 	let background;
 	switch (type) {
@@ -25,25 +22,17 @@ function showToast(message, type = "info") {
 		close: true,
 		gravity: "top",
 		position: "center",
-		style: { background: background },
+		style: {
+			background: background,
+			padding: "12px 20px",
+			borderRadius: "4px",
+			fontSize: "14px",
+			lineHeight: "1.5",
+		},
 		stopOnFocus: true,
 	}).showToast();
 }
 
-function showToastDebounced(message, type = "info") {
-	if (toastTimeout) {
-		clearTimeout(toastTimeout);
-	}
-	if (lastToastMessage !== message) {
-		showToast(message, type);
-		lastToastMessage = message;
-	}
-	toastTimeout = setTimeout(() => {
-		lastToastMessage = "";
-	}, 3000);
-}
-
 module.exports = {
 	showToast,
-	showToastDebounced,
 };

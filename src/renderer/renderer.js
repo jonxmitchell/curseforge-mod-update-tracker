@@ -16,6 +16,7 @@ const {
 	loadApiKey,
 	saveInterval,
 	saveApiKey,
+	initializeSettings,
 } = require("./components/Settings");
 const { DEFAULT_INTERVAL } = require("../shared/constants");
 
@@ -51,6 +52,8 @@ async function initializeApp() {
 	intervalSlider.value = Math.min(currentInterval, 3600);
 	intervalInput.value = currentInterval;
 
+	initializeSettings();
+
 	console.log("Application initialized");
 }
 
@@ -65,25 +68,6 @@ function setupEventListeners() {
 	document
 		.getElementById("filterModInput")
 		.addEventListener("input", filterMods);
-
-	const intervalSlider = document.getElementById("intervalSlider");
-	const intervalInput = document.getElementById("intervalInput");
-
-	intervalSlider.addEventListener("input", updateIntervalInput);
-	intervalInput.addEventListener("input", validateIntervalInput);
-	document
-		.getElementById("setIntervalButton")
-		.addEventListener("click", setInterval);
-
-	document
-		.getElementById("clearConsoleButton")
-		.addEventListener("click", clearConsole);
-	document
-		.getElementById("toggleApiKeyVisibility")
-		.addEventListener("click", toggleApiKeyVisibility);
-	document
-		.getElementById("saveApiKeyButton")
-		.addEventListener("click", saveApiKeyHandler);
 
 	document.querySelectorAll(".tab-button").forEach((button) => {
 		button.addEventListener("click", () => {
@@ -162,94 +146,47 @@ function filterMods(e) {
 	renderModList(filteredMods);
 }
 
-function updateIntervalInput(e) {
-	const value = e.target.value;
-	document.getElementById("intervalInput").value = value;
-}
-
-function validateIntervalInput(e) {
-	const value = e.target.value;
-	e.target.value = value.replace(/[^0-9]/g, "");
-	const newInterval = parseInt(value, 10);
-
-	if (newInterval < 1) {
-		showToast("Interval must be at least 1 second.", "error");
-		document.getElementById("setIntervalButton").disabled = true;
-	} else {
-		document.getElementById("setIntervalButton").disabled = false;
-		if (newInterval <= 3600) {
-			document.getElementById("intervalSlider").value = newInterval;
-		} else {
-			document.getElementById("intervalSlider").value = 3600;
-		}
-	}
-}
-
-async function setInterval() {
-	const newInterval = parseInt(
-		document.getElementById("intervalInput").value,
-		10
-	);
-	if (newInterval >= 1) {
-		if (newInterval < 300) {
-			showToast(
-				"It is recommended to set the interval to at least 300 seconds",
-				"warning"
-			);
-		}
-		currentInterval = newInterval;
-		await saveInterval(currentInterval);
-		// Update the slider to match the new interval
-		document.getElementById("intervalSlider").value = Math.min(
-			newInterval,
-			3600
-		);
-	}
-}
-
-function clearConsole() {
-	consoleLines = [];
-	updateConsoleOutput(consoleLines);
-	showToast("Console cleared", "info");
-}
-
-function toggleApiKeyVisibility() {
-	const apiKeyInput = document.getElementById("apiKeyInput");
-	const toggleButton = document.getElementById("toggleApiKeyVisibility");
-	if (apiKeyInput.type === "password") {
-		apiKeyInput.type = "text";
-		toggleButton.innerHTML = '<i class="fas fa-eye-slash"></i>';
-	} else {
-		apiKeyInput.type = "password";
-		toggleButton.innerHTML = '<i class="fas fa-eye"></i>';
-	}
-}
-
-async function saveApiKeyHandler() {
-	const apiKeyInput = document.getElementById("apiKeyInput").value.trim();
-	if (apiKeyInput) {
-		await saveApiKey(apiKeyInput);
-	} else {
-		showToast("Please enter an API key", "error");
-	}
-}
-
 function openTab(tabName) {
 	const tabContents = document.querySelectorAll(".tab-content");
 	const tabButtons = document.querySelectorAll(".tab-button");
 
 	tabContents.forEach((tab) => {
-		tab.style.display = "none";
+		tab.classList.add("hidden");
 	});
 
 	tabButtons.forEach((button) => {
-		button.classList.remove("active");
+		button.classList.remove(
+			"active",
+			"text-blue-600",
+			"border-blue-600",
+			"dark:text-blue-500",
+			"dark:border-blue-500"
+		);
+		button.classList.add(
+			"text-gray-500",
+			"hover:text-gray-300",
+			"hover:border-gray-300",
+			"dark:hover:text-gray-300"
+		);
 	});
 
-	document.getElementById(`${tabName}-tab`).style.display = "block";
-	document
-		.querySelector(`.tab-button[data-tab="${tabName}"]`)
-		.classList.add("active");
+	document.getElementById(`${tabName}-tab`).classList.remove("hidden");
+	const activeTab = document.querySelector(
+		`.tab-button[data-tab="${tabName}"]`
+	);
+	activeTab.classList.add(
+		"active",
+		"text-blue-600",
+		"border-blue-600",
+		"dark:text-blue-500",
+		"dark:border-blue-500"
+	);
+	activeTab.classList.remove(
+		"text-gray-500",
+		"hover:text-gray-300",
+		"hover:border-gray-300",
+		"dark:hover:text-gray-300"
+	);
 }
 
 function handleModUpdated(event, mod) {
@@ -315,16 +252,35 @@ function handleGetWebhooksResult(event, result) {
 
 			webhooks.forEach((webhook) => {
 				const option = document.createElement("div");
+				option.className =
+					"select-item flex items-center p-2 hover:bg-gray-600 cursor-pointer";
 				option.innerHTML = `
-                    <input type="checkbox" id="${modId}-${webhook.id}" value="${webhook.id}">
-                    <label for="${modId}-${webhook.id}">${webhook.name}</label>
+                    <div class="flex items-center w-full">
+                        <input id="${modId}-${webhook.id}" type="checkbox" value="${webhook.id}" 
+                            class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                        <label for="${modId}-${webhook.id}" class="ms-2 text-sm font-medium text-gray-300 flex-grow">
+                            ${webhook.name}
+                        </label>
+                    </div>
                 `;
+
+				const checkbox = option.querySelector('input[type="checkbox"]');
+
+				// Handle clicks on the entire row
 				option.addEventListener("click", (e) => {
+					if (e.target !== checkbox) {
+						e.preventDefault();
+						checkbox.checked = !checkbox.checked;
+						handleWebhookChange({ target: checkbox });
+					}
+				});
+
+				// Handle clicks directly on the checkbox
+				checkbox.addEventListener("change", (e) => {
 					e.stopPropagation();
-					const checkbox = option.querySelector('input[type="checkbox"]');
-					checkbox.checked = !checkbox.checked;
 					handleWebhookChange({ target: checkbox });
 				});
+
 				selectItems.appendChild(option);
 			});
 

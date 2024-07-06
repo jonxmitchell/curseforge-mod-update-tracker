@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html class="dark">
 	<head>
 		<title>Mod Update Tracker</title>
 		<link rel="stylesheet" href="styles/styles.css" />
@@ -11,93 +11,193 @@
 			rel="stylesheet"
 			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
 	</head>
-	<body>
-		<div class="tab-container">
-			<div class="tab-buttons">
-				<button class="tab-button active" data-tab="mods">Mod Tracker</button>
-				<button class="tab-button" data-tab="webhooks">Webhooks</button>
-				<button class="tab-button" data-tab="settings">Settings</button>
-			</div>
+	<body class="bg-dark-bg text-white p-6">
+		<div class="container mx-auto max-w-full">
+			<div class="tab-container">
+				<div class="mb-4 border-b border-gray-700">
+					<ul class="flex flex-wrap -mb-px text-sm font-medium text-center">
+						<li class="mr-2">
+							<button
+								class="tab-button inline-block p-4 border-b-2 rounded-t-lg"
+								data-tab="mods">
+								Mod Tracker
+							</button>
+						</li>
+						<li class="mr-2">
+							<button
+								class="tab-button inline-block p-4 border-b-2 rounded-t-lg"
+								data-tab="webhooks">
+								Webhooks
+							</button>
+						</li>
+						<li>
+							<button
+								class="tab-button inline-block p-4 border-b-2 rounded-t-lg"
+								data-tab="settings">
+								Settings
+							</button>
+						</li>
+					</ul>
+				</div>
 
-			<div class="tab-content active" id="mods-tab">
-				<div class="input-group">
-					<input type="text" id="modSearchInput" placeholder="Enter mod ID" />
-					<button id="addModButton">Add Mod</button>
-				</div>
-				<div class="input-group">
-					<input
-						type="text"
-						id="filterModInput"
-						placeholder="Search tracked mods" />
-					<button id="pauseResumeButton">Pause</button>
-					<button id="checkUpdatesButton">Check for updates</button>
-				</div>
-				<div id="updateCountdown">
-					<div class="countdown-wrapper">
-						<span>Checking for updates in:</span>
-						<span class="time-box" id="hours">00</span>
-						<span class="time-box" id="minutes">00</span>
-						<span class="time-box" id="seconds">00</span>
+				<div id="tab-content">
+					<div class="tab-content p-4 rounded-lg bg-modern-black" id="mods-tab">
+						<h3 class="text-xl font-bold mb-4">Mod Tracker</h3>
+						<div class="flex flex-wrap gap-4 mb-4">
+							<div class="relative flex-grow min-w-[200px]">
+								<input
+									type="text"
+									id="modSearchInput"
+									class="input-floating peer w-full"
+									placeholder=" " />
+								<label for="modSearchInput" class="input-floating-label"
+									>Enter mod ID</label
+								>
+							</div>
+							<button id="addModButton" class="custom-button shrink-0">
+								Add Mod
+							</button>
+						</div>
+						<div class="flex flex-wrap gap-4 mb-4">
+							<div class="relative flex-grow min-w-[200px]">
+								<input
+									type="text"
+									id="filterModInput"
+									class="input-floating peer w-full"
+									placeholder=" " />
+								<label for="filterModInput" class="input-floating-label"
+									>Search tracked mods</label
+								>
+							</div>
+							<button id="pauseResumeButton" class="custom-button shrink-0">
+								Pause
+							</button>
+							<button id="checkUpdatesButton" class="custom-button shrink-0">
+								Check for updates
+							</button>
+						</div>
+						<div
+							id="updateCountdown"
+							class="flex flex-wrap justify-between items-center mb-6">
+							<div class="flex items-center mb-2 sm:mb-0">
+								<span>Checking for updates in:</span>
+								<span class="bg-gray-700 px-2 py-1 mx-2 rounded" id="hours"
+									>00</span
+								>
+								<span class="bg-gray-700 px-2 py-1 mx-2 rounded" id="minutes"
+									>00</span
+								>
+								<span class="bg-gray-700 px-2 py-1 mx-2 rounded" id="seconds"
+									>00</span
+								>
+							</div>
+							<span class="total-mods"
+								>Total mods:
+								<span class="mod-count bg-gray-700 px-2 py-1 rounded"
+									>0</span
+								></span
+							>
+						</div>
+						<div id="modList" class="space-y-4"></div>
 					</div>
-					<span class="total-mods"
-						>Total mods: <span class="mod-count">0</span></span
-					>
-				</div>
-				<div id="modList"></div>
-			</div>
 
-			<div class="tab-content" id="webhooks-tab">
-				<div id="webhookSection">
-					<h3>Discord Webhooks</h3>
-					<div class="input-group">
-						<input
-							type="text"
-							id="webhookNameInput"
-							placeholder="Enter webhook name" />
-						<input
-							type="text"
-							id="webhookInput"
-							placeholder="Enter Discord webhook URL" />
-						<button id="addWebhookButton">Add Webhook</button>
+					<div
+						class="tab-content hidden p-4 rounded-lg bg-modern-black"
+						id="webhooks-tab">
+						<div id="webhookSection" class="space-y-4">
+							<h3 class="text-xl font-bold mb-4">Discord Webhooks</h3>
+							<div class="flex flex-wrap gap-4">
+								<div class="relative flex-grow min-w-[200px]">
+									<input
+										type="text"
+										id="webhookNameInput"
+										class="input-floating peer w-full"
+										placeholder=" " />
+									<label for="webhookNameInput" class="input-floating-label"
+										>Enter webhook name</label
+									>
+								</div>
+								<div class="relative flex-grow min-w-[200px]">
+									<input
+										type="text"
+										id="webhookInput"
+										class="input-floating peer w-full"
+										placeholder=" " />
+									<label for="webhookInput" class="input-floating-label"
+										>Enter Discord webhook URL</label
+									>
+								</div>
+								<button id="addWebhookButton" class="custom-button shrink-0">
+									Add Webhook
+								</button>
+							</div>
+							<div id="webhookList" class="space-y-4"></div>
+						</div>
 					</div>
-					<div id="webhookList"></div>
-				</div>
-			</div>
 
-			<div class="tab-content" id="settings-tab">
-				<h3>Settings</h3>
-				<div class="setting-group">
-					<label for="apiKeyInput">CurseForge API Key:</label>
-					<div class="input-group">
-						<input
-							type="password"
-							id="apiKeyInput"
-							placeholder="Enter API Key" />
-						<button id="toggleApiKeyVisibility">
-							<i class="fas fa-eye"></i>
+					<div
+						class="tab-content hidden p-4 rounded-lg bg-modern-black"
+						id="settings-tab">
+						<h3 class="text-xl font-bold mb-4">Settings</h3>
+						<div class="space-y-6">
+							<div>
+								<h4 class="text-lg font-semibold mb-2">CurseForge API Key</h4>
+								<div class="flex flex-wrap items-center gap-4">
+									<div class="relative flex-grow min-w-[200px]">
+										<div class="flex">
+											<input
+												type="password"
+												id="apiKeyInput"
+												class="input flex-grow rounded-r-none"
+												placeholder="Enter API Key" />
+											<button
+												id="toggleApiKeyVisibility"
+												class="icon-button rounded-l-none">
+												<i class="fas fa-eye"></i>
+											</button>
+										</div>
+									</div>
+									<button id="saveApiKeyButton" class="custom-button shrink-0">
+										Save API Key
+									</button>
+								</div>
+							</div>
+							<div>
+								<h4 class="text-lg font-semibold mb-2">Update Interval</h4>
+								<div class="flex flex-wrap gap-4 items-center">
+									<div class="flex-grow min-w-[200px]">
+										<input
+											type="range"
+											id="intervalSlider"
+											min="1"
+											max="3600"
+											value="3600"
+											class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700" />
+									</div>
+									<div class="flex gap-2">
+										<input
+											type="text"
+											id="intervalInput"
+											class="input w-20 text-center"
+											placeholder="Interval" />
+										<button
+											id="setIntervalButton"
+											class="custom-button whitespace-nowrap shrink-0">
+											Set Interval
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+						<h3 class="text-xl font-bold mt-8 mb-4">Console</h3>
+						<div
+							id="consoleOutput"
+							class="bg-gray-900 p-4 rounded h-64 overflow-y-auto font-mono text-sm mb-4"></div>
+						<button id="clearConsoleButton" class="custom-button">
+							Clear Console
 						</button>
-						<button id="saveApiKeyButton">Save API Key</button>
 					</div>
 				</div>
-				<div class="setting-group">
-					<label for="intervalSlider">Update Interval (in seconds):</label>
-					<div class="interval-controls">
-						<input
-							type="range"
-							id="intervalSlider"
-							min="1"
-							max="3600"
-							value="3600" />
-						<input
-							type="text"
-							id="intervalInput"
-							placeholder="Custom interval" />
-						<button id="setIntervalButton">Set Interval</button>
-					</div>
-				</div>
-				<h3>Console</h3>
-				<div id="consoleOutput"></div>
-				<button id="clearConsoleButton">Clear Console</button>
 			</div>
 		</div>
 		<script src="renderer.js"></script>

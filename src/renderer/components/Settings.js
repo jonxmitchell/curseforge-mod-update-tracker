@@ -58,9 +58,61 @@ async function saveApiKey(apiKey) {
 	}
 }
 
+function initializeSettings() {
+	const intervalSlider = document.getElementById("intervalSlider");
+	const intervalInput = document.getElementById("intervalInput");
+	const setIntervalButton = document.getElementById("setIntervalButton");
+	const apiKeyInput = document.getElementById("apiKeyInput");
+	const toggleApiKeyVisibilityButton = document.getElementById(
+		"toggleApiKeyVisibility"
+	);
+	const saveApiKeyButton = document.getElementById("saveApiKeyButton");
+
+	intervalSlider.addEventListener("input", (e) => {
+		intervalInput.value = e.target.value;
+	});
+
+	intervalInput.addEventListener("input", (e) => {
+		const value = parseInt(e.target.value);
+		if (!isNaN(value) && value >= 1 && value <= 3600) {
+			intervalSlider.value = value;
+		}
+	});
+
+	setIntervalButton.addEventListener("click", async () => {
+		const interval = parseInt(intervalInput.value);
+		if (!isNaN(interval) && interval >= 1) {
+			await saveInterval(interval);
+		} else {
+			showToast("Please enter a valid interval (1-3600 seconds)", "error");
+		}
+	});
+
+	toggleApiKeyVisibilityButton.addEventListener("click", () => {
+		if (apiKeyInput.type === "password") {
+			apiKeyInput.type = "text";
+			toggleApiKeyVisibilityButton.innerHTML =
+				'<i class="fas fa-eye-slash"></i>';
+		} else {
+			apiKeyInput.type = "password";
+			toggleApiKeyVisibilityButton.innerHTML = '<i class="fas fa-eye"></i>';
+		}
+	});
+
+	saveApiKeyButton.addEventListener("click", async () => {
+		const apiKey = apiKeyInput.value.trim();
+		if (apiKey) {
+			await saveApiKey(apiKey);
+		} else {
+			showToast("Please enter an API key", "error");
+		}
+	});
+}
+
 module.exports = {
 	loadSavedInterval,
 	loadApiKey,
 	saveInterval,
 	saveApiKey,
+	initializeSettings,
 };
