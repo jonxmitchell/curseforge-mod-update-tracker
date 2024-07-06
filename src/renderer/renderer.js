@@ -1,15 +1,17 @@
 const { ipcRenderer } = require("electron");
-const { showToast, showToastDebounced } = require("./utils/toast");
+const { showToast } = require("./utils/toast");
 const { updateModCount, updateConsoleOutput } = require("./utils/domUtils");
 const {
 	renderModList,
 	initializeWebhookSelects,
 	handleWebhookChange,
 	updateSelectedText,
+	updateWebhookDropdowns,
 } = require("./components/ModList");
 const {
 	renderWebhookList,
 	updateWebhookList,
+	addWebhook,
 } = require("./components/WebhookList");
 const {
 	loadSavedInterval,
@@ -64,10 +66,13 @@ function setupEventListeners() {
 		.addEventListener("click", checkForUpdates);
 	document
 		.getElementById("addWebhookButton")
-		.addEventListener("click", addWebhook);
+		.addEventListener("click", handleAddWebhook);
 	document
 		.getElementById("filterModInput")
 		.addEventListener("input", filterMods);
+	document
+		.getElementById("clearConsoleButton")
+		.addEventListener("click", clearConsole);
 
 	document.querySelectorAll(".tab-button").forEach((button) => {
 		button.addEventListener("click", () => {
@@ -122,15 +127,22 @@ function checkForUpdates() {
 	ipcRenderer.send("check-updates");
 }
 
-function addWebhook() {
-	const webhookNameInput = document.getElementById("webhookNameInput");
-	const webhookInput = document.getElementById("webhookInput");
-	const webhookName = webhookNameInput.value.trim();
-	const webhookUrl = webhookInput.value.trim();
-	if (webhookName && webhookUrl) {
-		ipcRenderer.send("add-webhook", { name: webhookName, url: webhookUrl });
-		webhookNameInput.value = "";
-		webhookInput.value = "";
+async function handleAddWebhook() {
+	const nameInput = document.getElementById("webhookNameInput");
+	const urlInput = document.getElementById("webhookInput");
+	const name = nameInput.value.trim();
+	const url = urlInput.value.trim();
+
+	if (name && url) {
+		try {
+			await addWebhook(name, url);
+			nameInput.value = "";
+			urlInput.value = "";
+			// Remove this line to avoid duplicate toast
+			// showToast("Webhook added successfully", "success");
+		} catch (error) {
+			showToast(`Failed to add webhook: ${error.message}`, "error");
+		}
 	} else {
 		showToast("Please enter both webhook name and URL", "error");
 	}
@@ -155,38 +167,13 @@ function openTab(tabName) {
 	});
 
 	tabButtons.forEach((button) => {
-		button.classList.remove(
-			"active",
-			"text-blue-600",
-			"border-blue-600",
-			"dark:text-blue-500",
-			"dark:border-blue-500"
-		);
-		button.classList.add(
-			"text-gray-500",
-			"hover:text-gray-300",
-			"hover:border-gray-300",
-			"dark:hover:text-gray-300"
-		);
+		button.classList.remove("active");
 	});
 
 	document.getElementById(`${tabName}-tab`).classList.remove("hidden");
-	const activeTab = document.querySelector(
-		`.tab-button[data-tab="${tabName}"]`
-	);
-	activeTab.classList.add(
-		"active",
-		"text-blue-600",
-		"border-blue-600",
-		"dark:text-blue-500",
-		"dark:border-blue-500"
-	);
-	activeTab.classList.remove(
-		"text-gray-500",
-		"hover:text-gray-300",
-		"hover:border-gray-300",
-		"dark:hover:text-gray-300"
-	);
+	document
+		.querySelector(`.tab-button[data-tab="${tabName}"]`)
+		.classList.add("active");
 }
 
 function handleModUpdated(event, mod) {
@@ -202,6 +189,7 @@ function handleModUpdated(event, mod) {
 
 function handleUpdateCheckComplete(event, result) {
 	updateModList();
+	updateWebhookDropdowns();
 
 	if (result.updatesFound) {
 		showToast("Mod updates found and applied!", "success");
@@ -243,62 +231,7 @@ function handleAddWebhookResult(event, result) {
 function handleGetWebhooksResult(event, result) {
 	if (result.success) {
 		const webhooks = result.webhooks;
-		const customSelects = document.querySelectorAll(".custom-select");
-
-		customSelects.forEach(async (select) => {
-			const modId = select.getAttribute("data-mod-id");
-			const selectItems = select.querySelector(".select-items");
-			selectItems.innerHTML = "";
-
-			webhooks.forEach((webhook) => {
-				const option = document.createElement("div");
-				option.className =
-					"select-item flex items-center p-2 hover:bg-gray-600 cursor-pointer";
-				option.innerHTML = `
-                    <div class="flex items-center w-full">
-                        <input id="${modId}-${webhook.id}" type="checkbox" value="${webhook.id}" 
-                            class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                        <label for="${modId}-${webhook.id}" class="ms-2 text-sm font-medium text-gray-300 flex-grow">
-                            ${webhook.name}
-                        </label>
-                    </div>
-                `;
-
-				const checkbox = option.querySelector('input[type="checkbox"]');
-
-				// Handle clicks on the entire row
-				option.addEventListener("click", (e) => {
-					if (e.target !== checkbox) {
-						e.preventDefault();
-						checkbox.checked = !checkbox.checked;
-						handleWebhookChange({ target: checkbox });
-					}
-				});
-
-				// Handle clicks directly on the checkbox
-				checkbox.addEventListener("change", (e) => {
-					e.stopPropagation();
-					handleWebhookChange({ target: checkbox });
-				});
-
-				selectItems.appendChild(option);
-			});
-
-			const assignedWebhooks = await ipcRenderer.invoke(
-				"get-mod-webhooks",
-				modId
-			);
-
-			selectItems
-				.querySelectorAll('input[type="checkbox"]')
-				.forEach((checkbox) => {
-					if (assignedWebhooks.includes(parseInt(checkbox.value))) {
-						checkbox.checked = true;
-					}
-				});
-
-			updateSelectedText(select);
-		});
+		updateWebhookDropdowns(webhooks);
 	} else {
 		showToast(`Failed to get webhooks: ${result.error}`, "error");
 	}
@@ -344,6 +277,7 @@ async function updateModList() {
 				allMods = result.mods;
 				renderModList(allMods);
 				updateModCount(allMods.length);
+				updateWebhookDropdowns();
 				resolve();
 			} else {
 				showToast(`Failed to get mods: ${result.error}`, "error");
@@ -351,6 +285,11 @@ async function updateModList() {
 			}
 		});
 	});
+}
+
+function clearConsole() {
+	consoleLines = [];
+	updateConsoleOutput(consoleLines);
 }
 
 const originalConsoleLog = console.log;

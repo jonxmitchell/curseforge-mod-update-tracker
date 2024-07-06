@@ -1,10 +1,12 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const { initDatabase } = require("../database/connection");
 const setupModIPC = require("./ipc/modIPC");
 const setupWebhookIPC = require("./ipc/webhookIPC");
 const setupSettingsIPC = require("./ipc/settingsIPC");
 const { setupUpdateIPC } = require("./ipc/updateIPC");
+const { getWebhooks } = require("../database/webhooksDB");
+const { getModWebhooks } = require("../database/modWebhooksDB");
 
 let mainWindow;
 
@@ -29,6 +31,16 @@ app.whenReady().then(() => {
 	setupWebhookIPC(mainWindow);
 	setupSettingsIPC(mainWindow);
 	setupUpdateIPC(mainWindow);
+
+	// Add these new IPC handlers
+	ipcMain.handle("get-webhooks", async () => {
+		try {
+			return await getWebhooks();
+		} catch (error) {
+			console.error("Error getting webhooks:", error);
+			throw error;
+		}
+	});
 
 	mainWindow.webContents.on("did-finish-load", () => {
 		mainWindow.webContents.send("initialize-pause-resume-button");

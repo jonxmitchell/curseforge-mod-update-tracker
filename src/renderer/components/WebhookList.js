@@ -1,5 +1,6 @@
 const { ipcRenderer } = require("electron");
 const { showToast } = require("../utils/toast");
+const { updateWebhookDropdowns } = require("./ModList");
 
 function renderWebhookList(webhooks) {
 	const webhookList = document.getElementById("webhookList");
@@ -63,9 +64,25 @@ function updateWebhookList() {
 		ipcRenderer.once("get-webhooks-result", (event, result) => {
 			if (result.success) {
 				renderWebhookList(result.webhooks);
-				resolve();
+				updateWebhookDropdowns(result.webhooks);
+				resolve(result.webhooks);
 			} else {
 				showToast(`Failed to get webhooks: ${result.error}`, "error");
+				reject(new Error(result.error));
+			}
+		});
+	});
+}
+
+// Add this function to handle adding a new webhook
+function addWebhook(name, url) {
+	return new Promise((resolve, reject) => {
+		ipcRenderer.send("add-webhook", { name, url });
+		ipcRenderer.once("add-webhook-result", (event, result) => {
+			if (result.success) {
+				updateWebhookList().then(resolve).catch(reject);
+			} else {
+				showToast(`Failed to add webhook: ${result.error}`, "error");
 				reject(new Error(result.error));
 			}
 		});
@@ -75,4 +92,5 @@ function updateWebhookList() {
 module.exports = {
 	renderWebhookList,
 	updateWebhookList,
+	addWebhook,
 };

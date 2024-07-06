@@ -93,7 +93,7 @@ function setupWebhookIPC(mainWindow) {
 			return await getModWebhooks(modId);
 		} catch (error) {
 			console.error("Error getting mod webhooks:", error);
-			return [];
+			throw error;
 		}
 	});
 
