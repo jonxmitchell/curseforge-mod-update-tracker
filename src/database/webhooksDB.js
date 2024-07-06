@@ -50,13 +50,49 @@ function addWebhook(name, url) {
 function deleteWebhook(id) {
 	return new Promise((resolve, reject) => {
 		const db = getDb();
-		db.run(`DELETE FROM webhooks WHERE id = ?`, [id], (err) => {
-			if (err) {
-				console.error("Error deleting webhook:", err);
-				reject(err);
-			} else {
-				resolve();
-			}
+		db.serialize(() => {
+			db.run("BEGIN TRANSACTION", (err) => {
+				if (err) {
+					console.error("Error starting transaction:", err);
+					reject(err);
+					return;
+				}
+
+				db.run(`DELETE FROM webhooks WHERE id = ?`, [id], (err) => {
+					if (err) {
+						console.error("Error deleting webhook:", err);
+						db.run("ROLLBACK", () => {
+							reject(err);
+						});
+						return;
+					}
+
+					db.run(
+						`DELETE FROM mod_webhooks WHERE webhook_id = ?`,
+						[id],
+						(err) => {
+							if (err) {
+								console.error("Error deleting mod_webhooks:", err);
+								db.run("ROLLBACK", () => {
+									reject(err);
+								});
+								return;
+							}
+
+							db.run("COMMIT", (err) => {
+								if (err) {
+									console.error("Error committing transaction:", err);
+									db.run("ROLLBACK", () => {
+										reject(err);
+									});
+									return;
+								}
+								resolve();
+							});
+						}
+					);
+				});
+			});
 		});
 	});
 }
