@@ -20,9 +20,9 @@ function renderWebhookList(webhooks) {
                 </div>
                 <div class="flex space-x-2">
                     <button class="icon-button show-full-webhook">
-                        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13.407V6.593a.5.5 0 0 0-.854-.353L9.6 10l4.546 3.76A.5.5 0 0 0 15 13.407Zm-5 0V6.593a.5.5 0 0 0-.854-.353L4.6 10l4.546 3.76A.5.5 0 0 0 10 13.407Z"/>
-                        </svg>
+                        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H4m0 0v4m0-4 5 5m7-5h4m0 0v4m0-4-5 5M8 20H4m0 0v-4m0 4 5-5m7 5h4m0 0v-4m0 4-5-5"/>
+                    </svg>
                     </button>
                     <button class="icon-button test-webhook">
                         <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
@@ -46,15 +46,15 @@ function renderWebhookList(webhooks) {
 			if (webhookUrlElement.textContent === truncatedUrl) {
 				webhookUrlElement.textContent = webhook.url;
 				showFullWebhookButton.innerHTML = `
-                    <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13.407V6.593a.5.5 0 0 1 .854-.353L10.4 10l-4.546 3.76A.5.5 0 0 1 5 13.407Zm5 0V6.593a.5.5 0 0 1 .854-.353L15.4 10l-4.546 3.76A.5.5 0 0 1 10 13.407Z"/>
+					<svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h4V4m12 4h-4V4M4 16h4v4m12-4h-4v4"/>
                     </svg>
                 `;
 			} else {
 				webhookUrlElement.textContent = truncatedUrl;
 				showFullWebhookButton.innerHTML = `
-                    <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13.407V6.593a.5.5 0 0 0-.854-.353L9.6 10l4.546 3.76A.5.5 0 0 0 15 13.407Zm-5 0V6.593a.5.5 0 0 0-.854-.353L4.6 10l4.546 3.76A.5.5 0 0 0 10 13.407Z"/>
+                    <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H4m0 0v4m0-4 5 5m7-5h4m0 0v4m0-4-5 5M8 20H4m0 0v-4m0 4 5-5m7 5h4m0 0v-4m0 4-5-5"/>
                     </svg>
                 `;
 			}
