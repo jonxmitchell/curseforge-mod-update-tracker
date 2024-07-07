@@ -4,6 +4,8 @@ const { updateModCount, updateConsoleOutput } = require("./utils/domUtils");
 const {
 	renderModList,
 	initializeWebhookSelects,
+	handleWebhookChange,
+	updateSelectedText,
 	updateWebhookDropdowns,
 } = require("./components/ModList");
 const {
@@ -54,7 +56,7 @@ async function setupEventListeners() {
 		.addEventListener("click", clearConsole);
 	document
 		.getElementById("toggleApiKeyVisibility")
-		.addEventListener("click", toggleApiKeyVisibility, true);
+		.addEventListener("click", toggleApiKeyVisibility);
 	document
 		.getElementById("saveApiKeyButton")
 		.addEventListener("click", handleSaveApiKey);
@@ -156,6 +158,7 @@ function handleModUpdated(event, mod) {
 function handleUpdateCheckComplete(event, result) {
 	updateModList();
 	updateWebhookDropdowns();
+
 	if (result.updatesFound) {
 		showToast("Mod updates found and applied!", "success");
 	} else {
@@ -254,42 +257,28 @@ function clearConsole() {
 	updateConsoleOutput(consoleLines);
 }
 
-function toggleApiKeyVisibility(event) {
-	event.preventDefault();
-	event.stopPropagation();
-
+function toggleApiKeyVisibility() {
 	const apiKeyInput = document.getElementById("apiKeyInput");
 	const toggleButton = document.getElementById("toggleApiKeyVisibility");
-	const icon = toggleButton.querySelector("i");
-
-	console.log("Toggle button clicked. Current input type:", apiKeyInput.type);
-
 	if (apiKeyInput.type === "password") {
 		apiKeyInput.type = "text";
-		icon.classList.remove("fa-eye");
-		icon.classList.add("fa-eye-slash");
+		toggleButton.innerHTML = '<i class="fas fa-eye-slash"></i>';
 	} else {
 		apiKeyInput.type = "password";
-		icon.classList.remove("fa-eye-slash");
-		icon.classList.add("fa-eye");
+		toggleButton.innerHTML = '<i class="fas fa-eye"></i>';
 	}
-
-	console.log("New input type immediately after change:", apiKeyInput.type);
-
-	// Check the type after a small delay
-	setTimeout(() => {
-		console.log("Input type after delay:", apiKeyInput.type);
-	}, 100);
-
-	return false;
 }
 
 async function handleSaveApiKey() {
 	const apiKeyInput = document.getElementById("apiKeyInput");
 	const apiKey = apiKeyInput.value.trim();
 	if (apiKey) {
-		await saveApiKey(apiKey);
-		showToast("API key saved successfully", "success");
+		try {
+			await saveApiKey(apiKey);
+			showToast("API key saved successfully", "success");
+		} catch (error) {
+			showToast(`Failed to save API key: ${error.message}`, "error");
+		}
 	} else {
 		showToast("Please enter an API key", "error");
 	}
@@ -304,8 +293,12 @@ function handleIntervalSliderChange(e) {
 function handleIntervalInputChange(e) {
 	const intervalSlider = document.getElementById("intervalSlider");
 	const value = parseInt(e.target.value);
-	if (!isNaN(value) && value >= 1 && value <= 3600) {
-		intervalSlider.value = value;
+	if (!isNaN(value)) {
+		if (value > 3600) {
+			intervalSlider.value = 3600;
+		} else {
+			intervalSlider.value = value;
+		}
 		currentInterval = value;
 	}
 }
@@ -313,18 +306,22 @@ function handleIntervalInputChange(e) {
 async function handleSetInterval() {
 	const interval = currentInterval;
 	if (!isNaN(interval) && interval >= 1) {
-		await saveInterval(interval);
-		ipcRenderer.send("set-interval", interval);
-		showToast("Update interval set successfully", "success");
+		try {
+			await saveInterval(interval);
+			ipcRenderer.send("set-interval", interval);
+			showToast("Update interval set successfully", "success");
+		} catch (error) {
+			showToast(`Failed to set interval: ${error.message}`, "error");
+		}
 	} else {
-		showToast("Please enter a valid interval (1-3600 seconds)", "error");
+		showToast("Please enter a valid interval (minimum 1 second)", "error");
 	}
 }
 
 function updateIntervalDisplay() {
 	const intervalSlider = document.getElementById("intervalSlider");
 	const intervalInput = document.getElementById("intervalInput");
-	intervalSlider.value = currentInterval;
+	intervalSlider.value = Math.min(currentInterval, 3600);
 	intervalInput.value = currentInterval;
 }
 
