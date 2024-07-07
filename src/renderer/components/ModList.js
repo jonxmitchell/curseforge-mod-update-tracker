@@ -32,36 +32,36 @@ function renderModList(mods) {
                     </button>
                 </div>
             </div>
-            <div class="custom-select" data-mod-id="${mod.mod_id}">
+            <div class="custom-select relative w-full" data-mod-id="${
+							mod.mod_id
+						}">
                 <button id="dropdownSearchButton-${
 									mod.mod_id
-								}" data-dropdown-toggle="dropdownSearch-${
-			mod.mod_id
-		}" data-dropdown-placement="bottom" class="dropdown-button" type="button">
-                    Select Webhooks 
-                    <svg class="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+								}" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 w-full justify-between" type="button">
+                    <span class="selected-webhooks flex flex-wrap gap-2"></span>
+                    <svg class="w-2.5 h-2.5 ms-3 flex-shrink-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
                     </svg>
                 </button>
                 <div id="dropdownSearch-${
 									mod.mod_id
-								}" class="dropdown-menu hidden">
+								}" class="z-10 hidden bg-white rounded-lg shadow w-full dark:bg-gray-700 absolute left-0 mt-2">
                     <div class="p-3">
                         <label for="input-group-search-${
 													mod.mod_id
 												}" class="sr-only">Search</label>
                         <div class="relative">
-                            <div class="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
+                            <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
                                 <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
                                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
                                 </svg>
                             </div>
                             <input type="text" id="input-group-search-${
 															mod.mod_id
-														}" class="dropdown-search" placeholder="Search webhook">
+														}" class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search webhook">
                         </div>
                     </div>
-                    <ul class="h-48 px-3 pb-3 overflow-y-auto text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownSearchButton-${
+                    <ul class="px-3 pb-3 text-sm text-gray-700 dark:text-gray-200 webhook-list" aria-labelledby="dropdownSearchButton-${
 											mod.mod_id
 										}">
                         <!-- Webhook checkboxes will be dynamically inserted here -->
@@ -92,19 +92,18 @@ function initializeWebhookSelects() {
 		const dropdownMenu = select.querySelector(`#dropdownSearch-${modId}`);
 		const searchInput = select.querySelector(`#input-group-search-${modId}`);
 
-		dropdownButton.addEventListener("click", () => {
-			dropdownMenu.classList.toggle("hidden");
+		dropdownButton.addEventListener("click", (e) => {
+			e.stopPropagation();
+			toggleDropdown(dropdownMenu);
 		});
 
-		document.addEventListener("click", (e) => {
-			if (!select.contains(e.target)) {
-				dropdownMenu.classList.add("hidden");
-			}
+		searchInput.addEventListener("click", (e) => {
+			e.stopPropagation();
 		});
 
 		searchInput.addEventListener("input", (e) => {
 			const searchTerm = e.target.value.toLowerCase();
-			const checkboxes = select.querySelectorAll(".dropdown-item");
+			const checkboxes = select.querySelectorAll("li");
 			checkboxes.forEach((item) => {
 				const label = item.querySelector("label");
 				if (label.textContent.toLowerCase().includes(searchTerm)) {
@@ -116,7 +115,28 @@ function initializeWebhookSelects() {
 		});
 	});
 
+	document.addEventListener("click", (e) => {
+		if (!e.target.closest(".custom-select")) {
+			closeAllDropdowns();
+		}
+	});
+
 	updateWebhookDropdowns();
+}
+
+function toggleDropdown(dropdownMenu) {
+	const isHidden = dropdownMenu.classList.contains("hidden");
+	closeAllDropdowns();
+	if (isHidden) {
+		dropdownMenu.classList.remove("hidden");
+	}
+}
+
+function closeAllDropdowns() {
+	document.querySelectorAll(".custom-select").forEach((select) => {
+		const dropdownMenu = select.querySelector('[id^="dropdownSearch-"]');
+		dropdownMenu.classList.add("hidden");
+	});
 }
 
 async function updateWebhookDropdowns() {
@@ -124,15 +144,15 @@ async function updateWebhookDropdowns() {
 		const webhooks = await ipcRenderer.invoke("get-webhooks");
 		document.querySelectorAll(".custom-select").forEach(async (select) => {
 			const modId = select.getAttribute("data-mod-id");
-			const webhookList = select.querySelector("ul");
+			const webhookList = select.querySelector(".webhook-list");
 			webhookList.innerHTML = "";
 
 			webhooks.forEach((webhook) => {
 				const listItem = document.createElement("li");
 				listItem.innerHTML = `
-                    <div class="dropdown-item">
-                        <input id="${modId}-${webhook.id}" type="checkbox" value="${webhook.id}" class="dropdown-checkbox">
-                        <label for="${modId}-${webhook.id}" class="dropdown-label">${webhook.name}</label>
+                    <div class="flex items-center ps-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+                        <input id="${modId}-${webhook.id}" type="checkbox" value="${webhook.id}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                        <label for="${modId}-${webhook.id}" class="w-full py-2 ms-2 text-sm font-medium text-gray-900 rounded dark:text-gray-300">${webhook.name}</label>
                     </div>
                 `;
 				const checkbox = listItem.querySelector('input[type="checkbox"]');
@@ -153,13 +173,29 @@ async function updateWebhookDropdowns() {
 				});
 
 			updateSelectedText(select);
+			updateDropdownHeight(webhookList);
 		});
 	} catch (error) {
 		showToast(`Error updating webhook dropdowns: ${error.message}`, "error");
 	}
 }
 
+function updateDropdownHeight(webhookList) {
+	const webhookItems = webhookList.querySelectorAll("li");
+	const itemHeight = 40; // Approximate height of each item in pixels
+	const maxHeight = 200; // Maximum height before scrolling
+
+	if (webhookItems.length >= 4) {
+		webhookList.style.maxHeight = `${maxHeight}px`;
+		webhookList.style.overflowY = "auto";
+	} else {
+		webhookList.style.height = `${webhookItems.length * itemHeight}px`;
+		webhookList.style.overflowY = "visible";
+	}
+}
+
 async function handleWebhookChange(event) {
+	event.stopPropagation();
 	const checkbox = event.target;
 	const modId = checkbox.closest(".custom-select").getAttribute("data-mod-id");
 	const select = checkbox.closest(".custom-select");
@@ -202,12 +238,21 @@ function updateSelectedText(select) {
 		(checkbox) => checkbox.nextElementSibling.textContent.trim()
 	);
 	const dropdownButton = select.querySelector('[id^="dropdownSearchButton-"]');
+	const selectedWebhooksContainer =
+		dropdownButton.querySelector(".selected-webhooks");
+	selectedWebhooksContainer.innerHTML = "";
+
 	if (selectedWebhooks.length > 0) {
-		dropdownButton.textContent = `${selectedWebhooks.length} Webhook${
-			selectedWebhooks.length > 1 ? "s" : ""
-		} Selected`;
+		selectedWebhooks.forEach((webhookName) => {
+			const bubble = document.createElement("span");
+			bubble.className =
+				"bg-blue-500 text-white text-xs px-2 py-1 rounded-full";
+			bubble.textContent = webhookName;
+			selectedWebhooksContainer.appendChild(bubble);
+		});
 	} else {
-		dropdownButton.textContent = "Select Webhooks";
+		dropdownButton.querySelector(".selected-webhooks").textContent =
+			"Select Webhooks";
 	}
 }
 

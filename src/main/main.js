@@ -17,6 +17,7 @@ function createWindow() {
 		webPreferences: {
 			nodeIntegration: true,
 			contextIsolation: false,
+			contentSecurityPolicy: "script-src 'self' 'unsafe-inline';",
 		},
 	});
 
@@ -32,7 +33,6 @@ app.whenReady().then(() => {
 	setupSettingsIPC(mainWindow);
 	setupUpdateIPC(mainWindow);
 
-	// Add these new IPC handlers
 	ipcMain.handle("get-webhooks", async () => {
 		try {
 			return await getWebhooks();

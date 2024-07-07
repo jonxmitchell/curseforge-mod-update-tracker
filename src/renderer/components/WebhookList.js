@@ -74,7 +74,6 @@ function updateWebhookList() {
 	});
 }
 
-// Add this function to handle adding a new webhook
 function addWebhook(name, url) {
 	return new Promise((resolve, reject) => {
 		ipcRenderer.send("add-webhook", { name, url });

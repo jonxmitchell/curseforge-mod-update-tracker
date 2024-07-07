@@ -1,60 +1,10 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+@import "flowbite/dist/flowbite.css";
 
 @layer components {
-	.input-floating {
-		@apply block px-2.5 pb-2.5 pt-4 w-full text-sm text-white bg-transparent rounded-lg border border-gray-600 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600;
-	}
-
-	.input-floating-label {
-		@apply absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-modern-black px-2 peer-placeholder-shown:px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 start-1;
-	}
-
-	.tab-button {
-		@apply text-gray-500 hover:text-gray-300 border-transparent hover:border-gray-300;
-	}
-
-	.tab-button.active {
-		@apply text-blue-600 border-blue-600;
-	}
-
-	.custom-select {
-		@apply relative w-full;
-	}
-
-	.dropdown-button {
-		@apply text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 w-full justify-between;
-	}
-
-	.dropdown-menu {
-		@apply z-10 bg-white rounded-lg shadow w-60 dark:bg-gray-700 absolute mt-2;
-	}
-
-	.dropdown-search {
-		@apply block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500;
-	}
-
-	.dropdown-item {
-		@apply flex items-center ps-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600;
-	}
-
-	.dropdown-checkbox {
-		@apply w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500;
-	}
-
-	.dropdown-label {
-		@apply w-full py-2 ms-2 text-sm font-medium text-gray-900 rounded dark:text-gray-300;
-	}
-
-	.webhook-bubble {
-		@apply inline-block bg-gray-600 text-white px-2 py-1 m-1 rounded-full text-sm;
-	}
-
-	.input {
-		@apply block px-2.5 py-2 w-full text-sm text-white bg-gray-600 rounded-lg border border-gray-500 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600;
-	}
-
 	.custom-button {
 		@apply text-blue-500 border border-blue-500 hover:text-white hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:hover:bg-blue-500 dark:focus:ring-blue-800;
 	}
@@ -62,15 +12,6 @@
 	.icon-button {
 		@apply text-blue-500 border border-blue-500 hover:text-white hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm p-2.5 text-center inline-flex items-center justify-center w-10 h-10 dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:hover:bg-blue-500 dark:focus:ring-blue-800;
 	}
-}
-
-/* Custom checkbox styles */
-.select-item input[type="checkbox"] {
-	@apply w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500;
-}
-
-.select-item label {
-	@apply ms-2 text-sm font-medium text-gray-300;
 }
 
 /* Custom range input styles */

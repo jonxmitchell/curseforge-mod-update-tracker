@@ -4,8 +4,6 @@ const { updateModCount, updateConsoleOutput } = require("./utils/domUtils");
 const {
 	renderModList,
 	initializeWebhookSelects,
-	handleWebhookChange,
-	updateSelectedText,
 	updateWebhookDropdowns,
 } = require("./components/ModList");
 const {
@@ -30,36 +28,17 @@ let allMods = [];
 document.addEventListener("DOMContentLoaded", initializeApp);
 
 async function initializeApp() {
-	const pauseResumeButton = document.getElementById("pauseResumeButton");
-	pauseResumeButton.removeEventListener("click", handlePauseResume);
-	pauseResumeButton.addEventListener("click", handlePauseResume);
-
-	ipcRenderer.on("initialize-pause-resume-button", () => {
-		console.log("Initializing pause/resume button");
-		pauseResumeButton.textContent = "Pause";
-		isPaused = false;
-	});
-
+	await setupEventListeners();
 	currentInterval = (await loadSavedInterval()) || DEFAULT_INTERVAL;
 	await loadApiKey();
 	await updateModList();
 	await updateWebhookList();
-	openTab("mods");
-
-	setupEventListeners();
-
-	// Update the interval input and slider with the current interval
-	const intervalSlider = document.getElementById("intervalSlider");
-	const intervalInput = document.getElementById("intervalInput");
-	intervalSlider.value = Math.min(currentInterval, 3600);
-	intervalInput.value = currentInterval;
-
 	initializeSettings();
-
+	updateIntervalDisplay();
 	console.log("Application initialized");
 }
 
-function setupEventListeners() {
+async function setupEventListeners() {
 	document.getElementById("addModButton").addEventListener("click", addMod);
 	document
 		.getElementById("checkUpdatesButton")
@@ -73,13 +52,24 @@ function setupEventListeners() {
 	document
 		.getElementById("clearConsoleButton")
 		.addEventListener("click", clearConsole);
-
-	document.querySelectorAll(".tab-button").forEach((button) => {
-		button.addEventListener("click", () => {
-			const tabName = button.getAttribute("data-tab");
-			openTab(tabName);
-		});
-	});
+	document
+		.getElementById("toggleApiKeyVisibility")
+		.addEventListener("click", toggleApiKeyVisibility, true);
+	document
+		.getElementById("saveApiKeyButton")
+		.addEventListener("click", handleSaveApiKey);
+	document
+		.getElementById("setIntervalButton")
+		.addEventListener("click", handleSetInterval);
+	document
+		.getElementById("intervalSlider")
+		.addEventListener("input", handleIntervalSliderChange);
+	document
+		.getElementById("intervalInput")
+		.addEventListener("input", handleIntervalInputChange);
+	document
+		.getElementById("pauseResumeButton")
+		.addEventListener("click", handlePauseResume);
 
 	setupIpcListeners();
 }
@@ -97,18 +87,14 @@ function setupIpcListeners() {
 }
 
 function handlePauseResume() {
+	isPaused = !isPaused;
 	const button = document.getElementById("pauseResumeButton");
-	console.log("Pause/Resume button clicked. Current state:", isPaused);
 	if (isPaused) {
-		ipcRenderer.send("resume-timer");
-		button.textContent = "Pause";
-		isPaused = false;
-		console.log("Resuming timer.");
-	} else {
 		ipcRenderer.send("pause-timer");
 		button.textContent = "Resume";
-		isPaused = true;
-		console.log("Pausing timer.");
+	} else {
+		ipcRenderer.send("resume-timer");
+		button.textContent = "Pause";
 	}
 }
 
@@ -138,8 +124,6 @@ async function handleAddWebhook() {
 			await addWebhook(name, url);
 			nameInput.value = "";
 			urlInput.value = "";
-			// Remove this line to avoid duplicate toast
-			// showToast("Webhook added successfully", "success");
 		} catch (error) {
 			showToast(`Failed to add webhook: ${error.message}`, "error");
 		}
@@ -158,24 +142,6 @@ function filterMods(e) {
 	renderModList(filteredMods);
 }
 
-function openTab(tabName) {
-	const tabContents = document.querySelectorAll(".tab-content");
-	const tabButtons = document.querySelectorAll(".tab-button");
-
-	tabContents.forEach((tab) => {
-		tab.classList.add("hidden");
-	});
-
-	tabButtons.forEach((button) => {
-		button.classList.remove("active");
-	});
-
-	document.getElementById(`${tabName}-tab`).classList.remove("hidden");
-	document
-		.querySelector(`.tab-button[data-tab="${tabName}"]`)
-		.classList.add("active");
-}
-
 function handleModUpdated(event, mod) {
 	console.log(
 		`Mod update received: ${mod.name} from ${mod.oldReleased} to ${mod.newReleased}`
@@ -190,7 +156,6 @@ function handleModUpdated(event, mod) {
 function handleUpdateCheckComplete(event, result) {
 	updateModList();
 	updateWebhookDropdowns();
-
 	if (result.updatesFound) {
 		showToast("Mod updates found and applied!", "success");
 	} else {
@@ -216,22 +181,13 @@ function handleAddWebhookResult(event, result) {
 		showToast("Webhook added successfully", "success");
 		updateWebhookList();
 	} else {
-		if (result.error === "Webhook name already exists") {
-			showToast("A webhook with this name already exists", "warning");
-		} else if (result.error === "Webhook URL already exists") {
-			showToast("This webhook URL is already in your list", "warning");
-		} else if (result.error === "Webhook already exists") {
-			showToast("This webhook is already in your list", "warning");
-		} else {
-			showToast(`Failed to add webhook: ${result.error}`, "error");
-		}
+		showToast(`Failed to add webhook: ${result.error}`, "error");
 	}
 }
 
 function handleGetWebhooksResult(event, result) {
 	if (result.success) {
-		const webhooks = result.webhooks;
-		updateWebhookDropdowns(webhooks);
+		updateWebhookDropdowns(result.webhooks);
 	} else {
 		showToast(`Failed to get webhooks: ${result.error}`, "error");
 	}
@@ -264,9 +220,15 @@ function handleTestWebhookResult(event, result) {
 }
 
 function updateCountdown(event, { hours, minutes, seconds }) {
-	document.getElementById("hours").textContent = hours;
-	document.getElementById("minutes").textContent = minutes;
-	document.getElementById("seconds").textContent = seconds;
+	document.getElementById("hours").textContent = hours
+		.toString()
+		.padStart(2, "0");
+	document.getElementById("minutes").textContent = minutes
+		.toString()
+		.padStart(2, "0");
+	document.getElementById("seconds").textContent = seconds
+		.toString()
+		.padStart(2, "0");
 }
 
 async function updateModList() {
@@ -292,6 +254,80 @@ function clearConsole() {
 	updateConsoleOutput(consoleLines);
 }
 
+function toggleApiKeyVisibility(event) {
+	event.preventDefault();
+	event.stopPropagation();
+
+	const apiKeyInput = document.getElementById("apiKeyInput");
+	const toggleButton = document.getElementById("toggleApiKeyVisibility");
+	const icon = toggleButton.querySelector("i");
+
+	console.log("Toggle button clicked. Current input type:", apiKeyInput.type);
+
+	if (apiKeyInput.type === "password") {
+		apiKeyInput.type = "text";
+		icon.classList.remove("fa-eye");
+		icon.classList.add("fa-eye-slash");
+	} else {
+		apiKeyInput.type = "password";
+		icon.classList.remove("fa-eye-slash");
+		icon.classList.add("fa-eye");
+	}
+
+	console.log("New input type immediately after change:", apiKeyInput.type);
+
+	// Check the type after a small delay
+	setTimeout(() => {
+		console.log("Input type after delay:", apiKeyInput.type);
+	}, 100);
+
+	return false;
+}
+
+async function handleSaveApiKey() {
+	const apiKeyInput = document.getElementById("apiKeyInput");
+	const apiKey = apiKeyInput.value.trim();
+	if (apiKey) {
+		await saveApiKey(apiKey);
+		showToast("API key saved successfully", "success");
+	} else {
+		showToast("Please enter an API key", "error");
+	}
+}
+
+function handleIntervalSliderChange(e) {
+	const intervalInput = document.getElementById("intervalInput");
+	intervalInput.value = e.target.value;
+	currentInterval = parseInt(e.target.value);
+}
+
+function handleIntervalInputChange(e) {
+	const intervalSlider = document.getElementById("intervalSlider");
+	const value = parseInt(e.target.value);
+	if (!isNaN(value) && value >= 1 && value <= 3600) {
+		intervalSlider.value = value;
+		currentInterval = value;
+	}
+}
+
+async function handleSetInterval() {
+	const interval = currentInterval;
+	if (!isNaN(interval) && interval >= 1) {
+		await saveInterval(interval);
+		ipcRenderer.send("set-interval", interval);
+		showToast("Update interval set successfully", "success");
+	} else {
+		showToast("Please enter a valid interval (1-3600 seconds)", "error");
+	}
+}
+
+function updateIntervalDisplay() {
+	const intervalSlider = document.getElementById("intervalSlider");
+	const intervalInput = document.getElementById("intervalInput");
+	intervalSlider.value = currentInterval;
+	intervalInput.value = currentInterval;
+}
+
 const originalConsoleLog = console.log;
 console.log = function () {
 	originalConsoleLog.apply(console, arguments);
@@ -301,4 +337,14 @@ console.log = function () {
 		consoleLines.shift();
 	}
 	updateConsoleOutput(consoleLines);
+};
+
+module.exports = {
+	initializeApp,
+	handlePauseResume,
+	addMod,
+	checkForUpdates,
+	handleAddWebhook,
+	filterMods,
+	clearConsole,
 };
