@@ -6,7 +6,14 @@
 
 @layer components {
 	.custom-button {
-		@apply text-blue-500 border border-blue-500 hover:text-white hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:hover:bg-blue-500 dark:focus:ring-blue-800;
+		@apply relative bg-[length:100%_2px,0_2px] bg-[position:100%_100%,0_100%] bg-no-repeat text-blue-500 transition-[background-size,color] duration-500 hover:bg-[0_2px,100%_2px] hover:text-white py-2 px-4 rounded;
+		background-image: linear-gradient(#262626, #262626),
+			linear-gradient(#3b82f6, #3b82f6);
+	}
+
+	.custom-button:active {
+		transform: scale(0.98);
+		transition: transform 0.1s;
 	}
 
 	.icon-button {
