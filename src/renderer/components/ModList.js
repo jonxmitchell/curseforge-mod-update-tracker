@@ -98,7 +98,7 @@ function initializeWebhookSelects() {
 
 		dropdownButton.addEventListener("click", (e) => {
 			e.stopPropagation();
-			toggleDropdown(dropdownMenu);
+			toggleDropdown(dropdownMenu, dropdownButton);
 		});
 
 		searchInput.addEventListener("click", (e) => {
@@ -128,18 +128,34 @@ function initializeWebhookSelects() {
 	updateWebhookDropdowns();
 }
 
-function toggleDropdown(dropdownMenu) {
+function toggleDropdown(dropdownMenu, button) {
 	const isHidden = dropdownMenu.classList.contains("hidden");
 	closeAllDropdowns();
 	if (isHidden) {
 		dropdownMenu.classList.remove("hidden");
+		updateDropdownArrow(button, true);
+	} else {
+		updateDropdownArrow(button, false);
+	}
+}
+
+function updateDropdownArrow(button, isOpen) {
+	const svg = button.querySelector("svg");
+	if (isOpen) {
+		svg.innerHTML =
+			'<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 5 4-4 4 4"/>';
+	} else {
+		svg.innerHTML =
+			'<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>';
 	}
 }
 
 function closeAllDropdowns() {
 	document.querySelectorAll(".custom-select").forEach((select) => {
 		const dropdownMenu = select.querySelector('[id^="dropdownSearch-"]');
+		const button = select.querySelector('[id^="dropdownSearchButton-"]');
 		dropdownMenu.classList.add("hidden");
+		updateDropdownArrow(button, false);
 	});
 }
 
