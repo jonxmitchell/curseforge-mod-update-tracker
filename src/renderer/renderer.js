@@ -37,7 +37,56 @@ async function initializeApp() {
 	await updateWebhookList();
 	initializeSettings();
 	updateIntervalDisplay();
+	initializeTabs();
 	console.log("Application initialized");
+}
+
+function initializeTabs() {
+	const tabsElement = document.getElementById("myTab");
+	if (!tabsElement) {
+		console.error("Tabs element not found");
+		return;
+	}
+
+	const tabButtons = tabsElement.querySelectorAll('[role="tab"]');
+	const tabContents = document.querySelectorAll('[role="tabpanel"]');
+
+	function setActiveTab(tabId) {
+		tabButtons.forEach((button) => {
+			if (button.getAttribute("data-tabs-target") === `#${tabId}`) {
+				button.classList.add("text-blue-600", "border-blue-600");
+				button.classList.remove("text-gray-500", "border-transparent");
+				button.setAttribute("aria-selected", "true");
+			} else {
+				button.classList.remove("text-blue-600", "border-blue-600");
+				button.classList.add("text-gray-500", "border-transparent");
+				button.setAttribute("aria-selected", "false");
+			}
+		});
+
+		tabContents.forEach((content) => {
+			if (content.id === tabId) {
+				content.classList.remove("hidden");
+			} else {
+				content.classList.add("hidden");
+			}
+		});
+	}
+
+	tabButtons.forEach((button) => {
+		button.addEventListener("click", () => {
+			const tabId = button.getAttribute("data-tabs-target").replace("#", "");
+			setActiveTab(tabId);
+		});
+	});
+
+	// Set the first tab as active by default
+	if (tabButtons.length > 0) {
+		const firstTabId = tabButtons[0]
+			.getAttribute("data-tabs-target")
+			.replace("#", "");
+		setActiveTab(firstTabId);
+	}
 }
 
 async function setupEventListeners() {
@@ -263,14 +312,14 @@ function toggleApiKeyVisibility() {
 	if (apiKeyInput.type === "password") {
 		apiKeyInput.type = "text";
 		toggleButton.innerHTML = `
-            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 18">
+            <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 18">
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1.933 10.909A4.357 4.357 0 0 1 1 9c0-1 4-6 9-6m7.6 3.8A5.068 5.068 0 0 1 19 9c0 1-3 6-9 6-.314 0-.62-.014-.918-.04M2 17 18 1m-5 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
             </svg>
         `;
 	} else {
 		apiKeyInput.type = "password";
 		toggleButton.innerHTML = `
-            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 14">
+            <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 14">
                 <g stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
                     <path d="M10 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
                     <path d="M10 13c4.97 0 9-2.686 9-6s-4.03-6-9-6-9 2.686-9 6 4.03 6 9 6Z"/>
