@@ -122,6 +122,16 @@ async function setupEventListeners() {
 		.getElementById("pauseResumeButton")
 		.addEventListener("click", handlePauseResume);
 
+	const filterModInput = document.getElementById("filterModInput");
+	const clearModSearchButton = document.querySelector(".clear-mod-search");
+
+	if (clearModSearchButton) {
+		clearModSearchButton.addEventListener("click", () => {
+			filterModInput.value = "";
+			filterModInput.dispatchEvent(new Event("input"));
+		});
+	}
+
 	setupIpcListeners();
 }
 

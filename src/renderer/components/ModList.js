@@ -63,6 +63,11 @@ function renderModList(mods) {
                             <input type="text" id="input-group-search-${
 															mod.mod_id
 														}" class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search webhook">
+                            <button type="button" class="absolute inset-y-0 right-0 flex items-center pr-3 clear-search-webhook">
+                                <svg class="w-4 h-4 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                    <path fill-rule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm7.707-3.707a1 1 0 0 0-1.414 1.414L10.586 12l-2.293 2.293a1 1 0 1 0 1.414 1.414L12 13.414l2.293 2.293a1 1 0 0 0 1.414-1.414L13.414 12l2.293-2.293a1 1 0 0 0-1.414-1.414L12 10.586 9.707 8.293Z" clip-rule="evenodd"/>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                     <ul class="px-3 pb-3 text-sm text-gray-700 dark:text-gray-200 webhook-list" aria-labelledby="dropdownSearchButton-${
@@ -95,6 +100,7 @@ function initializeWebhookSelects() {
 		);
 		const dropdownMenu = select.querySelector(`#dropdownSearch-${modId}`);
 		const searchInput = select.querySelector(`#input-group-search-${modId}`);
+		const clearSearchButton = select.querySelector(".clear-search-webhook");
 
 		dropdownButton.addEventListener("click", (e) => {
 			e.stopPropagation();
@@ -116,6 +122,11 @@ function initializeWebhookSelects() {
 					item.style.display = "none";
 				}
 			});
+		});
+
+		clearSearchButton.addEventListener("click", () => {
+			searchInput.value = "";
+			searchInput.dispatchEvent(new Event("input"));
 		});
 	});
 
@@ -154,8 +165,11 @@ function closeAllDropdowns() {
 	document.querySelectorAll(".custom-select").forEach((select) => {
 		const dropdownMenu = select.querySelector('[id^="dropdownSearch-"]');
 		const button = select.querySelector('[id^="dropdownSearchButton-"]');
+		const searchInput = select.querySelector('[id^="input-group-search-"]');
 		dropdownMenu.classList.add("hidden");
 		updateDropdownArrow(button, false);
+		searchInput.value = "";
+		searchInput.dispatchEvent(new Event("input"));
 	});
 }
 

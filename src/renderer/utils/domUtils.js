@@ -7,8 +7,10 @@ function updateModCount(count) {
 
 function updateConsoleOutput(consoleLines) {
 	const consoleOutput = document.getElementById("consoleOutput");
-	consoleOutput.textContent = consoleLines.join("\n");
-	consoleOutput.scrollTop = consoleOutput.scrollHeight;
+	if (consoleOutput) {
+		consoleOutput.textContent = consoleLines.join("\n");
+		consoleOutput.scrollTop = consoleOutput.scrollHeight;
+	}
 }
 
 module.exports = {
