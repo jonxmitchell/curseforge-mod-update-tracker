@@ -155,8 +155,6 @@ function setupIpcListeners() {
 	ipcRenderer.on("mod-updated", handleModUpdated);
 	ipcRenderer.on("update-check-complete", handleUpdateCheckComplete);
 	ipcRenderer.on("add-mod-result", handleAddModResult);
-	ipcRenderer.on("add-webhook-result", handleAddWebhookResult);
-	ipcRenderer.on("get-webhooks-result", handleGetWebhooksResult);
 	ipcRenderer.on("delete-mod-result", handleDeleteModResult);
 	ipcRenderer.on("delete-webhook-result", handleDeleteWebhookResult);
 	ipcRenderer.on("test-webhook-result", handleTestWebhookResult);
@@ -199,6 +197,7 @@ async function handleAddWebhook() {
 	if (name && url) {
 		try {
 			await addWebhook(name, url);
+			showToast("Webhook added successfully", "success");
 			nameInput.value = "";
 			urlInput.value = "";
 		} catch (error) {
@@ -251,23 +250,6 @@ function handleAddModResult(event, result) {
 		} else {
 			showToast(`Failed to add mod: ${result.error}`, "error");
 		}
-	}
-}
-
-function handleAddWebhookResult(event, result) {
-	if (result.success) {
-		showToast("Webhook added successfully", "success");
-		updateWebhookList();
-	} else {
-		showToast(`Failed to add webhook: ${result.error}`, "error");
-	}
-}
-
-function handleGetWebhooksResult(event, result) {
-	if (result.success) {
-		updateWebhookDropdowns(result.webhooks);
-	} else {
-		showToast(`Failed to get webhooks: ${result.error}`, "error");
 	}
 }
 

@@ -1,5 +1,4 @@
 const { ipcRenderer } = require("electron");
-const { showToast } = require("../utils/toast");
 const { updateWebhookDropdowns } = require("./ModList");
 
 function renderWebhookList(webhooks) {
@@ -100,7 +99,6 @@ function updateWebhookList() {
 				updateWebhookDropdowns(result.webhooks);
 				resolve(result.webhooks);
 			} else {
-				showToast(`Failed to get webhooks: ${result.error}`, "error");
 				reject(new Error(result.error));
 			}
 		});
@@ -114,7 +112,6 @@ function addWebhook(name, url) {
 			if (result.success) {
 				updateWebhookList().then(resolve).catch(reject);
 			} else {
-				showToast(`Failed to add webhook: ${result.error}`, "error");
 				reject(new Error(result.error));
 			}
 		});
