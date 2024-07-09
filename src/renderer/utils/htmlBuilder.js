@@ -7,6 +7,7 @@ const tabNavigationHTML = require("../templates/tabNavigationHTML");
 const modTrackerHTML = require("../pages/modTrackerHTML");
 const webhooksHTML = require("../pages/webhooksHTML");
 const settingsHTML = require("../pages/settingsHTML");
+const consoleHTML = require("../pages/consoleHTML");
 
 function buildHTML() {
 	const html = `
@@ -25,6 +26,7 @@ function buildHTML() {
         ${modTrackerHTML()}
         ${webhooksHTML()}
         ${settingsHTML()}
+        ${consoleHTML()}
       </div>
     </div>
     ${footerHTML()}
