@@ -1,7 +1,13 @@
 const { ipcRenderer } = require("electron");
 const { showToast } = require("./utils/toast");
 const { updateModCount, updateConsoleOutput } = require("./utils/domUtils");
-const { showTooltip, hideTooltip } = require("./utils/tooltipUtils");
+const {
+	initializeTooltipState,
+	setTooltipState,
+	shouldShowTooltips,
+	showTooltip,
+	hideTooltip,
+} = require("./utils/tooltipManager");
 const {
 	renderModList,
 	initializeWebhookSelects,
@@ -33,6 +39,7 @@ let allMods = [];
 document.addEventListener("DOMContentLoaded", initializeApp);
 
 async function initializeApp() {
+	initializeTooltipState(); // Add this line
 	await setupEventListeners();
 	currentInterval = (await loadSavedInterval()) || DEFAULT_INTERVAL;
 	await loadApiKey();
@@ -416,11 +423,27 @@ async function handleRenameWebhook() {
 	}
 }
 
+function initializeTooltipToggle() {
+	const tooltipToggle = document.getElementById("tooltipToggle");
+	tooltipToggle.checked = shouldShowTooltips();
+	if (tooltipToggle.checked) {
+		document.querySelectorAll("[data-tooltip]").forEach((element) => {
+			element.addEventListener("mouseenter", showTooltip);
+			element.addEventListener("mouseleave", hideTooltip);
+		});
+	} else {
+		removeAllTooltipListeners();
+	}
+}
+
 function handleTooltipToggle(event) {
 	const isEnabled = event.target.checked;
-	localStorage.setItem("tooltipEnabled", isEnabled);
+	setTooltipState(isEnabled);
 	if (isEnabled) {
-		initializeTooltips();
+		document.querySelectorAll("[data-tooltip]").forEach((element) => {
+			element.addEventListener("mouseenter", showTooltip);
+			element.addEventListener("mouseleave", hideTooltip);
+		});
 	} else {
 		removeAllTooltipListeners();
 	}
@@ -431,15 +454,6 @@ function removeAllTooltipListeners() {
 		element.removeEventListener("mouseenter", showTooltip);
 		element.removeEventListener("mouseleave", hideTooltip);
 	});
-}
-
-function initializeTooltipToggle() {
-	const tooltipToggle = document.getElementById("tooltipToggle");
-	const tooltipEnabled = localStorage.getItem("tooltipEnabled") !== "false";
-	tooltipToggle.checked = tooltipEnabled;
-	if (tooltipEnabled) {
-		initializeTooltips();
-	}
 }
 
 const originalConsoleLog = console.log;

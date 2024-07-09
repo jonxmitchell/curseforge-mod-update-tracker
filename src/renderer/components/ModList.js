@@ -1,7 +1,11 @@
 const { ipcRenderer } = require("electron");
 const { showToast } = require("../utils/toast");
 const { updateModCount } = require("../utils/domUtils");
-const { showTooltip, hideTooltip } = require("../utils/tooltipUtils");
+const {
+	shouldShowTooltips,
+	showTooltip,
+	hideTooltip,
+} = require("../utils/tooltipManager");
 
 function renderModList(mods) {
 	const modList = document.getElementById("modList");
@@ -87,11 +91,6 @@ function renderModList(mods) {
 			const modId = e.target.closest(".delete-mod").getAttribute("data-mod-id");
 			ipcRenderer.send("delete-mod", modId);
 		});
-	});
-
-	document.querySelectorAll(".icon-button").forEach((button) => {
-		button.addEventListener("mouseenter", showTooltip);
-		button.addEventListener("mouseleave", hideTooltip);
 	});
 
 	initializeWebhookSelects();
@@ -298,8 +297,7 @@ function updateSelectedText(select) {
 }
 
 function initializeTooltips() {
-	const tooltipEnabled = localStorage.getItem("tooltipEnabled") !== "false";
-	if (tooltipEnabled) {
+	if (shouldShowTooltips()) {
 		document.querySelectorAll("[data-tooltip]").forEach((element) => {
 			element.addEventListener("mouseenter", showTooltip);
 			element.addEventListener("mouseleave", hideTooltip);
