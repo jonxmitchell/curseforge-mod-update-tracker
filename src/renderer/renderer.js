@@ -1,12 +1,14 @@
 const { ipcRenderer } = require("electron");
 const { showToast } = require("./utils/toast");
 const { updateModCount, updateConsoleOutput } = require("./utils/domUtils");
+const { showTooltip, hideTooltip } = require("./utils/tooltipUtils");
 const {
 	renderModList,
 	initializeWebhookSelects,
 	handleWebhookChange,
 	updateSelectedText,
 	updateWebhookDropdowns,
+	initializeTooltips,
 } = require("./components/ModList");
 const {
 	renderWebhookList,
@@ -40,6 +42,7 @@ async function initializeApp() {
 	updateIntervalDisplay();
 	initializeTabs();
 	initializeRenameWebhookModal();
+	initializeTooltipToggle();
 	console.log("Application initialized");
 }
 
@@ -137,6 +140,9 @@ async function setupEventListeners() {
 	document
 		.getElementById("pauseResumeButton")
 		.addEventListener("click", handlePauseResume);
+	document
+		.getElementById("tooltipToggle")
+		.addEventListener("change", handleTooltipToggle);
 
 	const filterModInput = document.getElementById("filterModInput");
 	const clearModSearchButton = document.querySelector(".clear-mod-search");
@@ -407,6 +413,32 @@ async function handleRenameWebhook() {
 		}
 	} else {
 		showToast("Please enter a new name for the webhook", "error");
+	}
+}
+
+function handleTooltipToggle(event) {
+	const isEnabled = event.target.checked;
+	localStorage.setItem("tooltipEnabled", isEnabled);
+	if (isEnabled) {
+		initializeTooltips();
+	} else {
+		removeAllTooltipListeners();
+	}
+}
+
+function removeAllTooltipListeners() {
+	document.querySelectorAll("[data-tooltip]").forEach((element) => {
+		element.removeEventListener("mouseenter", showTooltip);
+		element.removeEventListener("mouseleave", hideTooltip);
+	});
+}
+
+function initializeTooltipToggle() {
+	const tooltipToggle = document.getElementById("tooltipToggle");
+	const tooltipEnabled = localStorage.getItem("tooltipEnabled") !== "false";
+	tooltipToggle.checked = tooltipEnabled;
+	if (tooltipEnabled) {
+		initializeTooltips();
 	}
 }
 

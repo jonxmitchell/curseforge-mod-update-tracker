@@ -1,5 +1,6 @@
 const { ipcRenderer } = require("electron");
 const { updateWebhookDropdowns } = require("./ModList");
+const { showTooltip, hideTooltip } = require("../utils/tooltipUtils");
 
 function renderWebhookList(webhooks) {
 	const webhookList = document.getElementById("webhookList");
@@ -18,22 +19,22 @@ function renderWebhookList(webhooks) {
                     <div class="text-gray-400 break-all webhook-url">${truncatedUrl}</div>
                 </div>
                 <div class="flex space-x-3">
-                    <button class="icon-button show-full-webhook">
+                    <button class="icon-button show-full-webhook" data-tooltip="Show/Hide full URL">
                         <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H4m0 0v4m0-4 5 5m7-5h4m0 0v4m0-4-5 5M8 20H4m0 0v-4m0 4 5-5m7 5h4m0 0v-4m0 4-5-5"/>
                     </svg>
                     </button>
-                    <button class="icon-button test-webhook">
+                    <button class="icon-button test-webhook" data-tooltip="Test webhook">
                         <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 4a4 4 0 0 1 4 4v6M5 4a4 4 0 0 0-4 4v6h8M5 4h9M9 14h10V8a3.999 3.999 0 0 0-4-4h-2m4 0v3m3 0v3m-6 4v3"/>
                         </svg>
                     </button>
-                    <button class="icon-button rename-webhook" data-webhook-id="${webhook.id}" data-webhook-name="${webhook.name}">
+                    <button class="icon-button rename-webhook" data-webhook-id="${webhook.id}" data-webhook-name="${webhook.name}" data-tooltip="Rename webhook">
                         <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6h9m-9-3h9m1.5-12.573-6.573 6.573M21 3l-6.573 6.573"/>
                         </svg>
                     </button>
-                    <button class="icon-button delete-webhook" data-webhook-id="${webhook.id}">
+                    <button class="icon-button delete-webhook" data-webhook-id="${webhook.id}" data-tooltip="Delete webhook">
                         <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 20">
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h16M7 8v8m4-8v8M7 1h4a1 1 0 0 1 1 1v3H6V2a1 1 0 0 1 1-1ZM3 5h12v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5Z"/>
                         </svg>
@@ -88,6 +89,12 @@ function renderWebhookList(webhooks) {
 			modal.classList.remove("hidden");
 		});
 	});
+
+	document.querySelectorAll(".icon-button").forEach((button) => {
+		button.addEventListener("mouseenter", showTooltip);
+		button.addEventListener("mouseleave", hideTooltip);
+	});
+	initializeTooltips();
 }
 
 function updateWebhookList() {
@@ -133,9 +140,20 @@ function renameWebhook(id, newName) {
 	});
 }
 
+function initializeTooltips() {
+	const tooltipEnabled = localStorage.getItem("tooltipEnabled") !== "false";
+	if (tooltipEnabled) {
+		document.querySelectorAll("[data-tooltip]").forEach((element) => {
+			element.addEventListener("mouseenter", showTooltip);
+			element.addEventListener("mouseleave", hideTooltip);
+		});
+	}
+}
+
 module.exports = {
 	renderWebhookList,
 	updateWebhookList,
 	addWebhook,
 	renameWebhook,
+	initializeTooltips,
 };

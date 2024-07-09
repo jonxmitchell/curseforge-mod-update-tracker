@@ -35,6 +35,26 @@
 		transform: scale(0.98);
 		transition: transform 0.1s;
 	}
+
+	.tooltip {
+		@apply absolute bg-gray-800 text-white text-xs rounded py-1 px-2 z-50 opacity-100;
+		pointer-events: none;
+	}
+
+	.tooltip::after {
+		content: "";
+		position: absolute;
+		top: 100%;
+		left: 50%;
+		margin-left: -5px;
+		border-width: 5px;
+		border-style: solid;
+		border-color: #1f2937 transparent transparent transparent;
+	}
+
+	.tooltip:hover {
+		@apply opacity-100;
+	}
 }
 
 /* Custom range input styles */
