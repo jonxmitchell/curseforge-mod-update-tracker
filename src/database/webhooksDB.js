@@ -97,8 +97,27 @@ function deleteWebhook(id) {
 	});
 }
 
+function renameWebhook(id, newName) {
+	return new Promise((resolve, reject) => {
+		const db = getDb();
+		db.run(
+			`UPDATE webhooks SET name = ? WHERE id = ?`,
+			[newName, id],
+			(err) => {
+				if (err) {
+					console.error("Error renaming webhook:", err);
+					reject(err);
+				} else {
+					resolve();
+				}
+			}
+		);
+	});
+}
+
 module.exports = {
 	getWebhooks,
 	addWebhook,
 	deleteWebhook,
+	renameWebhook,
 };

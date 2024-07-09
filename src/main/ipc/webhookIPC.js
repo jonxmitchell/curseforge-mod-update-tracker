@@ -3,6 +3,7 @@ const {
 	getWebhooks,
 	addWebhook,
 	deleteWebhook,
+	renameWebhook,
 } = require("../../database/webhooksDB");
 const {
 	getModWebhooks,
@@ -103,6 +104,16 @@ function setupWebhookIPC(mainWindow) {
 			return { success: true };
 		} catch (error) {
 			console.error("Error assigning webhooks:", error);
+			return { success: false, error: error.message };
+		}
+	});
+
+	ipcMain.handle("rename-webhook", async (event, { id, newName }) => {
+		try {
+			await renameWebhook(id, newName);
+			return { success: true };
+		} catch (error) {
+			console.error("Error renaming webhook:", error);
 			return { success: false, error: error.message };
 		}
 	});

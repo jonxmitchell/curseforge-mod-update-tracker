@@ -12,6 +12,7 @@ const {
 	renderWebhookList,
 	updateWebhookList,
 	addWebhook,
+	renameWebhook,
 } = require("./components/WebhookList");
 const {
 	loadSavedInterval,
@@ -38,7 +39,22 @@ async function initializeApp() {
 	initializeSettings();
 	updateIntervalDisplay();
 	initializeTabs();
+	initializeRenameWebhookModal();
 	console.log("Application initialized");
+}
+
+function initializeRenameWebhookModal() {
+	const modal = document.getElementById("renameWebhookModal");
+	const closeButtons = modal.querySelectorAll("[data-modal-hide]");
+	const submitButton = document.getElementById("renameWebhookSubmit");
+
+	closeButtons.forEach((button) => {
+		button.addEventListener("click", () => {
+			modal.classList.add("hidden");
+		});
+	});
+
+	submitButton.addEventListener("click", handleRenameWebhook);
 }
 
 function initializeTabs() {
@@ -393,6 +409,23 @@ function updateIntervalDisplay() {
 	const intervalInput = document.getElementById("intervalInput");
 	intervalSlider.value = Math.min(currentInterval, 3600);
 	intervalInput.value = currentInterval;
+}
+
+async function handleRenameWebhook() {
+	const webhookId = document.getElementById("webhookIdInput").value;
+	const newName = document.getElementById("newWebhookName").value.trim();
+
+	if (newName) {
+		try {
+			await renameWebhook(webhookId, newName);
+			showToast("Webhook renamed successfully", "success");
+			document.getElementById("renameWebhookModal").classList.add("hidden");
+		} catch (error) {
+			showToast(`Failed to rename webhook: ${error.message}`, "error");
+		}
+	} else {
+		showToast("Please enter a new name for the webhook", "error");
+	}
 }
 
 const originalConsoleLog = console.log;
