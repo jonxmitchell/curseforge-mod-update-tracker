@@ -53,6 +53,41 @@ async function saveApiKey(apiKey) {
 	}
 }
 
+async function loadOpenLinkPreference() {
+	try {
+		const result = await ipcRenderer.invoke("get-open-link-preference");
+		if (result.success) {
+			const radioButtons = document.querySelectorAll(
+				'input[name="openLinkPreference"]'
+			);
+			radioButtons.forEach((radio) => {
+				if (radio.value === result.preference) {
+					radio.checked = true;
+				}
+			});
+		} else {
+			console.error("Failed to load open link preference:", result.error);
+		}
+	} catch (error) {
+		console.error("Error loading open link preference:", error);
+	}
+}
+
+async function saveOpenLinkPreference(preference) {
+	try {
+		const result = await ipcRenderer.invoke(
+			"save-open-link-preference",
+			preference
+		);
+		if (!result.success) {
+			throw new Error(result.error);
+		}
+	} catch (error) {
+		console.error("Failed to save open link preference:", error);
+		throw error;
+	}
+}
+
 function initializeSettings() {
 	const intervalSlider = document.getElementById("intervalSlider");
 	const intervalInput = document.getElementById("intervalInput");
@@ -73,6 +108,17 @@ function initializeSettings() {
 			intervalSlider.value = value;
 		}
 	});
+
+	const openLinkPreferenceRadios = document.querySelectorAll(
+		'input[name="openLinkPreference"]'
+	);
+	openLinkPreferenceRadios.forEach((radio) => {
+		radio.addEventListener("change", (e) => {
+			saveOpenLinkPreference(e.target.value);
+		});
+	});
+
+	loadOpenLinkPreference();
 }
 
 module.exports = {
@@ -81,4 +127,6 @@ module.exports = {
 	saveInterval,
 	saveApiKey,
 	initializeSettings,
+	loadOpenLinkPreference,
+	saveOpenLinkPreference,
 };

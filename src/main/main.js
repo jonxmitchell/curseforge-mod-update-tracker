@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, shell } = require("electron");
 const path = require("path");
 const { initDatabase } = require("../database/connection");
 const setupModIPC = require("./ipc/modIPC");
@@ -40,6 +40,18 @@ app.whenReady().then(() => {
 			console.error("Error getting webhooks:", error);
 			throw error;
 		}
+	});
+
+	ipcMain.on("open-in-app", (event, url) => {
+		const win = new BrowserWindow({
+			width: 800,
+			height: 600,
+			webPreferences: {
+				nodeIntegration: false,
+				contextIsolation: true,
+			},
+		});
+		win.loadURL(url);
 	});
 
 	mainWindow.webContents.on("did-finish-load", () => {

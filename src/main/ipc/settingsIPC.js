@@ -40,6 +40,24 @@ function setupSettingsIPC(mainWindow) {
 			return { success: false, error: error.message };
 		}
 	});
+
+	ipcMain.handle("save-open-link-preference", async (event, preference) => {
+		try {
+			await saveSetting("open_link_preference", preference);
+			return { success: true };
+		} catch (error) {
+			return { success: false, error: error.message };
+		}
+	});
+
+	ipcMain.handle("get-open-link-preference", async (event) => {
+		try {
+			const preference = await getSetting("open_link_preference");
+			return { success: true, preference: preference || "inApp" };
+		} catch (error) {
+			return { success: false, error: error.message };
+		}
+	});
 }
 
 module.exports = setupSettingsIPC;
