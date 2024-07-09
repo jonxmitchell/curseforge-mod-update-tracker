@@ -151,3 +151,7 @@ mods.backup3.db
 
 #to do
 to do.txt
+
+# Ignore styles.css and index.html
+src/renderer/styles/styles.css
+src/renderer/index.html
