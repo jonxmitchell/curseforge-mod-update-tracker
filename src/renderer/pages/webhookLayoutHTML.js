@@ -31,10 +31,11 @@ module.exports = function webhookLayout() {
               <li>{oldPreviousDate} - Previous release date</li>
               <li>{modName} - Mod name</li>
               <li>{everyone} - @everyone mention</li>
+              <li>{modAuthorName} - Displays the mod authors name</li>
               <li>{here} - @here mention</li>
-              <li>{&role} - Mention a role (e.g., {&Gamers})</li>
-              <li>{#channel} - Channel link (e.g., {#testing})</li>
-              <li>{modUrlDownloadLink} - Mod download link</li>
+              <li>{&roleID} - Mention a role (e.g., {&123456789} to mention a role with ID 123456789)</li>
+              <li>{#channelID} - Channel link (e.g., {#987654321} to link a channel with ID 987654321)</li>
+              <li>{lastestModFileName} - Displays latest mod file name</li>
             </ul>
           </div>
           <button id="saveWebhookLayout" class="custom-button">Save Webhook Layout</button>

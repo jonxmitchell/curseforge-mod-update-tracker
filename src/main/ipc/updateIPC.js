@@ -139,13 +139,17 @@ async function createWebhookMessage(
 	modId,
 	modData
 ) {
+	const latestModFileName = getLatestModFileName(modData);
+	const modAuthorName = getModAuthorName(modData);
 	const webhookText = replaceVariables(
 		layout.webhookText,
 		modName,
 		newReleased,
 		oldReleased,
 		modId,
-		modData
+		modData,
+		latestModFileName,
+		modAuthorName
 	);
 	const embedTitle = replaceVariables(
 		layout.embedTitle,
@@ -153,7 +157,9 @@ async function createWebhookMessage(
 		newReleased,
 		oldReleased,
 		modId,
-		modData
+		modData,
+		latestModFileName,
+		modAuthorName
 	);
 	const embedText = replaceVariables(
 		layout.embedText,
@@ -161,7 +167,9 @@ async function createWebhookMessage(
 		newReleased,
 		oldReleased,
 		modId,
-		modData
+		modData,
+		latestModFileName,
+		modAuthorName
 	);
 
 	const message = {
@@ -192,7 +200,9 @@ function replaceVariables(
 	newReleased,
 	oldReleased,
 	modId,
-	modData
+	modData,
+	latestModFileName,
+	modAuthorName
 ) {
 	return text
 		.replace(/{modID}/g, modId)
@@ -201,16 +211,24 @@ function replaceVariables(
 		.replace(/{modName}/g, modName)
 		.replace(/{everyone}/g, "@everyone")
 		.replace(/{here}/g, "@here")
-		.replace(/{&(\w+)}/g, (match, role) => `@${role}`)
-		.replace(/{#(\w+)}/g, (match, channel) => `#${channel}`)
-		.replace(/{modUrlDownloadLink}/g, getModDownloadLink(modData));
+		.replace(/{&(\w+)}/g, (match, role) => `<@&${role}>`)
+		.replace(/{#(\w+)}/g, (match, channel) => `<#${channel}>`)
+		.replace(/{lastestModFileName}/g, latestModFileName)
+		.replace(/{modAuthorName}/g, modAuthorName);
 }
 
-function getModDownloadLink(modData) {
+function getLatestModFileName(modData) {
 	if (modData.latestFiles && modData.latestFiles.length > 0) {
-		return modData.latestFiles[0].downloadUrl;
+		return modData.latestFiles[0].fileName || "Unknown";
 	}
-	return modData.links?.websiteUrl || "https://www.curseforge.com";
+	return "Unknown";
+}
+
+function getModAuthorName(modData) {
+	if (modData.authors && modData.authors.length > 0) {
+		return modData.authors[0].name || "Unknown";
+	}
+	return "Unknown";
 }
 
 function formatDate(dateString) {
