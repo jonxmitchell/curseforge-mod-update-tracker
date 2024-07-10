@@ -99,3 +99,24 @@ input[type="range"]::-ms-thumb {
 		background-color: #2a2a2a;
 	}
 }
+
+#colorPreview {
+	width: 1.5rem;
+	height: 1.5rem;
+	border-radius: 0.25rem;
+	pointer-events: none;
+}
+
+#embedColor {
+	padding-left: 2.5rem;
+}
+
+#embedColorPicker {
+	width: 1.5rem;
+	height: 1.5rem;
+	cursor: pointer;
+}
+
+.relative.flex.items-center {
+	position: relative;
+}

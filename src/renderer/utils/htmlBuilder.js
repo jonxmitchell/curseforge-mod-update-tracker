@@ -18,7 +18,7 @@ function buildHTML() {
     <title>Mod Update Tracker</title>
     <link rel="stylesheet" href="styles/styles.css" />
     <link rel="stylesheet" type="text/css" href="../../node_modules/toastify-js/src/toastify.css" />
-  </head>
+    </head>
   <body class="bg-dark-bg text-white p-6">
     <div class="container mx-auto max-w-full">
       ${headerHTML()}

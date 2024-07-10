@@ -1,10 +1,5 @@
 const { ipcMain } = require("electron");
-const {
-	saveSetting,
-	getSetting,
-	saveWebhookLayout,
-	getWebhookLayout,
-} = require("../../database/settingsDB");
+const { saveSetting, getSetting } = require("../../database/settingsDB");
 const { startCountdown } = require("./updateIPC");
 
 function setupSettingsIPC(mainWindow) {
@@ -66,7 +61,7 @@ function setupSettingsIPC(mainWindow) {
 
 	ipcMain.handle("save-webhook-layout", async (event, layout) => {
 		try {
-			await saveWebhookLayout(layout);
+			await saveSetting("webhook_layout", JSON.stringify(layout));
 			return { success: true };
 		} catch (error) {
 			console.error("Error saving webhook layout:", error);
@@ -76,7 +71,8 @@ function setupSettingsIPC(mainWindow) {
 
 	ipcMain.handle("get-webhook-layout", async (event) => {
 		try {
-			const layout = await getWebhookLayout();
+			const layoutString = await getSetting("webhook_layout");
+			const layout = layoutString ? JSON.parse(layoutString) : null;
 			return { success: true, layout };
 		} catch (error) {
 			console.error("Error getting webhook layout:", error);

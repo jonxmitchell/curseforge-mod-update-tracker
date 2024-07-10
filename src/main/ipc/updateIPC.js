@@ -178,10 +178,46 @@ async function createWebhookMessage(
 			{
 				title: embedTitle,
 				description: embedText,
-				color: 5814783,
+				color: parseInt(layout.embedColor.replace("#", ""), 16),
 			},
 		],
 	};
+
+	if (layout.authorName) {
+		message.embeds[0].author = {
+			name: replaceVariables(
+				layout.authorName,
+				modName,
+				newReleased,
+				oldReleased,
+				modId,
+				modData,
+				latestModFileName,
+				modAuthorName
+			),
+		};
+		if (layout.authorIcon) {
+			message.embeds[0].author.icon_url = layout.authorIcon;
+		}
+	}
+
+	if (layout.footerText) {
+		message.embeds[0].footer = {
+			text: replaceVariables(
+				layout.footerText,
+				modName,
+				newReleased,
+				oldReleased,
+				modId,
+				modData,
+				latestModFileName,
+				modAuthorName
+			),
+		};
+		if (layout.footerIcon) {
+			message.embeds[0].footer.icon_url = layout.footerIcon;
+		}
+	}
 
 	if (layout.showDate) {
 		message.embeds[0].timestamp = new Date().toISOString();
