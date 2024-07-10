@@ -1,21 +1,31 @@
-// src/renderer/utils/tooltipManager.js
+const { ipcRenderer } = require("electron");
 
 let isTooltipEnabled = true; // Default to true
 
-function initializeTooltipState() {
-	const storedState = localStorage.getItem("tooltipEnabled");
-	if (storedState === null) {
-		// If no state is stored, set the default state (true) in localStorage
-		localStorage.setItem("tooltipEnabled", "true");
-	} else {
-		// If a state is stored, use that value
-		isTooltipEnabled = storedState === "true";
+async function initializeTooltipState() {
+	try {
+		const result = await ipcRenderer.invoke("get-tooltip-preference");
+		if (result.success) {
+			isTooltipEnabled = result.preference;
+		} else {
+			console.error("Failed to load tooltip preference:", result.error);
+			// Set default state if there's an error
+			await setTooltipState(true);
+		}
+	} catch (error) {
+		console.error("Error loading tooltip preference:", error);
+		// Set default state if there's an error
+		await setTooltipState(true);
 	}
 }
 
-function setTooltipState(state) {
+async function setTooltipState(state) {
 	isTooltipEnabled = state;
-	localStorage.setItem("tooltipEnabled", state.toString());
+	try {
+		await ipcRenderer.invoke("save-tooltip-preference", state);
+	} catch (error) {
+		console.error("Error saving tooltip preference:", error);
+	}
 }
 
 function shouldShowTooltips() {

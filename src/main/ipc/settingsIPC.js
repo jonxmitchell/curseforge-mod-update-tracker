@@ -58,6 +58,24 @@ function setupSettingsIPC(mainWindow) {
 			return { success: false, error: error.message };
 		}
 	});
+
+	ipcMain.handle("save-tooltip-preference", async (event, preference) => {
+		try {
+			await saveSetting("tooltip_enabled", preference.toString());
+			return { success: true };
+		} catch (error) {
+			return { success: false, error: error.message };
+		}
+	});
+
+	ipcMain.handle("get-tooltip-preference", async (event) => {
+		try {
+			const preference = await getSetting("tooltip_enabled");
+			return { success: true, preference: preference === "true" };
+		} catch (error) {
+			return { success: false, error: error.message };
+		}
+	});
 }
 
 module.exports = setupSettingsIPC;
