@@ -6,23 +6,23 @@ async function initializeTooltipState() {
 	try {
 		const result = await ipcRenderer.invoke("get-tooltip-preference");
 		if (result.success) {
-			isTooltipEnabled = result.preference;
+			isTooltipEnabled = result.isEnabled;
 		} else {
-			console.error("Failed to load tooltip preference:", result.error);
-			// Set default state if there's an error
-			await setTooltipState(true);
+			console.error("Error loading tooltip preference:", result.error);
 		}
 	} catch (error) {
 		console.error("Error loading tooltip preference:", error);
-		// Set default state if there's an error
-		await setTooltipState(true);
 	}
 }
 
 async function setTooltipState(state) {
-	isTooltipEnabled = state;
 	try {
-		await ipcRenderer.invoke("save-tooltip-preference", state);
+		const result = await ipcRenderer.invoke("save-tooltip-preference", state);
+		if (result.success) {
+			isTooltipEnabled = state;
+		} else {
+			console.error("Error saving tooltip preference:", result.error);
+		}
 	} catch (error) {
 		console.error("Error saving tooltip preference:", error);
 	}

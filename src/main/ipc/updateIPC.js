@@ -1,7 +1,7 @@
 const { ipcMain } = require("electron");
 const fetch = require("node-fetch");
 const { getMods, updateMod } = require("../../database/modsDB");
-const { getSetting, saveSetting } = require("../../database/settingsDB");
+const { getSetting, getWebhookLayout } = require("../../database/settingsDB");
 const { getModWebhooks } = require("../../database/modWebhooksDB");
 const { getWebhooks } = require("../../database/webhooksDB");
 
@@ -68,7 +68,8 @@ async function checkForUpdates(mainWindow) {
 					mod.name,
 					latestReleased,
 					mod.current_released,
-					mod.mod_id
+					mod.mod_id,
+					data.data
 				);
 			} else {
 				await updateMod(
@@ -90,28 +91,25 @@ async function sendDiscordNotifications(
 	modName,
 	newReleased,
 	oldReleased,
-	modId
+	modId,
+	modData
 ) {
 	try {
 		const webhookIds = await getModWebhooks(modId);
 		const webhooks = await getWebhooks();
+		const layout = await getWebhookLayout();
 
 		for (const webhookId of webhookIds) {
 			const webhook = webhooks.find((w) => w.id === webhookId);
 			if (webhook) {
-				const message = {
-					content: `Mod Update Alert!`,
-					embeds: [
-						{
-							title: `${modName} has been updated!`,
-							description: `New release date: ${formatDate(
-								newReleased
-							)}\nPrevious release date: ${formatDate(oldReleased)}`,
-							color: 5814783,
-							timestamp: new Date().toISOString(),
-						},
-					],
-				};
+				const message = await createWebhookMessage(
+					layout,
+					modName,
+					newReleased,
+					oldReleased,
+					modId,
+					modData
+				);
 
 				const response = await fetch(webhook.url, {
 					method: "POST",
@@ -131,6 +129,88 @@ async function sendDiscordNotifications(
 	} catch (error) {
 		console.error(`Error sending Discord notifications:`, error);
 	}
+}
+
+async function createWebhookMessage(
+	layout,
+	modName,
+	newReleased,
+	oldReleased,
+	modId,
+	modData
+) {
+	const webhookText = replaceVariables(
+		layout.webhookText,
+		modName,
+		newReleased,
+		oldReleased,
+		modId,
+		modData
+	);
+	const embedTitle = replaceVariables(
+		layout.embedTitle,
+		modName,
+		newReleased,
+		oldReleased,
+		modId,
+		modData
+	);
+	const embedText = replaceVariables(
+		layout.embedText,
+		modName,
+		newReleased,
+		oldReleased,
+		modId,
+		modData
+	);
+
+	const message = {
+		content: webhookText,
+		embeds: [
+			{
+				title: embedTitle,
+				description: embedText,
+				color: 5814783,
+			},
+		],
+	};
+
+	if (layout.showDate) {
+		message.embeds[0].timestamp = new Date().toISOString();
+	}
+
+	if (layout.showImage && modData.logo) {
+		message.embeds[0].thumbnail = { url: modData.logo.url };
+	}
+
+	return message;
+}
+
+function replaceVariables(
+	text,
+	modName,
+	newReleased,
+	oldReleased,
+	modId,
+	modData
+) {
+	return text
+		.replace(/{modID}/g, modId)
+		.replace(/{newReleaseDate}/g, formatDate(newReleased))
+		.replace(/{oldPreviousDate}/g, formatDate(oldReleased))
+		.replace(/{modName}/g, modName)
+		.replace(/{everyone}/g, "@everyone")
+		.replace(/{here}/g, "@here")
+		.replace(/{&(\w+)}/g, (match, role) => `@${role}`)
+		.replace(/{#(\w+)}/g, (match, channel) => `#${channel}`)
+		.replace(/{modUrlDownloadLink}/g, getModDownloadLink(modData));
+}
+
+function getModDownloadLink(modData) {
+	if (modData.latestFiles && modData.latestFiles.length > 0) {
+		return modData.latestFiles[0].downloadUrl;
+	}
+	return modData.links?.websiteUrl || "https://www.curseforge.com";
 }
 
 function formatDate(dateString) {

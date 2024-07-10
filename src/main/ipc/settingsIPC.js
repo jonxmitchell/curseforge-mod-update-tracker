@@ -1,5 +1,10 @@
 const { ipcMain } = require("electron");
-const { saveSetting, getSetting } = require("../../database/settingsDB");
+const {
+	saveSetting,
+	getSetting,
+	saveWebhookLayout,
+	getWebhookLayout,
+} = require("../../database/settingsDB");
 const { startCountdown } = require("./updateIPC");
 
 function setupSettingsIPC(mainWindow) {
@@ -59,20 +64,42 @@ function setupSettingsIPC(mainWindow) {
 		}
 	});
 
-	ipcMain.handle("save-tooltip-preference", async (event, preference) => {
+	ipcMain.handle("save-webhook-layout", async (event, layout) => {
 		try {
-			await saveSetting("tooltip_enabled", preference.toString());
+			await saveWebhookLayout(layout);
 			return { success: true };
 		} catch (error) {
+			console.error("Error saving webhook layout:", error);
+			return { success: false, error: error.message };
+		}
+	});
+
+	ipcMain.handle("get-webhook-layout", async (event) => {
+		try {
+			const layout = await getWebhookLayout();
+			return { success: true, layout };
+		} catch (error) {
+			console.error("Error getting webhook layout:", error);
+			return { success: false, error: error.message };
+		}
+	});
+
+	ipcMain.handle("save-tooltip-preference", async (event, isEnabled) => {
+		try {
+			await saveSetting("tooltip_enabled", isEnabled.toString());
+			return { success: true };
+		} catch (error) {
+			console.error("Error saving tooltip preference:", error);
 			return { success: false, error: error.message };
 		}
 	});
 
 	ipcMain.handle("get-tooltip-preference", async (event) => {
 		try {
-			const preference = await getSetting("tooltip_enabled");
-			return { success: true, preference: preference === "true" };
+			const tooltipEnabled = await getSetting("tooltip_enabled");
+			return { success: true, isEnabled: tooltipEnabled === "true" };
 		} catch (error) {
+			console.error("Error getting tooltip preference:", error);
 			return { success: false, error: error.message };
 		}
 	});

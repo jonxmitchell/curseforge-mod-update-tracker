@@ -29,6 +29,7 @@ const {
 	saveApiKey,
 	initializeSettings,
 } = require("./components/Settings");
+const { initializeWebhookLayout } = require("./components/WebhookLayout");
 const { DEFAULT_INTERVAL } = require("../shared/constants");
 
 let isPaused = false;
@@ -46,10 +47,11 @@ async function initializeApp() {
 	await updateModList();
 	await updateWebhookList();
 	initializeSettings();
+	initializeWebhookLayout();
 	updateIntervalDisplay();
 	initializeTabs();
 	initializeRenameWebhookModal();
-	await initializeTooltipToggle();
+	initializeTooltipToggle();
 	console.log("Application initialized");
 }
 
@@ -423,13 +425,9 @@ async function handleRenameWebhook() {
 	}
 }
 
-async function initializeTooltipToggle() {
+function initializeTooltipToggle() {
 	const tooltipToggle = document.getElementById("tooltipToggle");
-	const shouldShowTooltips = await ipcRenderer.invoke("get-tooltip-preference");
-	tooltipToggle.checked = shouldShowTooltips.success
-		? shouldShowTooltips.preference
-		: true;
-
+	tooltipToggle.checked = shouldShowTooltips();
 	if (tooltipToggle.checked) {
 		document.querySelectorAll("[data-tooltip]").forEach((element) => {
 			element.addEventListener("mouseenter", showTooltip);
@@ -440,9 +438,9 @@ async function initializeTooltipToggle() {
 	}
 }
 
-async function handleTooltipToggle(event) {
+function handleTooltipToggle(event) {
 	const isEnabled = event.target.checked;
-	await setTooltipState(isEnabled);
+	setTooltipState(isEnabled);
 	if (isEnabled) {
 		document.querySelectorAll("[data-tooltip]").forEach((element) => {
 			element.addEventListener("mouseenter", showTooltip);

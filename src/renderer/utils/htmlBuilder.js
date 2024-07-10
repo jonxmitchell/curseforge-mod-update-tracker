@@ -8,6 +8,7 @@ const modTrackerHTML = require("../pages/modTrackerHTML");
 const webhooksHTML = require("../pages/webhooksHTML");
 const settingsHTML = require("../pages/settingsHTML");
 const consoleHTML = require("../pages/consoleHTML");
+const webhookLayoutHTML = require("../pages/webhookLayoutHTML");
 
 function buildHTML() {
 	const html = `
@@ -27,6 +28,7 @@ function buildHTML() {
         ${webhooksHTML()}
         ${settingsHTML()}
         ${consoleHTML()}
+        ${webhookLayoutHTML()}
       </div>
     </div>
     ${footerHTML()}

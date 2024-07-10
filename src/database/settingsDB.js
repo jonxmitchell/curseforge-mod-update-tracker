@@ -32,7 +32,27 @@ function getSetting(key) {
 	});
 }
 
+function saveWebhookLayout(layout) {
+	return saveSetting("webhook_layout", JSON.stringify(layout));
+}
+
+async function getWebhookLayout() {
+	const layout = await getSetting("webhook_layout");
+	return layout
+		? JSON.parse(layout)
+		: {
+				webhookText: "Mod Update Alert!",
+				embedTitle: "{modName} has been updated!",
+				embedText:
+					"New release date: {newReleaseDate}\nPrevious release date: {oldPreviousDate}",
+				showDate: true,
+				showImage: false,
+		  };
+}
+
 module.exports = {
 	saveSetting,
 	getSetting,
+	saveWebhookLayout,
+	getWebhookLayout,
 };
