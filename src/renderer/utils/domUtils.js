@@ -8,7 +8,8 @@ function updateModCount(count) {
 function updateConsoleOutput(consoleLines) {
 	const consoleOutput = document.getElementById("consoleOutput");
 	if (consoleOutput) {
-		consoleOutput.textContent = consoleLines.join("\n");
+		// Join the lines with line breaks and set as HTML to preserve formatting
+		consoleOutput.innerHTML = consoleLines.join("<br>");
 		consoleOutput.scrollTop = consoleOutput.scrollHeight;
 	}
 }

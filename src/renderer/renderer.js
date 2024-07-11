@@ -460,7 +460,8 @@ const originalConsoleLog = console.log;
 console.log = function () {
 	originalConsoleLog.apply(console, arguments);
 	const logMessage = Array.from(arguments).join(" ");
-	consoleLines.push(logMessage);
+	const timestamp = new Date().toLocaleTimeString();
+	consoleLines.push(`[${timestamp}] ${logMessage}`);
 	if (consoleLines.length > 200) {
 		consoleLines.shift();
 	}
