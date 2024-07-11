@@ -14,12 +14,26 @@ function initializeWebhookLayout() {
 	setupFormattingButtons();
 	setupFormattedContentListeners();
 	setupUrlValidation();
+	setupDynamicTextareas();
 	loadWebhookLayout();
 	initializeCharacterCounters();
 }
 
 function initializeFormattedContent() {
 	setupFormattedContentListeners();
+}
+
+function setupDynamicTextareas() {
+	const textareas = document.querySelectorAll("textarea");
+	textareas.forEach((textarea) => {
+		textarea.addEventListener("input", function () {
+			this.style.height = "auto";
+			this.style.height = this.scrollHeight + "px";
+		});
+
+		// Initial call to set the correct height
+		textarea.dispatchEvent(new Event("input"));
+	});
 }
 
 function setupColorPicker() {

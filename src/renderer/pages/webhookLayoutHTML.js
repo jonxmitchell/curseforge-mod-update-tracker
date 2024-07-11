@@ -59,7 +59,7 @@ module.exports = function webhookLayout() {
               </div>
             </div>
             <div class="px-4 py-2 bg-white rounded-b-lg dark:bg-gray-800">
-              <textarea id="webhookText" rows="4" class="block w-full px-0 text-sm text-gray-800 bg-white border-0 dark:bg-gray-800 focus:ring-0 dark:text-white dark:placeholder-gray-400" placeholder="Write webhook text..." required></textarea>
+              <textarea id="webhookText" rows="1" class="block w-full px-0 text-sm text-gray-800 bg-white border-0 dark:bg-gray-800 focus:ring-0 dark:text-white dark:placeholder-gray-400 resize-none overflow-hidden" placeholder="Write webhook text..." required></textarea>
             </div>
           </div>
         </div>
@@ -129,7 +129,7 @@ module.exports = function webhookLayout() {
               </div>
             </div>
             <div class="px-4 py-2 bg-white rounded-b-lg dark:bg-gray-800">
-              <textarea id="embedText" rows="4" maxlength="4096" class="block w-full px-0 text-sm text-gray-800 bg-white border-0 dark:bg-gray-800 focus:ring-0 dark:text-white dark:placeholder-gray-400" placeholder="Write embed text..." required></textarea>
+              <textarea id="embedText" rows="1" maxlength="4096" class="block w-full px-0 text-sm text-gray-800 bg-white border-0 dark:bg-gray-800 focus:ring-0 dark:text-white dark:placeholder-gray-400 resize-none overflow-hidden" placeholder="Write embed text..." required></textarea>
             </div>
           </div>
         </div>
