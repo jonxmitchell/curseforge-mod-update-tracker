@@ -28,6 +28,12 @@ function setupColorPicker() {
 	const colorPreview = document.getElementById("colorPreview");
 
 	if (embedColorPicker && embedColor && colorPreview) {
+		// Set default color
+		const defaultColor = "#7289DA"; // Discord's blurple color
+		embedColorPicker.value = defaultColor;
+		embedColor.value = defaultColor;
+		colorPreview.style.backgroundColor = defaultColor;
+
 		embedColorPicker.addEventListener("input", (event) => {
 			const color = event.target.value;
 			colorPreview.style.backgroundColor = color;
@@ -240,9 +246,9 @@ async function loadWebhookLayout() {
 			setElementValue("embedText", layout.embedText);
 			setElementChecked("showDate", layout.showDate);
 			setElementChecked("showImage", layout.showImage);
-			setElementValue("embedColor", layout.embedColor);
-			setElementValue("embedColorPicker", layout.embedColor);
-			setElementBackgroundColor("colorPreview", layout.embedColor);
+			setElementValue("embedColor", layout.embedColor || "#7289DA");
+			setElementValue("embedColorPicker", layout.embedColor || "#7289DA");
+			setElementBackgroundColor("colorPreview", layout.embedColor || "#7289DA");
 			setElementValue("footerText", layout.footerText);
 			setElementValue("footerIcon", layout.footerIcon);
 			setElementValue("authorName", layout.authorName);
