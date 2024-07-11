@@ -1,3 +1,5 @@
+// tailwind.config.js
+
 module.exports = {
 	content: ["./src/**/*.{html,js}", "./node_modules/flowbite/**/*.js"],
 	darkMode: "class",
@@ -7,6 +9,7 @@ module.exports = {
 				"dark-bg": "#1e1e1e",
 				"dark-surface": "#2a2a2a",
 				"dark-border": "#555555",
+				"darker-surface": "#252525", // New color for console background
 			},
 		},
 	},
