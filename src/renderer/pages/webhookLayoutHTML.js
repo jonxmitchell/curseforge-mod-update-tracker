@@ -1,12 +1,13 @@
-// src/renderer/pages/webhookLayoutHTML.js
-
 module.exports = function webhookLayout() {
 	return `
     <div class="hidden p-4 rounded-lg" id="webhook-layout" role="tabpanel" aria-labelledby="webhook-layout-tab">
       <h3 class="text-xl font-bold mb-4">Webhook Layout</h3>
       <div class="space-y-4">
         <div class="formatting-container">
-          <label for="webhookText" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Webhook Text (outside embed)</label>
+          <div class="flex justify-between items-center mb-2">
+            <label for="webhookText" class="block text-sm font-medium text-gray-900 dark:text-white">Webhook Text (outside embed)</label>
+            <span id="webhookTextCounter" class="text-xs text-gray-500 dark:text-gray-400">0/2000</span>
+          </div>
           <div class="w-full mb-4 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
             <div class="flex items-center justify-between px-3 py-2 border-b dark:border-gray-600">
               <div class="flex flex-wrap items-center divide-gray-200 sm:divide-x sm:rtl:divide-x-reverse dark:divide-gray-600">
@@ -59,7 +60,7 @@ module.exports = function webhookLayout() {
               </div>
             </div>
             <div class="px-4 py-2 bg-white rounded-b-lg dark:bg-gray-800">
-              <textarea id="webhookText" rows="1" class="block w-full px-0 text-sm text-gray-800 bg-white border-0 dark:bg-gray-800 focus:ring-0 dark:text-white dark:placeholder-gray-400 resize-none overflow-hidden" placeholder="Write webhook text..." required></textarea>
+              <textarea id="webhookText" rows="1" maxlength="2000" class="block w-full px-0 text-sm text-gray-800 bg-white border-0 dark:bg-gray-800 focus:ring-0 dark:text-white dark:placeholder-gray-400 resize-none overflow-hidden" placeholder="Write webhook text..." required></textarea>
             </div>
           </div>
         </div>

@@ -28,6 +28,7 @@ function setupCharacterCounter(inputId, counterId, maxLength) {
 }
 
 function initializeCharacterCounters() {
+	setupCharacterCounter("webhookText", "webhookTextCounter", 2000);
 	setupCharacterCounter("embedTitle", "embedTitleCounter", 256);
 	setupCharacterCounter("embedText", "embedTextCounter", 4096);
 	setupCharacterCounter("footerText", "footerTextCounter", 2048);
