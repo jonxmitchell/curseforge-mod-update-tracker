@@ -1,32 +1,211 @@
+// src/renderer/components/WebhookLayout.js
+
 const { ipcRenderer } = require("electron");
 const { showToast } = require("../utils/toast");
 
 function initializeWebhookLayout() {
 	const saveButton = document.getElementById("saveWebhookLayout");
-	saveButton.addEventListener("click", saveWebhookLayout);
+	if (saveButton) {
+		saveButton.addEventListener("click", saveWebhookLayout);
+	}
 
+	setupColorPicker();
+	setupFormattingButtons();
+	setupFormattedContentListeners();
+	setupUrlValidation();
+	loadWebhookLayout();
+}
+
+function initializeFormattedContent() {
+	setupFormattedContentListeners();
+}
+
+function setupColorPicker() {
 	const embedColorPicker = document.getElementById("embedColorPicker");
 	const embedColor = document.getElementById("embedColor");
 	const colorPreview = document.getElementById("colorPreview");
 
-	embedColorPicker.addEventListener("input", (event) => {
-		const color = event.target.value;
-		colorPreview.style.backgroundColor = color;
-		embedColor.value = color;
-	});
-
-	embedColor.addEventListener("input", (event) => {
-		const color = event.target.value;
-		if (/^#[0-9A-F]{6}$/i.test(color)) {
+	if (embedColorPicker && embedColor && colorPreview) {
+		embedColorPicker.addEventListener("input", (event) => {
+			const color = event.target.value;
 			colorPreview.style.backgroundColor = color;
-			embedColorPicker.value = color;
+			embedColor.value = color;
+		});
+
+		embedColor.addEventListener("input", (event) => {
+			const color = event.target.value;
+			if (/^#[0-9A-F]{6}$/i.test(color)) {
+				colorPreview.style.backgroundColor = color;
+				embedColorPicker.value = color;
+			}
+		});
+	}
+}
+
+function setupFormattingButtons() {
+	const formatButtons = document.querySelectorAll("[data-format]");
+	formatButtons.forEach((button) => {
+		button.addEventListener("click", (event) => {
+			event.preventDefault();
+			const format = button.getAttribute("data-format");
+			const container = button.closest(".formatting-container");
+			if (container) {
+				const textarea = container.querySelector("textarea");
+				if (textarea) {
+					textarea.focus();
+					applyFormatting(format, textarea);
+				}
+			}
+		});
+	});
+}
+
+function applyFormatting(format, textarea) {
+	const start = textarea.selectionStart;
+	const end = textarea.selectionEnd;
+	const selectedText = textarea.value.substring(start, end);
+
+	let formattedText = "";
+	switch (format) {
+		case "bold":
+			formattedText = `**${selectedText}**`;
+			break;
+		case "italic":
+			formattedText = `*${selectedText}*`;
+			break;
+		case "underline":
+			formattedText = `__${selectedText}__`;
+			break;
+		case "strikethrough":
+			formattedText = `~~${selectedText}~~`;
+			break;
+		case "list":
+			formattedText = selectedText
+				.split("\n")
+				.map((line) => `- ${line}`)
+				.join("\n");
+			break;
+		case "code":
+			formattedText = `\`\`\`\n${selectedText}\n\`\`\``;
+			break;
+		case "quote":
+			formattedText = selectedText
+				.split("\n")
+				.map((line) => `> ${line}`)
+				.join("\n");
+			break;
+		default:
+			console.log(`Unknown format: ${format}`);
+			return;
+	}
+
+	textarea.value =
+		textarea.value.substring(0, start) +
+		formattedText +
+		textarea.value.substring(end);
+	textarea.focus();
+	textarea.selectionStart = start + formattedText.length;
+	textarea.selectionEnd = start + formattedText.length;
+}
+
+function setupFormattedContentListeners() {
+	const textareas = document.querySelectorAll(".formatting-container textarea");
+	textareas.forEach((textarea) => {
+		textarea.addEventListener("input", function () {
+			this.dataset.formattedText = this.value;
+		});
+	});
+}
+
+function setupUrlValidation() {
+	const urlInputs = ["authorIcon", "footerIcon"];
+	urlInputs.forEach((id) => {
+		const input = document.getElementById(id);
+		if (input) {
+			input.addEventListener("input", function () {
+				validateUrl(this);
+			});
 		}
 	});
+}
 
-	loadWebhookLayout();
+function validateUrl(input) {
+	const value = input.value.trim();
+	const label = document.querySelector(`label[for="${input.id}"]`);
+	const errorMessage = document.getElementById(`${input.id}Error`);
+
+	if (value === "" || isValidUrl(value)) {
+		input.classList.remove(
+			"border-red-500",
+			"text-red-900",
+			"placeholder-red-700",
+			"focus:ring-red-500",
+			"focus:border-red-500"
+		);
+		input.classList.add(
+			"border-gray-600",
+			"focus:ring-blue-500",
+			"focus:border-blue-500"
+		);
+		label.classList.remove("text-red-700", "dark:text-red-500");
+		if (errorMessage) errorMessage.remove();
+	} else {
+		input.classList.add(
+			"border-red-500",
+			"text-red-900",
+			"placeholder-red-700",
+			"focus:ring-red-500",
+			"focus:border-red-500"
+		);
+		input.classList.remove(
+			"border-gray-600",
+			"focus:ring-blue-500",
+			"focus:border-blue-500"
+		);
+		label.classList.add("text-red-700", "dark:text-red-500");
+		if (!errorMessage) {
+			const error = document.createElement("p");
+			error.id = `${input.id}Error`;
+			error.className = "mt-2 text-sm text-red-600 dark:text-red-500";
+			error.innerHTML =
+				'<span class="font-medium">Error:</span> Please enter a valid URL or leave it blank.';
+			input.parentNode.insertBefore(error, input.nextSibling);
+		}
+	}
+}
+
+function isValidUrl(string) {
+	try {
+		new URL(string);
+		return true;
+	} catch (_) {
+		return false;
+	}
 }
 
 async function saveWebhookLayout() {
+	const authorIconInput = document.getElementById("authorIcon");
+	const footerIconInput = document.getElementById("footerIcon");
+
+	const invalidFields = [];
+
+	if (!isValidUrl(authorIconInput.value) && authorIconInput.value !== "") {
+		invalidFields.push("Author Icon URL");
+	}
+	if (!isValidUrl(footerIconInput.value) && footerIconInput.value !== "") {
+		invalidFields.push("Footer Icon URL");
+	}
+
+	if (invalidFields.length > 0) {
+		showToast(
+			`Please enter valid URLs for ${invalidFields.join(
+				" and "
+			)} or leave them blank.`,
+			"error"
+		);
+		return;
+	}
+
 	const layout = {
 		webhookText: document.getElementById("webhookText").value,
 		embedTitle: document.getElementById("embedTitle").value,
@@ -35,15 +214,16 @@ async function saveWebhookLayout() {
 		showImage: document.getElementById("showImage").checked,
 		embedColor: document.getElementById("embedColor").value,
 		footerText: document.getElementById("footerText").value,
-		footerIcon: document.getElementById("footerIcon").value,
+		footerIcon: footerIconInput.value,
 		authorName: document.getElementById("authorName").value,
-		authorIcon: document.getElementById("authorIcon").value,
+		authorIcon: authorIconInput.value,
 	};
 
 	try {
 		await ipcRenderer.invoke("save-webhook-layout", layout);
 		showToast("Webhook layout saved successfully", "success");
 	} catch (error) {
+		console.error("Failed to save webhook layout:", error);
 		showToast(`Failed to save webhook layout: ${error.message}`, "error");
 	}
 }
@@ -53,27 +233,42 @@ async function loadWebhookLayout() {
 		const result = await ipcRenderer.invoke("get-webhook-layout");
 		if (result.success && result.layout) {
 			const layout = result.layout;
-			document.getElementById("webhookText").value = layout.webhookText || "";
-			document.getElementById("embedTitle").value = layout.embedTitle || "";
-			document.getElementById("embedText").value = layout.embedText || "";
-			document.getElementById("showDate").checked = layout.showDate || false;
-			document.getElementById("showImage").checked = layout.showImage || false;
-			document.getElementById("embedColor").value =
-				layout.embedColor || "#03EAF7";
-			document.getElementById("embedColorPicker").value =
-				layout.embedColor || "#03EAF7";
-			document.getElementById("colorPreview").style.backgroundColor =
-				layout.embedColor || "#03EAF7";
-			document.getElementById("footerText").value = layout.footerText || "";
-			document.getElementById("footerIcon").value = layout.footerIcon || "";
-			document.getElementById("authorName").value = layout.authorName || "";
-			document.getElementById("authorIcon").value = layout.authorIcon || "";
+			setElementValue("webhookText", layout.webhookText);
+			setElementValue("embedTitle", layout.embedTitle);
+			setElementValue("embedText", layout.embedText);
+			setElementChecked("showDate", layout.showDate);
+			setElementChecked("showImage", layout.showImage);
+			setElementValue("embedColor", layout.embedColor);
+			setElementValue("embedColorPicker", layout.embedColor);
+			setElementBackgroundColor("colorPreview", layout.embedColor);
+			setElementValue("footerText", layout.footerText);
+			setElementValue("footerIcon", layout.footerIcon);
+			setElementValue("authorName", layout.authorName);
+			setElementValue("authorIcon", layout.authorIcon);
+			console.log("Webhook layout loaded successfully");
 		}
 	} catch (error) {
+		console.error("Failed to load webhook layout:", error);
 		showToast(`Failed to load webhook layout: ${error.message}`, "error");
 	}
 }
 
+function setElementValue(id, value) {
+	const element = document.getElementById(id);
+	if (element) element.value = value || "";
+}
+
+function setElementChecked(id, checked) {
+	const element = document.getElementById(id);
+	if (element) element.checked = checked || false;
+}
+
+function setElementBackgroundColor(id, color) {
+	const element = document.getElementById(id);
+	if (element) element.style.backgroundColor = color || "";
+}
+
 module.exports = {
 	initializeWebhookLayout,
+	initializeFormattedContent,
 };

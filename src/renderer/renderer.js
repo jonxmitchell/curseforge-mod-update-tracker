@@ -29,7 +29,11 @@ const {
 	saveApiKey,
 	initializeSettings,
 } = require("./components/Settings");
-const { initializeWebhookLayout } = require("./components/WebhookLayout");
+const {
+	initializeWebhookLayout,
+	initializeFormattedContent,
+} = require("./components/WebhookLayout");
+
 const { DEFAULT_INTERVAL } = require("../shared/constants");
 
 let isPaused = false;
@@ -47,8 +51,9 @@ async function initializeApp() {
 	await updateModList();
 	await updateWebhookList();
 	initializeSettings();
-	initializeWebhookLayout();
+	initializeWebhookLayout(); // Make sure this line is present
 	updateIntervalDisplay();
+	initializeFormattedContent();
 	initializeTabs();
 	initializeRenameWebhookModal();
 	initializeTooltipToggle();

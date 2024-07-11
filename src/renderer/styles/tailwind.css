@@ -120,3 +120,27 @@ input[type="range"]::-ms-thumb {
 .relative.flex.items-center {
 	position: relative;
 }
+
+/* .formatted-content {
+	min-height: 100px;
+	border: 1px solid #ccc;
+	padding: 5px;
+	white-space: pre-wrap;
+}
+
+.formatted-content ul {
+	padding-left: 20px;
+}
+
+.formatted-content blockquote {
+	border-left: 3px solid #ccc;
+	margin-left: 0;
+	padding-left: 10px;
+	color: #777;
+}
+
+.formatted-content pre {
+	background-color: #f4f4f4;
+	padding: 5px;
+	border-radius: 3px;
+} */
