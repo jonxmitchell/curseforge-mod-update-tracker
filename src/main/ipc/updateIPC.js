@@ -151,80 +151,84 @@ async function createWebhookMessage(
 		latestModFileName,
 		modAuthorName
 	);
-	const embedTitle = replaceVariables(
-		layout.embedTitle,
-		modName,
-		newReleased,
-		oldReleased,
-		modId,
-		modData,
-		latestModFileName,
-		modAuthorName
-	);
-	const embedText = replaceVariables(
-		layout.embedText,
-		modName,
-		newReleased,
-		oldReleased,
-		modId,
-		modData,
-		latestModFileName,
-		modAuthorName
-	);
 
 	const message = {
 		content: webhookText,
-		embeds: [
+	};
+
+	if (layout.useEmbed) {
+		const embedTitle = replaceVariables(
+			layout.embedTitle,
+			modName,
+			newReleased,
+			oldReleased,
+			modId,
+			modData,
+			latestModFileName,
+			modAuthorName
+		);
+		const embedText = replaceVariables(
+			layout.embedText,
+			modName,
+			newReleased,
+			oldReleased,
+			modId,
+			modData,
+			latestModFileName,
+			modAuthorName
+		);
+
+		message.embeds = [
 			{
 				title: embedTitle,
 				description: embedText,
 				color: parseInt(layout.embedColor.replace("#", ""), 16),
 			},
-		],
-	};
+		];
 
-	if (layout.authorName) {
-		message.embeds[0].author = {
-			name: replaceVariables(
-				layout.authorName,
-				modName,
-				newReleased,
-				oldReleased,
-				modId,
-				modData,
-				latestModFileName,
-				modAuthorName
-			),
-		};
-		if (layout.authorIcon) {
-			message.embeds[0].author.icon_url = layout.authorIcon;
+		if (layout.authorName) {
+			message.embeds[0].author = {
+				name: replaceVariables(
+					layout.authorName,
+					modName,
+					newReleased,
+					oldReleased,
+					modId,
+					modData,
+					latestModFileName,
+					modAuthorName
+				),
+			};
+			if (layout.authorIcon) {
+				message.embeds[0].author.icon_url = layout.authorIcon;
+			}
 		}
-	}
 
-	if (layout.footerText) {
-		message.embeds[0].footer = {
-			text: replaceVariables(
-				layout.footerText,
-				modName,
-				newReleased,
-				oldReleased,
-				modId,
-				modData,
-				latestModFileName,
-				modAuthorName
-			),
-		};
-		if (layout.footerIcon) {
-			message.embeds[0].footer.icon_url = layout.footerIcon;
+		if (layout.footerText) {
+			message.embeds[0].footer = {
+				text: replaceVariables(
+					layout.footerText,
+					modName,
+					newReleased,
+					oldReleased,
+					modId,
+					modData,
+					latestModFileName,
+					modAuthorName
+				),
+			};
+			if (layout.footerIcon) {
+				message.embeds[0].footer.icon_url = layout.footerIcon;
+			}
 		}
-	}
 
-	if (layout.showDate) {
-		message.embeds[0].timestamp = new Date().toISOString();
-	}
+		if (layout.showDate) {
+			message.embeds[0].timestamp = new Date().toISOString();
+		}
 
-	if (layout.showImage && modData.logo) {
-		message.embeds[0].thumbnail = { url: modData.logo.url };
+		if (layout.showImage && modData.logo) {
+			message.embeds[0].thumbnail = { url: modData.logo.url };
+		}
 	}
 
 	return message;
