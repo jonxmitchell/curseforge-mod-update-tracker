@@ -17,22 +17,22 @@ module.exports = function webhookLayout() {
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label for="footerText" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Footer Text</label>
-            <input type="text" id="footerText" class="bg-gray-800 border border-gray-600 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:placeholder-gray-400 dark:text-white" placeholder="Enter footer text...">
-          </div>
-          <div>
-            <label for="footerIcon" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Footer Icon URL</label>
-            <input type="url" id="footerIcon" class="bg-gray-800 border border-gray-600 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:placeholder-gray-400 dark:text-white" placeholder="Enter footer icon URL...">
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
             <label for="authorName" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Author Name</label>
             <input type="text" id="authorName" class="bg-gray-800 border border-gray-600 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:placeholder-gray-400 dark:text-white" placeholder="Enter author name...">
           </div>
           <div>
             <label for="authorIcon" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Author Icon URL</label>
             <input type="url" id="authorIcon" class="bg-gray-800 border border-gray-600 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:placeholder-gray-400 dark:text-white" placeholder="Enter author icon URL...">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="footerText" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Footer Text</label>
+            <input type="text" id="footerText" class="bg-gray-800 border border-gray-600 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:placeholder-gray-400 dark:text-white" placeholder="Enter footer text...">
+          </div>
+          <div>
+            <label for="footerIcon" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Footer Icon URL</label>
+            <input type="url" id="footerIcon" class="bg-gray-800 border border-gray-600 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:placeholder-gray-400 dark:text-white" placeholder="Enter footer icon URL...">
           </div>
         </div>
         <div>
@@ -57,17 +57,17 @@ module.exports = function webhookLayout() {
         </div>
         <div>
           <h4 class="text-lg font-semibold mb-2">Available Variables</h4>
-          <ul class="list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
-            <li>{modID} - Mod ID</li>
-            <li>{newReleaseDate} - New release date</li>
-            <li>{oldPreviousDate} - Previous release date</li>
-            <li>{modName} - Mod name</li>
-            <li>{everyone} - @everyone mention</li>
-            <li>{here} - @here mention</li>
-            <li>{&roleID} - Mention a role (e.g., {&123456789})</li>
-            <li>{#channelID} - Channel link (e.g., {#987654321})</li>
-            <li>{lastestModFileName} - Latest mod file name</li>
-            <li>{modAuthorName} - Mod author name</li>
+          <ul class="space-y-1 text-sm text-white">
+            <li><span class="text-purple-400">{modID}</span> - Mod ID</li>
+            <li><span class="text-purple-400">{newReleaseDate}</span> - New release date</li>
+            <li><span class="text-purple-400">{oldPreviousDate}</span> - Previous release date</li>
+            <li><span class="text-purple-400">{modName}</span> - Mod name</li>
+            <li><span class="text-purple-400">{everyone}</span> - @everyone mention</li>
+            <li><span class="text-purple-400">{here}</span> - @here mention</li>
+            <li><span class="text-purple-400">{&roleID}</span> - Mention a role (e.g., {&123456789})</li>
+            <li><span class="text-purple-400">{#channelID}</span> - Channel link (e.g., {#987654321})</li>
+            <li><span class="text-purple-400">{lastestModFileName}</span> - Latest mod file name</li>
+            <li><span class="text-purple-400">{modAuthorName}</span> - Mod author name</li>
           </ul>
         </div>
         <button id="saveWebhookLayout" class="custom-button">Save Webhook Layout</button>
