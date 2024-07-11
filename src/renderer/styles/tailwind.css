@@ -122,5 +122,7 @@ input[type="range"]::-ms-thumb {
 }
 
 textarea.resize-none {
-	min-height: 2.5rem; /* Adjust this value as needed */
+	min-height: 2.5rem;
+	height: auto; /* Allow the height to adjust automatically */
+	overflow-y: hidden; /* Hide vertical scrollbar */
 }

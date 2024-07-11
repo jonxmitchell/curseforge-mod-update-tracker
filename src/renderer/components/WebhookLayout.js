@@ -14,26 +14,16 @@ function initializeWebhookLayout() {
 	setupFormattingButtons();
 	setupFormattedContentListeners();
 	setupUrlValidation();
-	setupDynamicTextareas();
 	loadWebhookLayout();
 	initializeCharacterCounters();
+	setupDynamicTextareas();
+
+	// Adjust heights when the window is resized
+	window.addEventListener("resize", adjustAllTextareaHeights);
 }
 
 function initializeFormattedContent() {
 	setupFormattedContentListeners();
-}
-
-function setupDynamicTextareas() {
-	const textareas = document.querySelectorAll("textarea");
-	textareas.forEach((textarea) => {
-		textarea.addEventListener("input", function () {
-			this.style.height = "auto";
-			this.style.height = this.scrollHeight + "px";
-		});
-
-		// Initial call to set the correct height
-		textarea.dispatchEvent(new Event("input"));
-	});
 }
 
 function setupColorPicker() {
@@ -128,6 +118,7 @@ function applyFormatting(format, textarea) {
 	textarea.focus();
 	textarea.selectionStart = start + formattedText.length;
 	textarea.selectionEnd = start + formattedText.length;
+	adjustTextareaHeight(textarea);
 }
 
 function setupFormattedContentListeners() {
@@ -135,6 +126,7 @@ function setupFormattedContentListeners() {
 	textareas.forEach((textarea) => {
 		textarea.addEventListener("input", function () {
 			this.dataset.formattedText = this.value;
+			adjustTextareaHeight(this);
 		});
 	});
 }
@@ -268,6 +260,9 @@ async function loadWebhookLayout() {
 			setElementValue("authorName", layout.authorName);
 			setElementValue("authorIcon", layout.authorIcon);
 			console.log("Webhook layout loaded successfully");
+
+			// Adjust all textareas after a short delay
+			setTimeout(adjustAllTextareaHeights, 100);
 		}
 	} catch (error) {
 		console.error("Failed to load webhook layout:", error);
@@ -277,7 +272,13 @@ async function loadWebhookLayout() {
 
 function setElementValue(id, value) {
 	const element = document.getElementById(id);
-	if (element) element.value = value || "";
+	if (element) {
+		element.value = value || "";
+		if (element.tagName.toLowerCase() === "textarea") {
+			// Trigger resize after a short delay
+			setTimeout(() => adjustTextareaHeight(element), 0);
+		}
+	}
 }
 
 function setElementChecked(id, checked) {
@@ -288,6 +289,41 @@ function setElementChecked(id, checked) {
 function setElementBackgroundColor(id, color) {
 	const element = document.getElementById(id);
 	if (element) element.style.backgroundColor = color || "";
+}
+
+function setupDynamicTextareas() {
+	const textareas = document.querySelectorAll("textarea");
+	textareas.forEach((textarea) => {
+		// Set up ResizeObserver
+		const resizeObserver = new ResizeObserver(() => {
+			adjustTextareaHeight(textarea);
+		});
+		resizeObserver.observe(textarea);
+
+		// Adjust on input as well (for immediate feedback)
+		textarea.addEventListener("input", () => adjustTextareaHeight(textarea));
+	});
+
+	// Adjust all textareas on window load
+	window.addEventListener("load", () => {
+		setTimeout(adjustAllTextareaHeights, 100);
+	});
+}
+
+function adjustTextareaHeight(textarea) {
+	requestAnimationFrame(() => {
+		textarea.style.height = "auto";
+		const newHeight = Math.max(textarea.scrollHeight, 40) + "px"; // 40px = 2.5rem
+		if (textarea.style.height !== newHeight) {
+			textarea.style.height = newHeight;
+			console.log(`Adjusted height for ${textarea.id}: ${newHeight}`);
+		}
+	});
+}
+
+function adjustAllTextareaHeights() {
+	const textareas = document.querySelectorAll("textarea");
+	textareas.forEach(adjustTextareaHeight);
 }
 
 module.exports = {
