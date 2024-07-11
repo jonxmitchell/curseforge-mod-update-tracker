@@ -316,7 +316,6 @@ function adjustTextareaHeight(textarea) {
 		const newHeight = Math.max(textarea.scrollHeight, 40) + "px"; // 40px = 2.5rem
 		if (textarea.style.height !== newHeight) {
 			textarea.style.height = newHeight;
-			console.log(`Adjusted height for ${textarea.id}: ${newHeight}`);
 		}
 	});
 }
