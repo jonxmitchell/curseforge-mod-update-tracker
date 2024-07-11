@@ -16,6 +16,7 @@ const {
 	updateSelectedText,
 	updateWebhookDropdowns,
 	initializeTooltips,
+	filterMods,
 } = require("./components/ModList");
 const {
 	renderWebhookList,
@@ -228,16 +229,6 @@ async function handleAddWebhook() {
 	} else {
 		showToast("Please enter both webhook name and URL", "error");
 	}
-}
-
-function filterMods(e) {
-	const filterText = e.target.value.toLowerCase();
-	const filteredMods = allMods.filter(
-		(mod) =>
-			mod.name.toLowerCase().includes(filterText) ||
-			mod.mod_id.toLowerCase().includes(filterText)
-	);
-	renderModList(filteredMods);
 }
 
 function handleModUpdated(event, mod) {
@@ -482,6 +473,5 @@ module.exports = {
 	addMod,
 	checkForUpdates,
 	handleAddWebhook,
-	filterMods,
 	clearConsole,
 };

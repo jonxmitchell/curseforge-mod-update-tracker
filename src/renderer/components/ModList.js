@@ -1,3 +1,5 @@
+// src/renderer/components/ModList.js
+
 const { ipcRenderer, shell } = require("electron");
 const { showToast } = require("../utils/toast");
 const { updateModCount } = require("../utils/domUtils");
@@ -28,9 +30,11 @@ async function openModLink(url) {
 function renderModList(mods) {
 	const modList = document.getElementById("modList");
 	modList.innerHTML = "";
-	mods.forEach((mod) => {
+	mods.forEach((mod, index) => {
 		const modElement = document.createElement("div");
-		modElement.className = "bg-lighter-black p-4 rounded mb-4";
+		modElement.className =
+			"mod-item bg-lighter-black p-4 rounded mb-4 opacity-0";
+		modElement.style.transitionDelay = `${index * 50}ms`;
 		modElement.innerHTML = `
             <div class="flex justify-between items-center mb-2">
                 <div class="space-y-1 pr-8">
@@ -51,51 +55,59 @@ function renderModList(mods) {
                     <button class="icon-button delete-mod" data-mod-id="${
 											mod.mod_id
 										}" data-tooltip="Delete mod">
-					<svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 20">
-						<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h16M7 8v8m4-8v8M7 1h4a1 1 0 0 1 1 1v3H6V2a1 1 0 0 1 1-1ZM3 5h12v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5Z"/>
-					</svg>
-				</button>
-			</div>
-		</div>
-		<div class="custom-select relative w-full" data-mod-id="${mod.mod_id}">
-			<button id="dropdownSearchButton-${
-				mod.mod_id
-			}" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 w-full justify-between" type="button">
-				<span class="selected-webhooks flex flex-wrap gap-2"></span>
-				<svg class="w-2.5 h-2.5 ms-3 flex-shrink-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-					<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
-				</svg>
-			</button>
-			<div id="dropdownSearch-${
-				mod.mod_id
-			}" class="z-10 hidden bg-white rounded-lg shadow w-full dark:bg-gray-700 absolute left-0 mt-2">
-				<div class="p-3">
-					<label for="input-group-search-${mod.mod_id}" class="sr-only">Search</label>
-					<div class="relative">
-						<div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-							<svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-								<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-							</svg>
-						</div>
-						<input type="text" id="input-group-search-${
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 20">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h16M7 8v8m4-8v8M7 1h4a1 1 0 0 1 1 1v3H6V2a1 1 0 0 1 1-1ZM3 5h12v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5Z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="custom-select relative w-full" data-mod-id="${mod.mod_id}">
+            <button id="dropdownSearchButton-${
 							mod.mod_id
-						}" class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search webhook">
-						<button type="button" class="absolute inset-y-0 right-0 flex items-center pr-3 clear-search-webhook">
-							<svg class="w-4 h-4 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-								<path fill-rule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm7.707-3.707a1 1 0 0 0-1.414 1.414L10.586 12l-2.293 2.293a1 1 0 1 0 1.414 1.414L12 13.414l2.293 2.293a1 1 0 0 0 1.414-1.414L13.414 12l2.293-2.293a1 1 0 0 0-1.414-1.414L12 10.586 9.707 8.293Z" clip-rule="evenodd"/>
-							</svg>
-						</button>
-					</div>
-				</div>
-				<ul class="px-3 pb-3 text-sm text-gray-700 dark:text-gray-200 webhook-list" aria-labelledby="dropdownSearchButton-${
-					mod.mod_id
-				}">
-					<!-- Webhook checkboxes will be dynamically inserted here -->
-				</ul>
-			</div>
-		</div>
-	`;
+						}" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 w-full justify-between" type="button">
+                <span class="selected-webhooks flex flex-wrap gap-2"></span>
+                <svg class="w-2.5 h-2.5 ms-3 flex-shrink-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+                </svg>
+            </button>
+            <div id="dropdownSearch-${
+							mod.mod_id
+						}" class="z-10 hidden bg-white rounded-lg shadow w-full dark:bg-gray-700 absolute left-0 mt-2">
+                <div class="p-3">
+                    <label for="input-group-search-${
+											mod.mod_id
+										}" class="sr-only">Search</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                            </svg>
+                        </div>
+                        <input type="text" id="input-group-search-${
+													mod.mod_id
+												}" class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search webhook">
+                        <button type="button" class="absolute inset-y-0 right-0 flex items-center pr-3 clear-search-webhook">
+                            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path fill-rule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm7.707-3.707a1 1 0 0 0-1.414 1.414L10.586 12l-2.293 2.293a1 1 0 1 0 1.414 1.414L12 13.414l2.293 2.293a1 1 0 0 0 1.414-1.414L13.414 12l2.293-2.293a1 1 0 0 0-1.414-1.414L12 10.586 9.707 8.293Z" clip-rule="evenodd"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <ul class="px-3 pb-3 text-sm text-gray-700 dark:text-gray-200 webhook-list" aria-labelledby="dropdownSearchButton-${
+									mod.mod_id
+								}">
+                    <!-- Webhook checkboxes will be dynamically inserted here -->
+                </ul>
+            </div>
+        </div>
+    `;
 		modList.appendChild(modElement);
+
+		// Trigger entrance animation
+		setTimeout(() => {
+			modElement.classList.remove("opacity-0");
+			modElement.classList.add("opacity-100");
+		}, 10);
 	});
 
 	document.querySelectorAll(".delete-mod").forEach((button) => {
@@ -113,6 +125,31 @@ function renderModList(mods) {
 
 	initializeWebhookSelects();
 	initializeTooltips();
+}
+
+function filterMods(e) {
+	const filterText = e.target.value.toLowerCase();
+	const modItems = document.querySelectorAll(".mod-item");
+
+	modItems.forEach((item) => {
+		const modName = item.querySelector(".font-bold").textContent.toLowerCase();
+		const modId = item
+			.querySelector(".text-gray-400")
+			.textContent.toLowerCase();
+
+		if (modName.includes(filterText) || modId.includes(filterText)) {
+			item.classList.remove("mod-item-exit");
+			item.style.display = "";
+			setTimeout(() => item.classList.remove("mod-item-enter"), 10);
+		} else {
+			item.classList.add("mod-item-exit");
+			setTimeout(() => {
+				item.style.display = "none";
+				item.classList.add("mod-item-enter");
+				item.classList.remove("mod-item-exit");
+			}, 300);
+		}
+	});
 }
 
 function initializeWebhookSelects() {
@@ -208,11 +245,11 @@ async function updateWebhookDropdowns() {
 			webhooks.forEach((webhook) => {
 				const listItem = document.createElement("li");
 				listItem.innerHTML = `
-				<div class="flex items-center ps-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
-					<input id="${modId}-${webhook.id}" type="checkbox" value="${webhook.id}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
-					<label for="${modId}-${webhook.id}" class="w-full py-2 ms-2 text-sm font-medium text-gray-900 rounded dark:text-gray-300">${webhook.name}</label>
-				</div>
-			`;
+                <div class="flex items-center ps-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+                    <input id="${modId}-${webhook.id}" type="checkbox" value="${webhook.id}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                    <label for="${modId}-${webhook.id}" class="w-full py-2 ms-2 text-sm font-medium text-gray-900 rounded dark:text-gray-300">${webhook.name}</label>
+                </div>
+            `;
 				const checkbox = listItem.querySelector('input[type="checkbox"]');
 				checkbox.addEventListener("change", handleWebhookChange);
 				webhookList.appendChild(listItem);
@@ -331,4 +368,5 @@ module.exports = {
 	updateWebhookDropdowns,
 	initializeTooltips,
 	openModLink,
+	filterMods,
 };

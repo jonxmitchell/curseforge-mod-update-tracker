@@ -55,6 +55,22 @@
 	.tooltip:hover {
 		@apply opacity-100;
 	}
+
+	.mod-item {
+		transition: all 0.3s ease-in-out;
+		opacity: 1;
+		transform: translateY(0);
+	}
+
+	.mod-item-enter {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+
+	.mod-item-exit {
+		opacity: 0;
+		transform: translateY(-20px);
+	}
 }
 
 /* Custom range input styles */
