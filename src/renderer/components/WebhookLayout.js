@@ -1,5 +1,3 @@
-// src/renderer/components/WebhookLayout.js
-
 const { ipcRenderer } = require("electron");
 const { showToast } = require("../utils/toast");
 const { initializeCharacterCounters } = require("../utils/characterCounter");
@@ -17,6 +15,7 @@ function initializeWebhookLayout() {
 	loadWebhookLayout();
 	initializeCharacterCounters();
 	setupDynamicTextareas();
+	setupEmbedToggle();
 
 	// Adjust heights when the window is resized
 	window.addEventListener("resize", adjustAllTextareaHeights);
@@ -221,6 +220,7 @@ async function saveWebhookLayout() {
 	}
 
 	const layout = {
+		useEmbed: document.getElementById("useEmbed").checked,
 		webhookText: document.getElementById("webhookText").value,
 		embedTitle: document.getElementById("embedTitle").value,
 		embedText: document.getElementById("embedText").value,
@@ -247,6 +247,7 @@ async function loadWebhookLayout() {
 		const result = await ipcRenderer.invoke("get-webhook-layout");
 		if (result.success && result.layout) {
 			const layout = result.layout;
+			setElementChecked("useEmbed", layout.useEmbed);
 			setElementValue("webhookText", layout.webhookText);
 			setElementValue("embedTitle", layout.embedTitle);
 			setElementValue("embedText", layout.embedText);
@@ -261,15 +262,11 @@ async function loadWebhookLayout() {
 			setElementValue("authorIcon", layout.authorIcon);
 			console.log("Webhook layout loaded successfully");
 
-			// Update character counters
-			updateCharacterCounter("webhookText", "webhookTextCounter", 2000);
-			updateCharacterCounter("embedTitle", "embedTitleCounter", 256);
-			updateCharacterCounter("embedText", "embedTextCounter", 4096);
-			updateCharacterCounter("footerText", "footerTextCounter", 2048);
-			updateCharacterCounter("authorName", "authorNameCounter", 256);
-
 			// Adjust all textareas after a short delay
 			setTimeout(adjustAllTextareaHeights, 100);
+
+			// Toggle embed options based on loaded state
+			toggleEmbedOptions(layout.useEmbed);
 		}
 	} catch (error) {
 		console.error("Failed to load webhook layout:", error);
@@ -296,31 +293,6 @@ function setElementChecked(id, checked) {
 function setElementBackgroundColor(id, color) {
 	const element = document.getElementById(id);
 	if (element) element.style.backgroundColor = color || "";
-}
-
-function updateCharacterCounter(inputId, counterId, maxLength) {
-	const input = document.getElementById(inputId);
-	const counter = document.getElementById(counterId);
-	if (input && counter) {
-		const currentLength = input.value.length;
-		counter.textContent = `${currentLength}/${maxLength}`;
-
-		const percentage = (currentLength / maxLength) * 100;
-		if (percentage >= 100) {
-			counter.classList.remove("text-amber-500");
-			counter.classList.add("text-red-500");
-		} else if (percentage >= 90) {
-			counter.classList.remove(
-				"text-gray-500",
-				"dark:text-gray-400",
-				"text-red-500"
-			);
-			counter.classList.add("text-amber-500");
-		} else {
-			counter.classList.remove("text-amber-500", "text-red-500");
-			counter.classList.add("text-gray-500", "dark:text-gray-400");
-		}
-	}
 }
 
 function setupDynamicTextareas() {
@@ -355,6 +327,35 @@ function adjustTextareaHeight(textarea) {
 function adjustAllTextareaHeights() {
 	const textareas = document.querySelectorAll("textarea");
 	textareas.forEach(adjustTextareaHeight);
+}
+
+function setupEmbedToggle() {
+	const useEmbedToggle = document.getElementById("useEmbed");
+	const embedOptions = document.getElementById("embedOptions");
+
+	useEmbedToggle.addEventListener("change", function () {
+		const isEnabled = this.checked;
+		toggleEmbedOptions(isEnabled);
+	});
+
+	// Initial state
+	toggleEmbedOptions(useEmbedToggle.checked);
+}
+
+function toggleEmbedOptions(isEnabled) {
+	const embedOptions = document.getElementById("embedOptions");
+	const inputs = embedOptions.querySelectorAll("input, textarea");
+	const buttons = embedOptions.querySelectorAll("button");
+
+	if (isEnabled) {
+		embedOptions.classList.remove("opacity-50", "pointer-events-none");
+		inputs.forEach((input) => (input.disabled = false));
+		buttons.forEach((button) => (button.disabled = false));
+	} else {
+		embedOptions.classList.add("opacity-50", "pointer-events-none");
+		inputs.forEach((input) => (input.disabled = true));
+		buttons.forEach((button) => (button.disabled = true));
+	}
 }
 
 module.exports = {
