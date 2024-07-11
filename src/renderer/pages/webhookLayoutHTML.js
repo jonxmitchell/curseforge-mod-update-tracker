@@ -5,34 +5,42 @@ module.exports = function webhookLayout() {
       <div class="space-y-4">
         <div>
           <label for="webhookText" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Webhook Text (outside embed)</label>
-          <textarea id="webhookText" rows="3" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Enter webhook text..."></textarea>
+          <textarea id="webhookText" rows="3" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-800 rounded-lg border border-gray-600 focus:ring-blue-500 focus:border-blue-500 dark:placeholder-gray-400 dark:text-white" placeholder="Enter webhook text..."></textarea>
         </div>
         <div>
           <label for="embedTitle" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Embed Title</label>
-          <input type="text" id="embedTitle" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Enter embed title...">
+          <input type="text" id="embedTitle" class="bg-gray-800 border border-gray-600 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:placeholder-gray-400 dark:text-white" placeholder="Enter embed title...">
         </div>
         <div>
           <label for="embedText" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Embed Text</label>
-          <textarea id="embedText" rows="3" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Enter embed text..."></textarea>
+          <textarea id="embedText" rows="3" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-800 rounded-lg border border-gray-600 focus:ring-blue-500 focus:border-blue-500 dark:placeholder-gray-400 dark:text-white" placeholder="Enter embed text..."></textarea>
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label for="footerText" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Footer Text</label>
-            <input type="text" id="footerText" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Enter footer text...">
+            <input type="text" id="footerText" class="bg-gray-800 border border-gray-600 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:placeholder-gray-400 dark:text-white" placeholder="Enter footer text...">
           </div>
           <div>
             <label for="footerIcon" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Footer Icon URL</label>
-            <input type="url" id="footerIcon" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Enter footer icon URL...">
+            <input type="url" id="footerIcon" class="bg-gray-800 border border-gray-600 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:placeholder-gray-400 dark:text-white" placeholder="Enter footer icon URL...">
           </div>
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label for="authorName" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Author Name</label>
-            <input type="text" id="authorName" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Enter author name...">
+            <input type="text" id="authorName" class="bg-gray-800 border border-gray-600 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:placeholder-gray-400 dark:text-white" placeholder="Enter author name...">
           </div>
           <div>
             <label for="authorIcon" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Author Icon URL</label>
-            <input type="url" id="authorIcon" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Enter author icon URL...">
+            <input type="url" id="authorIcon" class="bg-gray-800 border border-gray-600 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:placeholder-gray-400 dark:text-white" placeholder="Enter author icon URL...">
+          </div>
+        </div>
+        <div>
+          <label for="embedColor" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Embed Color</label>
+          <div class="relative flex items-center w-1/2">
+            <div id="colorPreview" class="absolute left-2 w-6 h-6 rounded pointer-events-none"></div>
+            <input type="text" id="embedColor" class="bg-gray-800 border border-gray-600 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 dark:placeholder-gray-400 dark:text-white" placeholder="#03EAF7">
+            <input type="color" id="embedColorPicker" class="absolute left-2 opacity-0 w-6 h-6 cursor-pointer">
           </div>
         </div>
         <div class="flex items-center space-x-4">
@@ -47,16 +55,6 @@ module.exports = function webhookLayout() {
             <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Show mod image in embed</span>
           </label>
         </div>
-        <!-- ... (colour picker setting) ... -->
-    <div>
-      <label for="embedColor" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Embed Color</label>
-      <div class="relative flex items-center">
-        <div id="colorPreview" class="absolute left-2 w-6 h-6 rounded pointer-events-none"></div>
-        <input type="text" id="embedColor" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="#03EAF7">
-        <input type="color" id="embedColorPicker" class="absolute left-2 opacity-0 w-6 h-6 cursor-pointer">
-      </div>
-    </div>
-    <!-- ... (colour picker setting) ... -->
         <div>
           <h4 class="text-lg font-semibold mb-2">Available Variables</h4>
           <ul class="list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
