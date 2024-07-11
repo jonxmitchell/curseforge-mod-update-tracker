@@ -261,6 +261,13 @@ async function loadWebhookLayout() {
 			setElementValue("authorIcon", layout.authorIcon);
 			console.log("Webhook layout loaded successfully");
 
+			// Update character counters
+			updateCharacterCounter("webhookText", "webhookTextCounter", 2000);
+			updateCharacterCounter("embedTitle", "embedTitleCounter", 256);
+			updateCharacterCounter("embedText", "embedTextCounter", 4096);
+			updateCharacterCounter("footerText", "footerTextCounter", 2048);
+			updateCharacterCounter("authorName", "authorNameCounter", 256);
+
 			// Adjust all textareas after a short delay
 			setTimeout(adjustAllTextareaHeights, 100);
 		}
@@ -289,6 +296,31 @@ function setElementChecked(id, checked) {
 function setElementBackgroundColor(id, color) {
 	const element = document.getElementById(id);
 	if (element) element.style.backgroundColor = color || "";
+}
+
+function updateCharacterCounter(inputId, counterId, maxLength) {
+	const input = document.getElementById(inputId);
+	const counter = document.getElementById(counterId);
+	if (input && counter) {
+		const currentLength = input.value.length;
+		counter.textContent = `${currentLength}/${maxLength}`;
+
+		const percentage = (currentLength / maxLength) * 100;
+		if (percentage >= 100) {
+			counter.classList.remove("text-amber-500");
+			counter.classList.add("text-red-500");
+		} else if (percentage >= 90) {
+			counter.classList.remove(
+				"text-gray-500",
+				"dark:text-gray-400",
+				"text-red-500"
+			);
+			counter.classList.add("text-amber-500");
+		} else {
+			counter.classList.remove("text-amber-500", "text-red-500");
+			counter.classList.add("text-gray-500", "dark:text-gray-400");
+		}
+	}
 }
 
 function setupDynamicTextareas() {
