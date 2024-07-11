@@ -1,5 +1,6 @@
 const { ipcRenderer } = require("electron");
 const { showToast } = require("./utils/toast");
+const { initializeCharacterCounters } = require("./utils/characterCounter");
 const { updateModCount, updateConsoleOutput } = require("./utils/domUtils");
 const {
 	initializeTooltipState,
@@ -51,12 +52,13 @@ async function initializeApp() {
 	await updateModList();
 	await updateWebhookList();
 	initializeSettings();
-	initializeWebhookLayout(); // Make sure this line is present
+	initializeWebhookLayout();
 	updateIntervalDisplay();
 	initializeFormattedContent();
 	initializeTabs();
 	initializeRenameWebhookModal();
 	initializeTooltipToggle();
+	initializeCharacterCounters();
 	console.log("Application initialized");
 }
 

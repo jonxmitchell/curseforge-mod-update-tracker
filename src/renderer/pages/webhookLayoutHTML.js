@@ -65,12 +65,18 @@ module.exports = function webhookLayout() {
         </div>
         
         <div>
-          <label for="embedTitle" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Embed Title</label>
-          <input type="text" id="embedTitle" class="bg-gray-800 border border-gray-600 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:placeholder-gray-400 dark:text-white" placeholder="Enter embed title...">
+          <div class="flex justify-between items-center mb-2">
+            <label for="embedTitle" class="text-sm font-medium text-gray-900 dark:text-white">Embed Title</label>
+            <span id="embedTitleCounter" class="text-xs text-gray-500 dark:text-gray-400">0/256</span>
+          </div>
+          <input type="text" id="embedTitle" maxlength="256" class="bg-gray-800 border border-gray-600 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:placeholder-gray-400 dark:text-white" placeholder="Enter embed title...">
         </div>
         
         <div class="formatting-container">
-          <label for="embedText" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Embed Text</label>
+          <div class="flex justify-between items-center mb-2">
+            <label for="embedText" class="text-sm font-medium text-gray-900 dark:text-white">Embed Text</label>
+            <span id="embedTextCounter" class="text-xs text-gray-500 dark:text-gray-400">0/4096</span>
+          </div>
           <div class="w-full mb-4 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
             <div class="flex items-center justify-between px-3 py-2 border-b dark:border-gray-600">
               <div class="flex flex-wrap items-center divide-gray-200 sm:divide-x sm:rtl:divide-x-reverse dark:divide-gray-600">
@@ -108,7 +114,7 @@ module.exports = function webhookLayout() {
                     <span class="sr-only">Add list</span>
                   </button>
                   <button type="button" class="p-2 text-gray-500 rounded cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600" data-format="code">
-                    <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 024 24">
                       <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m8 8-4 4 4 4m8 0 4-4-4-4m-2-3-4 14"/>
                     </svg>
                     <span class="sr-only">Code block</span>
@@ -123,7 +129,7 @@ module.exports = function webhookLayout() {
               </div>
             </div>
             <div class="px-4 py-2 bg-white rounded-b-lg dark:bg-gray-800">
-              <textarea id="embedText" rows="4" class="block w-full px-0 text-sm text-gray-800 bg-white border-0 dark:bg-gray-800 focus:ring-0 dark:text-white dark:placeholder-gray-400" placeholder="Write embed text..." required></textarea>
+              <textarea id="embedText" rows="4" maxlength="4096" class="block w-full px-0 text-sm text-gray-800 bg-white border-0 dark:bg-gray-800 focus:ring-0 dark:text-white dark:placeholder-gray-400" placeholder="Write embed text..." required></textarea>
             </div>
           </div>
         </div>
@@ -139,8 +145,11 @@ module.exports = function webhookLayout() {
         
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label for="authorName" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Author Name</label>
-            <input type="text" id="authorName" class="bg-gray-800 border border-gray-600 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:placeholder-gray-400 dark:text-white" placeholder="Enter author name...">
+            <div class="flex justify-between items-center mb-2">
+              <label for="authorName" class="text-sm font-medium text-gray-900 dark:text-white">Author Name</label>
+              <span id="authorNameCounter" class="text-xs text-gray-500 dark:text-gray-400">0/256</span>
+            </div>
+            <input type="text" id="authorName" maxlength="256" class="bg-gray-800 border border-gray-600 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:placeholder-gray-400 dark:text-white" placeholder="Enter author name...">
           </div>
           <div>
             <label for="authorIcon" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Author Icon URL</label>
@@ -150,8 +159,11 @@ module.exports = function webhookLayout() {
         
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label for="footerText" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Footer Text</label>
-            <input type="text" id="footerText" class="bg-gray-800 border border-gray-600 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:placeholder-gray-400 dark:text-white" placeholder="Enter footer text...">
+            <div class="flex justify-between items-center mb-2">
+              <label for="footerText" class="text-sm font-medium text-gray-900 dark:text-white">Footer Text</label>
+              <span id="footerTextCounter" class="text-xs text-gray-500 dark:text-gray-400">0/2048</span>
+            </div>
+            <input type="text" id="footerText" maxlength="2048" class="bg-gray-800 border border-gray-600 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:placeholder-gray-400 dark:text-white" placeholder="Enter footer text...">
           </div>
           <div>
             <label for="footerIcon" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Footer Icon URL</label>

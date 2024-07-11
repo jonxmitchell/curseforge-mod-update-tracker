@@ -2,6 +2,7 @@
 
 const { ipcRenderer } = require("electron");
 const { showToast } = require("../utils/toast");
+const { initializeCharacterCounters } = require("../utils/characterCounter");
 
 function initializeWebhookLayout() {
 	const saveButton = document.getElementById("saveWebhookLayout");
@@ -14,6 +15,7 @@ function initializeWebhookLayout() {
 	setupFormattedContentListeners();
 	setupUrlValidation();
 	loadWebhookLayout();
+	initializeCharacterCounters();
 }
 
 function initializeFormattedContent() {
