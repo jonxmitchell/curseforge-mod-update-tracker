@@ -1,6 +1,9 @@
 const { ipcRenderer } = require("electron");
 const { showToast } = require("../utils/toast");
-const { initializeCharacterCounters } = require("../utils/characterCounter");
+const {
+	initializeCharacterCounters,
+	updateCharacterCount,
+} = require("../utils/characterCounter");
 
 function initializeWebhookLayout() {
 	const saveButton = document.getElementById("saveWebhookLayout");
@@ -261,6 +264,13 @@ async function loadWebhookLayout() {
 			setElementValue("authorName", layout.authorName);
 			setElementValue("authorIcon", layout.authorIcon);
 			console.log("Webhook layout loaded successfully");
+
+			// Update character counters
+			updateCharacterCount("webhookText", "webhookTextCounter", 2000);
+			updateCharacterCount("embedTitle", "embedTitleCounter", 256);
+			updateCharacterCount("embedText", "embedTextCounter", 4096);
+			updateCharacterCount("footerText", "footerTextCounter", 2048);
+			updateCharacterCount("authorName", "authorNameCounter", 256);
 
 			// Adjust all textareas after a short delay
 			setTimeout(adjustAllTextareaHeights, 100);
