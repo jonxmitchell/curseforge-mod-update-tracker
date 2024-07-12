@@ -71,9 +71,17 @@
 		transform: translateY(-20px);
 	}
 
+	#console {
+		display: flex;
+		flex-direction: column;
+		height: calc(100vh - 200px); /* Adjust this value as needed */
+	}
+
 	#consoleOutput {
 		scrollbar-width: thin;
 		scrollbar-color: #4b5563 #252525;
+		lex-grow: 1;
+		overflow-y: auto;
 	}
 
 	#consoleOutput::-webkit-scrollbar {

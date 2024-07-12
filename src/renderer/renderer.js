@@ -1,6 +1,7 @@
 const { ipcRenderer } = require("electron");
 const { showToast } = require("./utils/toast");
 const logger = require("./utils/logger");
+const { adjustConsoleHeight } = require("./utils/domUtils");
 const {
 	initializeConsoleLogger,
 	clearConsoleLogs,
@@ -111,6 +112,11 @@ async function initializeApp() {
 	console.log("Initializing character counters...");
 	initializeCharacterCounters();
 	console.log("Character counters initialized.");
+
+	console.log("Setting up window resize event listener...");
+	window.addEventListener("resize", adjustConsoleHeight);
+	adjustConsoleHeight(); // Initial adjustment
+	console.log("Window resize event listener set up.");
 
 	console.log("Application initialization completed.");
 }

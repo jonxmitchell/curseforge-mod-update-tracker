@@ -13,7 +13,18 @@ function updateConsoleOutput(consoleLines) {
 	}
 }
 
+function adjustConsoleHeight() {
+	const consoleOutput = document.getElementById("consoleOutput");
+	if (consoleOutput) {
+		const windowHeight = window.innerHeight;
+		const consoleTop = consoleOutput.getBoundingClientRect().top;
+		const newHeight = windowHeight - consoleTop - 20; // 20px for some padding
+		consoleOutput.style.height = `${newHeight}px`;
+	}
+}
+
 module.exports = {
 	updateModCount,
 	updateConsoleOutput,
+	adjustConsoleHeight,
 };
