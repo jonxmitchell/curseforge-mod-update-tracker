@@ -1,7 +1,13 @@
+// src/main/ipc/updateIPC.js
+
 const { ipcMain } = require("electron");
 const fetch = require("node-fetch");
 const { getMods, updateMod } = require("../../database/modsDB");
-const { getSetting, getWebhookLayout } = require("../../database/settingsDB");
+const {
+	getSetting,
+	getWebhookLayout,
+	saveSetting,
+} = require("../../database/settingsDB");
 const { getModWebhooks } = require("../../database/modWebhooksDB");
 const { getWebhooks } = require("../../database/webhooksDB");
 
@@ -36,6 +42,7 @@ async function checkForUpdates(mainWindow) {
 
 	let updatesFound = false;
 	const checkTime = new Date().toISOString();
+	const updatedMods = [];
 
 	try {
 		const mods = await getMods();
@@ -64,13 +71,7 @@ async function checkForUpdates(mainWindow) {
 					newReleased: latestReleased,
 					oldReleased: mod.current_released,
 				});
-				await sendDiscordNotifications(
-					mod.name,
-					latestReleased,
-					mod.current_released,
-					mod.mod_id,
-					data.data
-				);
+				updatedMods.push({ ...mod, newReleased: latestReleased });
 			} else {
 				await updateMod(
 					mod.mod_id,
@@ -81,10 +82,38 @@ async function checkForUpdates(mainWindow) {
 			}
 		}
 
-		mainWindow.webContents.send("update-check-complete", { updatesFound });
+		mainWindow.webContents.send("update-check-complete", {
+			updatesFound,
+			updatedModsCount: updatedMods.length,
+		});
+
+		// Send webhooks for updated mods
+		if (updatesFound) {
+			const totalWebhooks = await getTotalWebhooksForMods(updatedMods);
+			for (const mod of updatedMods) {
+				await sendDiscordNotifications(
+					mod.name,
+					mod.newReleased,
+					mod.current_released,
+					mod.mod_id,
+					mod,
+					mainWindow,
+					totalWebhooks
+				);
+			}
+		}
 	} catch (error) {
 		console.error("Error checking for updates:", error);
 	}
+}
+
+async function getTotalWebhooksForMods(mods) {
+	let total = 0;
+	for (const mod of mods) {
+		const webhookIds = await getModWebhooks(mod.mod_id);
+		total += webhookIds.length;
+	}
+	return total;
 }
 
 async function sendDiscordNotifications(
@@ -92,7 +121,9 @@ async function sendDiscordNotifications(
 	newReleased,
 	oldReleased,
 	modId,
-	modData
+	modData,
+	mainWindow,
+	totalWebhooks
 ) {
 	try {
 		const webhookIds = await getModWebhooks(modId);
@@ -111,25 +142,63 @@ async function sendDiscordNotifications(
 					modData
 				);
 
-				const response = await fetch(webhook.url, {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify(message),
-				});
+				try {
+					const response = await fetch(webhook.url, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify(message),
+					});
 
-				if (!response.ok) {
+					if (!response.ok) {
+						console.error(
+							`Failed to send webhook for ${modName} to ${webhook.name}: HTTP error ${response.status}`
+						);
+						mainWindow.webContents.send("webhook-send-result", {
+							success: false,
+							total: totalWebhooks,
+						});
+						mainWindow.webContents.send("webhook-send-failed", {
+							modName,
+							webhookName: webhook.name,
+							errorStatus: response.status,
+						});
+					} else {
+						console.log(
+							`Webhook sent successfully for ${modName} to ${webhook.name}`
+						);
+						mainWindow.webContents.send("webhook-send-result", {
+							success: true,
+							total: totalWebhooks,
+						});
+					}
+				} catch (error) {
 					console.error(
-						`Failed to send webhook for ${modName} to ${webhook.name}: HTTP error ${response.status}`
+						`Error sending webhook for ${modName} to ${webhook.name}:`,
+						error
 					);
-				} else {
-					console.log(
-						`Webhook sent successfully for ${modName} to ${webhook.name}`
-					);
+					mainWindow.webContents.send("webhook-send-result", {
+						success: false,
+						total: totalWebhooks,
+					});
+					mainWindow.webContents.send("webhook-send-failed", {
+						modName,
+						webhookName: webhook.name,
+						errorStatus: "Network Error",
+					});
 				}
 			}
 		}
 	} catch (error) {
 		console.error(`Error sending Discord notifications for ${modName}:`, error);
+		mainWindow.webContents.send("webhook-send-result", {
+			success: false,
+			total: totalWebhooks,
+		});
+		mainWindow.webContents.send("webhook-send-failed", {
+			modName,
+			webhookName: "Unknown",
+			errorStatus: "Unknown Error",
+		});
 	}
 }
 

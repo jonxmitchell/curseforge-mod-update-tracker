@@ -1,3 +1,5 @@
+// src/renderer/utils/consoleLogger.js
+
 const { ipcRenderer } = require("electron");
 const { updateConsoleOutput } = require("./domUtils");
 
@@ -5,8 +7,9 @@ let consoleLines = [];
 
 function initializeConsoleLogger() {
 	const originalConsoleLog = console.log;
-	console.log = function (...args) {
-		originalConsoleLog.apply(console, args);
+	const originalConsoleError = console.error;
+
+	function logMessage(args, isError = false) {
 		const logMessage = args.join(" ");
 		const now = new Date();
 		const date = `${String(now.getDate()).padStart(2, "0")}/${String(
@@ -17,7 +20,7 @@ function initializeConsoleLogger() {
 		).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}`;
 		const formattedDateTime = `<span class="text-purple-400">[${date}] [${time}]</span>`;
 
-		let colorClass = "";
+		let colorClass = isError ? "text-red-500" : "";
 		if (
 			logMessage.includes("deleted from tracker") ||
 			logMessage.includes("Webhook deleted:")
@@ -58,6 +61,16 @@ function initializeConsoleLogger() {
 
 		// Send log to main process for file writing
 		ipcRenderer.send("log-to-file", logMessage);
+	}
+
+	console.log = function (...args) {
+		originalConsoleLog.apply(console, args);
+		logMessage(args);
+	};
+
+	console.error = function (...args) {
+		originalConsoleError.apply(console, args);
+		logMessage(args, true);
 	};
 }
 
@@ -66,7 +79,14 @@ function clearConsoleLogs() {
 	updateConsoleOutput(consoleLines);
 }
 
+function logWebhookFailure(modName, webhookName, errorStatus) {
+	console.error(
+		`Webhook failed to send for ${modName} to ${webhookName} | HTTP error ${errorStatus}`
+	);
+}
+
 module.exports = {
 	initializeConsoleLogger,
 	clearConsoleLogs,
+	logWebhookFailure,
 };

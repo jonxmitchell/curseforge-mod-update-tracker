@@ -20,6 +20,7 @@ module.exports = {
 		"text-green-500",
 		"text-cyan-500",
 		"text-amber-500",
-		"text-pink-500", // Add this line for the new pink color
+		"text-pink-500",
+		"text-red-700",
 	],
 };
