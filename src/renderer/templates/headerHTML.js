@@ -1,5 +1,3 @@
-// src/renderer/templates/headerHTML.js
-
 module.exports = function header() {
 	return `
   <header class="app-header bg-darker-surface text-white p-1 flex justify-end items-center w-full fixed top-0 left-0 z-50">
