@@ -195,6 +195,7 @@ header {
 
 .app-header {
 	height: 30px;
+	background-color: #2a2a2a;
 }
 
 .app-container {
@@ -206,7 +207,7 @@ header {
 
 .app-tabs {
 	position: sticky;
-	top: 30px;
+	top: 0px;
 	z-index: 40;
 	background-color: #1e1e1e;
 }
