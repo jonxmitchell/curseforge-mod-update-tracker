@@ -7,6 +7,7 @@ const setupSettingsIPC = require("./ipc/settingsIPC");
 const { setupUpdateIPC } = require("./ipc/updateIPC");
 const { getWebhooks } = require("../database/webhooksDB");
 const { getModWebhooks } = require("../database/modWebhooksDB");
+const logger = require("../renderer/utils/logger");
 
 let mainWindow;
 
@@ -77,4 +78,8 @@ app.on("activate", () => {
 	if (BrowserWindow.getAllWindows().length === 0) {
 		createWindow();
 	}
+});
+
+ipcMain.on("log-to-file", (event, message) => {
+	logger.log(message);
 });

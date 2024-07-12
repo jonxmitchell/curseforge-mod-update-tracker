@@ -1,5 +1,6 @@
 const { ipcRenderer } = require("electron");
 const { showToast } = require("./utils/toast");
+const logger = require("./utils/logger");
 const { initializeCharacterCounters } = require("./utils/characterCounter");
 const { updateModCount, updateConsoleOutput } = require("./utils/domUtils");
 const {
@@ -558,11 +559,15 @@ console.log = function (...args) {
 	originalConsoleLog.apply(console, args);
 	const logMessage = args.join(" ");
 	const timestamp = new Date().toLocaleTimeString();
-	consoleLines.push(`[${timestamp}] ${logMessage}`);
+	const formattedMessage = `[${timestamp}] ${logMessage}`;
+	consoleLines.push(formattedMessage);
 	if (consoleLines.length > 200) {
 		consoleLines.shift();
 	}
 	updateConsoleOutput(consoleLines);
+
+	// Send log to main process for file writing
+	ipcRenderer.send("log-to-file", formattedMessage);
 };
 
 module.exports = {
