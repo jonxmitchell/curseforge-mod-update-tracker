@@ -4,10 +4,7 @@ const path = require("path");
 class Logger {
 	constructor() {
 		this.logsDir = path.join(__dirname, "../../../logs");
-		this.logFile = path.join(
-			this.logsDir,
-			`log_${this.getFormattedDate()}.txt`
-		);
+		this.logFile = this.createNewLogFile();
 		this.ensureLogDirectory();
 	}
 
@@ -17,17 +14,30 @@ class Logger {
 		}
 	}
 
-	getFormattedDate() {
+	createNewLogFile() {
+		const timestamp = this.getFormattedTimestamp();
+		return path.join(this.logsDir, `log_${timestamp}.txt`);
+	}
+
+	getFormattedTimestamp() {
 		const now = new Date();
-		return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
-			2,
-			"0"
-		)}-${String(now.getDate()).padStart(2, "0")}`;
+		return now.toISOString().replace(/:/g, "-").replace("T", "_").slice(0, -5);
+	}
+
+	getFormattedDateTime() {
+		const now = new Date();
+		const date = `${String(now.getDate()).padStart(2, "0")}/${String(
+			now.getMonth() + 1
+		).padStart(2, "0")}/${now.getFullYear()}`;
+		const time = `${String(now.getHours()).padStart(2, "0")}:${String(
+			now.getMinutes()
+		).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}`;
+		return `[${date}] [${time}]`;
 	}
 
 	log(message) {
-		const timestamp = new Date().toISOString();
-		const logEntry = `[${timestamp}] ${message}\n`;
+		const formattedDateTime = this.getFormattedDateTime();
+		const logEntry = `${formattedDateTime} ${message}\n`;
 
 		fs.appendFile(this.logFile, logEntry, (err) => {
 			if (err) {

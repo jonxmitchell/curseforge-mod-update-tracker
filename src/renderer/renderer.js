@@ -558,8 +558,15 @@ const originalConsoleLog = console.log;
 console.log = function (...args) {
 	originalConsoleLog.apply(console, args);
 	const logMessage = args.join(" ");
-	const timestamp = new Date().toLocaleTimeString();
-	const formattedMessage = `[${timestamp}] ${logMessage}`;
+	const now = new Date();
+	const date = `${String(now.getDate()).padStart(2, "0")}/${String(
+		now.getMonth() + 1
+	).padStart(2, "0")}/${now.getFullYear()}`;
+	const time = `${String(now.getHours()).padStart(2, "0")}:${String(
+		now.getMinutes()
+	).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}`;
+	const formattedDateTime = `[${date}] [${time}]`;
+	const formattedMessage = `${formattedDateTime} ${logMessage}`;
 	consoleLines.push(formattedMessage);
 	if (consoleLines.length > 200) {
 		consoleLines.shift();
@@ -567,7 +574,7 @@ console.log = function (...args) {
 	updateConsoleOutput(consoleLines);
 
 	// Send log to main process for file writing
-	ipcRenderer.send("log-to-file", formattedMessage);
+	ipcRenderer.send("log-to-file", logMessage);
 };
 
 module.exports = {
