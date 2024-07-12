@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, Menu } = require("electron");
 const path = require("path");
 const { initDatabase } = require("../database/connection");
 const setupModIPC = require("./ipc/modIPC");
@@ -33,6 +33,19 @@ function createWindow() {
 			mainWindow.webContents.send("main-process-log", args.join(" "));
 		}
 	};
+
+	// Enable right-click context menu
+	mainWindow.webContents.on("context-menu", (event, params) => {
+		const menu = Menu.buildFromTemplate([
+			{ role: "cut" },
+			{ role: "copy" },
+			{ role: "paste" },
+			{ type: "separator" },
+			{ role: "selectAll" },
+		]);
+
+		menu.popup(mainWindow, params.x, params.y);
+	});
 }
 
 app.whenReady().then(() => {
