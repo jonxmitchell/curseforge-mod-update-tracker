@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell } = require("electron");
+const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const { initDatabase } = require("../database/connection");
 const setupModIPC = require("./ipc/modIPC");
@@ -22,6 +22,14 @@ function createWindow() {
 	});
 
 	mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"));
+
+	const originalConsoleLog = console.log;
+	console.log = function (...args) {
+		originalConsoleLog.apply(console, args);
+		if (mainWindow && mainWindow.webContents) {
+			mainWindow.webContents.send("main-process-log", args.join(" "));
+		}
+	};
 }
 
 app.whenReady().then(() => {

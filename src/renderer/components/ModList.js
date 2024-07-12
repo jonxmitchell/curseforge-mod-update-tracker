@@ -294,6 +294,10 @@ async function handleWebhookChange(event) {
 	const checkbox = event.target;
 	const modId = checkbox.closest(".custom-select").getAttribute("data-mod-id");
 	const select = checkbox.closest(".custom-select");
+	const previousWebhookIds = Array.from(
+		select.querySelectorAll('input[type="checkbox"]:checked'),
+		(checkbox) => parseInt(checkbox.value)
+	);
 	const webhookIds = Array.from(
 		select.querySelectorAll('input[type="checkbox"]:checked'),
 		(checkbox) => parseInt(checkbox.value)
@@ -305,15 +309,20 @@ async function handleWebhookChange(event) {
 		const result = await ipcRenderer.invoke("assign-webhooks", {
 			modId,
 			webhookIds,
+			previousWebhookIds,
 		});
 		if (result.success) {
 			updateSelectedText(select);
 			if (isChecked) {
+				console.log(`Webhook "${webhookName}" was assigned to mod ${modId}`);
 				showToast(
 					`Webhook "${webhookName}" was assigned to mod ${modId}`,
 					"success"
 				);
 			} else {
+				console.log(
+					`Webhook "${webhookName}" was unassigned from mod ${modId}`
+				);
 				showToast(
 					`Webhook "${webhookName}" was unassigned from mod ${modId}`,
 					"info"

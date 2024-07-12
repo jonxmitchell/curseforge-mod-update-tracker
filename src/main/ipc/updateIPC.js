@@ -118,16 +118,18 @@ async function sendDiscordNotifications(
 				});
 
 				if (!response.ok) {
-					throw new Error(`HTTP error! status: ${response.status}`);
+					console.error(
+						`Failed to send webhook for ${modName} to ${webhook.name}: HTTP error ${response.status}`
+					);
+				} else {
+					console.log(
+						`Webhook sent successfully for ${modName} to ${webhook.name}`
+					);
 				}
-
-				console.log(
-					`Notification sent for ${modName} to webhook ${webhook.url}`
-				);
 			}
 		}
 	} catch (error) {
-		console.error(`Error sending Discord notifications:`, error);
+		console.error(`Error sending Discord notifications for ${modName}:`, error);
 	}
 }
 

@@ -80,11 +80,20 @@ function setupWebhookIPC(mainWindow) {
 				throw new Error(`HTTP error! status: ${response.status}`);
 			}
 
-			event.reply("test-webhook-result", { success: true });
+			event.reply("test-webhook-result", {
+				success: true,
+				webhookName: webhook.name,
+			});
 		} catch (error) {
+			console.error(
+				`Webhook test failed for ${
+					webhook ? webhook.name : "unknown webhook"
+				}: ${error.message}`
+			);
 			event.reply("test-webhook-result", {
 				success: false,
 				error: error.message,
+				webhookName: webhook ? webhook.name : "unknown webhook",
 			});
 		}
 	});
@@ -98,15 +107,40 @@ function setupWebhookIPC(mainWindow) {
 		}
 	});
 
-	ipcMain.handle("assign-webhooks", async (event, { modId, webhookIds }) => {
-		try {
-			await assignWebhooks(modId, webhookIds);
-			return { success: true };
-		} catch (error) {
-			console.error("Error assigning webhooks:", error);
-			return { success: false, error: error.message };
+	ipcMain.handle(
+		"assign-webhooks",
+		async (event, { modId, webhookIds, previousWebhookIds }) => {
+			try {
+				await assignWebhooks(modId, webhookIds);
+
+				const assignedWebhooks = webhookIds.filter(
+					(id) => !previousWebhookIds.includes(id)
+				);
+				const unassignedWebhooks = previousWebhookIds.filter(
+					(id) => !webhookIds.includes(id)
+				);
+
+				if (assignedWebhooks.length > 0) {
+					const assignLogMessage = `Webhooks assigned to mod ${modId}: ${assignedWebhooks.join(
+						", "
+					)}`;
+					console.log(assignLogMessage);
+				}
+
+				if (unassignedWebhooks.length > 0) {
+					const unassignLogMessage = `Webhooks unassigned from mod ${modId}: ${unassignedWebhooks.join(
+						", "
+					)}`;
+					console.log(unassignLogMessage);
+				}
+
+				return { success: true };
+			} catch (error) {
+				console.error("Error assigning/unassigning webhooks:", error);
+				return { success: false, error: error.message };
+			}
 		}
-	});
+	);
 
 	ipcMain.handle("rename-webhook", async (event, { id, newName }) => {
 		try {

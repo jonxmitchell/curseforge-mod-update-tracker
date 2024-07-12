@@ -44,8 +44,10 @@ function setupSettingsIPC(mainWindow) {
 	ipcMain.handle("save-open-link-preference", async (event, preference) => {
 		try {
 			await saveSetting("open_link_preference", preference);
+			console.log(`Open mod links preference changed to: ${preference}`);
 			return { success: true };
 		} catch (error) {
+			console.error("Error saving open link preference:", error);
 			return { success: false, error: error.message };
 		}
 	});
@@ -62,6 +64,7 @@ function setupSettingsIPC(mainWindow) {
 	ipcMain.handle("save-webhook-layout", async (event, layout) => {
 		try {
 			await saveSetting("webhook_layout", JSON.stringify(layout));
+			console.log("Webhook layout updated");
 			return { success: true };
 		} catch (error) {
 			console.error("Error saving webhook layout:", error);

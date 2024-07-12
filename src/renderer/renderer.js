@@ -182,6 +182,9 @@ function setupIpcListeners() {
 	ipcRenderer.on("delete-webhook-result", handleDeleteWebhookResult);
 	ipcRenderer.on("test-webhook-result", handleTestWebhookResult);
 	ipcRenderer.on("countdown-tick", updateCountdown);
+	ipcRenderer.on("main-process-log", (event, message) => {
+		console.log(message);
+	});
 }
 
 function handlePauseResume() {
@@ -190,9 +193,11 @@ function handlePauseResume() {
 	if (isPaused) {
 		ipcRenderer.send("pause-timer");
 		button.textContent = "Resume";
+		console.log("Timer paused");
 	} else {
 		ipcRenderer.send("resume-timer");
 		button.textContent = "Pause";
+		console.log("Timer resumed");
 	}
 }
 
@@ -208,6 +213,7 @@ function addMod() {
 }
 
 function checkForUpdates() {
+	console.log("Manual mod check initiated");
 	ipcRenderer.send("check-updates");
 }
 
@@ -220,10 +226,12 @@ async function handleAddWebhook() {
 	if (name && url) {
 		try {
 			await addWebhook(name, url);
+			console.log(`Webhook added: ${name}`);
 			showToast("Webhook added successfully", "success");
 			nameInput.value = "";
 			urlInput.value = "";
 		} catch (error) {
+			console.error(`Failed to add webhook: ${error.message}`);
 			showToast(`Failed to add webhook: ${error.message}`, "error");
 		}
 	} else {
@@ -232,11 +240,34 @@ async function handleAddWebhook() {
 }
 
 function handleModUpdated(event, mod) {
+	const oldDate = new Date(mod.oldReleased);
+	const newDate = new Date(mod.newReleased);
+	const formattedOldDate = oldDate
+		.toLocaleString("en-GB", {
+			day: "2-digit",
+			month: "2-digit",
+			year: "numeric",
+			hour: "2-digit",
+			minute: "2-digit",
+			second: "2-digit",
+		})
+		.replace(",", "");
+	const formattedNewDate = newDate
+		.toLocaleString("en-GB", {
+			day: "2-digit",
+			month: "2-digit",
+			year: "numeric",
+			hour: "2-digit",
+			minute: "2-digit",
+			second: "2-digit",
+		})
+		.replace(",", "");
+
 	console.log(
-		`Mod update received: ${mod.name} from ${mod.oldReleased} to ${mod.newReleased}`
+		`Mod update detected: ${mod.name} from ${formattedOldDate} to ${formattedNewDate}`
 	);
 	showToast(
-		`Mod ${mod.name} updated from release date ${mod.oldReleased} to ${mod.newReleased}`,
+		`Mod ${mod.name} updated from release date ${formattedOldDate} to ${formattedNewDate}`,
 		"success"
 	);
 	updateModList();
@@ -249,18 +280,23 @@ function handleUpdateCheckComplete(event, result) {
 	if (result.updatesFound) {
 		showToast("Mod updates found and applied!", "success");
 	} else {
+		console.log("No mod updates detected");
 		showToast("No mod updates detected", "info");
 	}
 }
 
 function handleAddModResult(event, result) {
 	if (result.success) {
+		console.log(
+			`Mod added to tracker: ${result.mod.name} (ID: ${result.mod.id})`
+		);
 		showToast("Mod added successfully", "success");
 		updateModList();
 	} else {
 		if (result.error === "Mod already exists") {
 			showToast("This mod is already in your list", "warning");
 		} else {
+			console.error(`Failed to add mod: ${result.error}`);
 			showToast(`Failed to add mod: ${result.error}`, "error");
 		}
 	}
@@ -268,26 +304,34 @@ function handleAddModResult(event, result) {
 
 function handleDeleteModResult(event, result) {
 	if (result.success) {
+		console.log(`Mod deleted from tracker: ID ${result.modId}`);
 		showToast("Mod deleted successfully", "success");
 		updateModList();
 	} else {
+		console.error(`Failed to delete mod: ${result.error}`);
 		showToast(`Failed to delete mod: ${result.error}`, "error");
 	}
 }
 
 function handleDeleteWebhookResult(event, result) {
 	if (result.success) {
+		console.log(`Webhook deleted: ID ${result.id}`);
 		showToast("Webhook removed successfully", "success");
 		updateWebhookList();
 	} else {
+		console.error(`Failed to delete webhook: ${result.error}`);
 		showToast(`Failed to delete webhook: ${result.error}`, "error");
 	}
 }
 
 function handleTestWebhookResult(event, result) {
 	if (result.success) {
+		console.log(`Test webhook sent successfully for ${result.webhookName}`);
 		showToast("Webhook test successful", "success");
 	} else {
+		console.error(
+			`Webhook test failed for ${result.webhookName}: ${result.error}`
+		);
 		showToast(`Webhook test failed: ${result.error}`, "error");
 	}
 }
@@ -356,8 +400,10 @@ async function handleSaveApiKey() {
 	if (apiKey) {
 		try {
 			await saveApiKey(apiKey);
+			console.log("API key updated");
 			showToast("API key saved successfully", "success");
 		} catch (error) {
+			console.error(`Failed to save API key: ${error.message}`);
 			showToast(`Failed to save API key: ${error.message}`, "error");
 		}
 	} else {
@@ -390,8 +436,10 @@ async function handleSetInterval() {
 		try {
 			await saveInterval(interval);
 			ipcRenderer.send("set-interval", interval);
+			console.log(`Update interval set to ${interval} seconds`);
 			showToast("Update interval set successfully", "success");
 		} catch (error) {
+			console.error(`Failed to set interval: ${error.message}`);
 			showToast(`Failed to set interval: ${error.message}`, "error");
 		}
 	} else {
@@ -409,13 +457,16 @@ function updateIntervalDisplay() {
 async function handleRenameWebhook() {
 	const webhookId = document.getElementById("webhookIdInput").value;
 	const newName = document.getElementById("newWebhookName").value.trim();
+	const oldName = document.getElementById("currentWebhookName").textContent;
 
 	if (newName) {
 		try {
 			await renameWebhook(webhookId, newName);
+			console.log(`Webhook renamed from "${oldName}" to "${newName}"`);
 			showToast("Webhook renamed successfully", "success");
 			document.getElementById("renameWebhookModal").classList.add("hidden");
 		} catch (error) {
+			console.error(`Failed to rename webhook: ${error.message}`);
 			showToast(`Failed to rename webhook: ${error.message}`, "error");
 		}
 	} else {
@@ -439,6 +490,7 @@ function initializeTooltipToggle() {
 function handleTooltipToggle(event) {
 	const isEnabled = event.target.checked;
 	setTooltipState(isEnabled);
+	console.log(`Tooltips ${isEnabled ? "enabled" : "disabled"}`);
 	if (isEnabled) {
 		document.querySelectorAll("[data-tooltip]").forEach((element) => {
 			element.addEventListener("mouseenter", showTooltip);
@@ -456,10 +508,11 @@ function removeAllTooltipListeners() {
 	});
 }
 
+// Modify the existing console.log override
 const originalConsoleLog = console.log;
-console.log = function () {
-	originalConsoleLog.apply(console, arguments);
-	const logMessage = Array.from(arguments).join(" ");
+console.log = function (...args) {
+	originalConsoleLog.apply(console, args);
+	const logMessage = args.join(" ");
 	const timestamp = new Date().toLocaleTimeString();
 	consoleLines.push(`[${timestamp}] ${logMessage}`);
 	if (consoleLines.length > 200) {
