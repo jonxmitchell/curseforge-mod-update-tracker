@@ -25,9 +25,10 @@ function showToast(message, type = "info") {
 		style: {
 			background: background,
 			padding: "12px 20px",
-			borderRadius: "4px",
+			borderRadius: "6px",
 			fontSize: "14px",
 			lineHeight: "1.5",
+			marginTop: "40px",
 		},
 		stopOnFocus: true,
 	}).showToast();
