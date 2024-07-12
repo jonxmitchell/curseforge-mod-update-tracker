@@ -104,7 +104,6 @@
 	}
 }
 
-/* Custom range input styles */
 input[type="range"] {
 	@apply appearance-none;
 }
@@ -265,4 +264,35 @@ body {
 
 .app-header {
 	-webkit-app-region: drag;
+}
+
+/* Tab animations */
+.tab-button {
+	position: relative;
+	overflow: hidden;
+}
+
+.tab-text {
+	position: relative;
+	z-index: 1;
+	transition: color 0.3s ease;
+}
+
+.tab-button:hover .tab-text {
+	color: #3b82f6;
+}
+
+.tab-button[aria-selected="true"] {
+	color: #3b82f6;
+	border-color: #3b82f6;
+	transition: transform 0.5s ease;
+}
+
+.tab-button[aria-selected="true"]::before {
+	transform: translateY(0);
+	transition: transform 0.5s ease;
+}
+
+.hover:border-gray-300 {
+	transition: transform 0.5s ease;
 }
