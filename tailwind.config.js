@@ -9,9 +9,17 @@ module.exports = {
 				"dark-bg": "#1e1e1e",
 				"dark-surface": "#2a2a2a",
 				"dark-border": "#555555",
-				"darker-surface": "#252525", // New color for console background
+				"darker-surface": "#252525",
 			},
 		},
 	},
 	plugins: [require("flowbite/plugin")],
+	safelist: [
+		"text-purple-400",
+		"text-red-500",
+		"text-green-500",
+		"text-cyan-500",
+		"text-amber-500",
+		"text-pink-500", // Add this line for the new pink color
+	],
 };

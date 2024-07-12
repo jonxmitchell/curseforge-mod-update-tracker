@@ -1,6 +1,10 @@
 const { ipcRenderer } = require("electron");
 const { showToast } = require("./utils/toast");
 const logger = require("./utils/logger");
+const {
+	initializeConsoleLogger,
+	clearConsoleLogs,
+} = require("./utils/consoleLogger");
 const { initializeCharacterCounters } = require("./utils/characterCounter");
 const { updateModCount, updateConsoleOutput } = require("./utils/domUtils");
 const {
@@ -47,7 +51,10 @@ let allMods = [];
 document.addEventListener("DOMContentLoaded", initializeApp);
 
 async function initializeApp() {
+	initializeConsoleLogger();
 	console.log("Starting application initialization...");
+	console.log("Initializing console logger...");
+	console.log("Console logger initialized.");
 
 	console.log("Initializing tooltip state...");
 	await initializeTooltipState();
@@ -423,8 +430,7 @@ async function updateModList() {
 }
 
 function clearConsole() {
-	consoleLines = [];
-	updateConsoleOutput(consoleLines);
+	clearConsoleLogs();
 }
 
 function toggleApiKeyVisibility() {
@@ -576,8 +582,41 @@ console.log = function (...args) {
 	const time = `${String(now.getHours()).padStart(2, "0")}:${String(
 		now.getMinutes()
 	).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}`;
-	const formattedDateTime = `[${date}] [${time}]`;
-	const formattedMessage = `${formattedDateTime} ${logMessage}`;
+	const formattedDateTime = `<span class="text-purple-400">[${date}] [${time}]</span>`;
+
+	let colorClass = "";
+	if (
+		logMessage.includes("deleted from tracker") ||
+		logMessage.includes("Webhook deleted:")
+	) {
+		colorClass = "text-red-500";
+	} else if (
+		logMessage.includes("added to tracker") ||
+		logMessage.includes("Webhook added:")
+	) {
+		colorClass = "text-green-500";
+	} else if (
+		logMessage.includes("Mod update detected") ||
+		logMessage.includes("Webhook sent successfully")
+	) {
+		colorClass = "text-cyan-500";
+	} else if (logMessage.includes("No mod updates detected")) {
+		colorClass = "text-amber-500";
+	} else if (
+		logMessage.includes("initialization") ||
+		logMessage.includes("initialized") ||
+		logMessage.includes("Initializing") ||
+		logMessage.includes("Setting up") ||
+		logMessage.includes("set up") ||
+		logMessage.includes("Loading") ||
+		logMessage.includes("loaded") ||
+		logMessage.includes("Updating") ||
+		logMessage.includes("updated")
+	) {
+		colorClass = "text-pink-500";
+	}
+
+	const formattedMessage = `<span class="${colorClass}">${formattedDateTime} ${logMessage}</span>`;
 	consoleLines.push(formattedMessage);
 	if (consoleLines.length > 200) {
 		consoleLines.shift();
