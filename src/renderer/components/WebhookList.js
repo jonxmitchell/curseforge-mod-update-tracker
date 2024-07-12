@@ -1,4 +1,5 @@
 const { ipcRenderer } = require("electron");
+const { showToast } = require("../utils/toast");
 const { updateWebhookDropdowns } = require("./ModList");
 const {
 	shouldShowTooltips,
@@ -114,10 +115,21 @@ function updateWebhookList() {
 
 function addWebhook(name, url) {
 	return new Promise((resolve, reject) => {
+		if (!isValidDiscordWebhookUrl(url)) {
+			showToast(
+				"Invalid Discord webhook URL. Please enter a valid URL.",
+				"error"
+			);
+			setInvalidWebhookInputStyle();
+			reject(new Error("Invalid Discord webhook URL"));
+			return;
+		}
+
 		ipcRenderer.send("add-webhook", { name, url });
 		ipcRenderer.once("add-webhook-result", (event, result) => {
 			if (result.success) {
 				updateWebhookList().then(resolve).catch(reject);
+				resetWebhookInputStyle();
 			} else {
 				reject(new Error(result.error));
 			}
@@ -149,10 +161,71 @@ function initializeTooltips() {
 	}
 }
 
+function isValidDiscordWebhookUrl(url) {
+	const discordWebhookRegex =
+		/^https:\/\/discord\.com\/api\/webhooks\/\d+\/[\w-]+$/;
+	return discordWebhookRegex.test(url);
+}
+
+function setInvalidWebhookInputStyle() {
+	const webhookInput = document.getElementById("webhookInput");
+	const webhookInputLabel = document.querySelector('label[for="webhookInput"]');
+
+	webhookInput.classList.remove(
+		"border-gray-300",
+		"dark:border-gray-600",
+		"focus:border-blue-600",
+		"dark:focus:border-blue-500"
+	);
+	webhookInput.classList.add(
+		"border-red-600",
+		"dark:border-red-500",
+		"focus:border-red-600",
+		"dark:focus:border-red-500"
+	);
+
+	webhookInputLabel.classList.remove(
+		"text-gray-500",
+		"dark:text-gray-400",
+		"peer-focus:text-blue-600",
+		"peer-focus:dark:text-blue-500"
+	);
+	webhookInputLabel.classList.add("text-red-600", "dark:text-red-500");
+}
+
+function resetWebhookInputStyle() {
+	const webhookInput = document.getElementById("webhookInput");
+	const webhookInputLabel = document.querySelector('label[for="webhookInput"]');
+
+	webhookInput.classList.remove(
+		"border-red-600",
+		"dark:border-red-500",
+		"focus:border-red-600",
+		"dark:focus:border-red-500"
+	);
+	webhookInput.classList.add(
+		"border-gray-300",
+		"dark:border-gray-600",
+		"focus:border-blue-600",
+		"dark:focus:border-blue-500"
+	);
+
+	webhookInputLabel.classList.remove("text-red-600", "dark:text-red-500");
+	webhookInputLabel.classList.add(
+		"text-gray-500",
+		"dark:text-gray-400",
+		"peer-focus:text-blue-600",
+		"peer-focus:dark:text-blue-500"
+	);
+}
+
 module.exports = {
 	renderWebhookList,
 	updateWebhookList,
 	addWebhook,
 	renameWebhook,
 	initializeTooltips,
+	setInvalidWebhookInputStyle,
+	resetWebhookInputStyle,
+	isValidDiscordWebhookUrl,
 };

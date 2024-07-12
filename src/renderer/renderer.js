@@ -32,6 +32,9 @@ const {
 	updateWebhookList,
 	addWebhook,
 	renameWebhook,
+	setInvalidWebhookInputStyle,
+	resetWebhookInputStyle,
+	isValidDiscordWebhookUrl,
 } = require("./components/WebhookList");
 const {
 	loadSavedInterval,
@@ -245,6 +248,15 @@ async function setupEventListeners() {
 		});
 	}
 
+	const webhookInput = document.getElementById("webhookInput");
+	webhookInput.addEventListener("input", function () {
+		if (isValidDiscordWebhookUrl(this.value)) {
+			resetWebhookInputStyle();
+		} else {
+			setInvalidWebhookInputStyle();
+		}
+	});
+
 	setupIpcListeners();
 }
 
@@ -304,12 +316,22 @@ async function handleAddWebhook() {
 	const url = urlInput.value.trim();
 
 	if (name && url) {
+		if (!isValidDiscordWebhookUrl(url)) {
+			showToast(
+				"Invalid Discord webhook URL. Please enter a valid URL.",
+				"error"
+			);
+			setInvalidWebhookInputStyle();
+			return;
+		}
+
 		try {
 			await addWebhook(name, url);
 			console.log(`Webhook added: ${name}`);
 			showToast("Webhook added successfully", "success");
 			nameInput.value = "";
 			urlInput.value = "";
+			resetWebhookInputStyle();
 		} catch (error) {
 			console.error(`Failed to add webhook: ${error.message}`);
 			showToast(`Failed to add webhook: ${error.message}`, "error");
@@ -481,20 +503,20 @@ function toggleApiKeyVisibility() {
 	if (apiKeyInput.type === "password") {
 		apiKeyInput.type = "text";
 		toggleButton.innerHTML = `
-		<svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 18">
-			<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1.933 10.909A4.357 4.357 0 0 1 1 9c0-1 4-6 9-6m7.6 3.8A5.068 5.068 0 0 1 19 9c0 1-3 6-9 6-.314 0-.62-.014-.918-.04M2 17 18 1m-5 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
-		</svg>
-	`;
+        <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 18">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1.933 10.909A4.357 4.357 0 0 1 1 9c0-1 4-6 9-6m7.6 3.8A5.068 5.068 0 0 1 19 9c0 1-3 6-9 6-.314 0-.62-.014-.918-.04M2 17 18 1m-5 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+        </svg>
+    `;
 	} else {
 		apiKeyInput.type = "password";
 		toggleButton.innerHTML = `
-		<svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 14">
-			<g stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
-				<path d="M10 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
-				<path d="M10 13c4.97 0 9-2.686 9-6s-4.03-6-9-6-9 2.686-9 6 4.03 6 9 6Z"/>
-			</g>
-		</svg>
-	`;
+        <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 14">
+            <g stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                <path d="M10 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
+                <path d="M10 13c4.97 0 9-2.686 9-6s-4.03-6-9-6-9 2.686-9 6 4.03 6 9 6Z"/>
+            </g>
+        </svg>
+    `;
 	}
 }
 
@@ -611,63 +633,6 @@ function removeAllTooltipListeners() {
 		element.removeEventListener("mouseleave", hideTooltip);
 	});
 }
-
-// Modify the existing console.log override
-const originalConsoleLog = console.log;
-console.log = function (...args) {
-	originalConsoleLog.apply(console, args);
-	const logMessage = args.join(" ");
-	const now = new Date();
-	const date = `${String(now.getDate()).padStart(2, "0")}/${String(
-		now.getMonth() + 1
-	).padStart(2, "0")}/${now.getFullYear()}`;
-	const time = `${String(now.getHours()).padStart(2, "0")}:${String(
-		now.getMinutes()
-	).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}`;
-	const formattedDateTime = `<span class="text-purple-400">[${date}] [${time}]</span>`;
-
-	let colorClass = "";
-	if (
-		logMessage.includes("deleted from tracker") ||
-		logMessage.includes("Webhook deleted:")
-	) {
-		colorClass = "text-red-500";
-	} else if (
-		logMessage.includes("added to tracker") ||
-		logMessage.includes("Webhook added:")
-	) {
-		colorClass = "text-green-500";
-	} else if (
-		logMessage.includes("Mod update detected") ||
-		logMessage.includes("Webhook sent successfully")
-	) {
-		colorClass = "text-cyan-500";
-	} else if (logMessage.includes("No mod updates detected")) {
-		colorClass = "text-amber-500";
-	} else if (
-		logMessage.includes("initialization") ||
-		logMessage.includes("initialized") ||
-		logMessage.includes("Initializing") ||
-		logMessage.includes("Setting up") ||
-		logMessage.includes("set up") ||
-		logMessage.includes("Loading") ||
-		logMessage.includes("loaded") ||
-		logMessage.includes("Updating") ||
-		logMessage.includes("updated")
-	) {
-		colorClass = "text-pink-500";
-	}
-
-	const formattedMessage = `<span class="${colorClass}">${formattedDateTime} ${logMessage}</span>`;
-	consoleLines.push(formattedMessage);
-	if (consoleLines.length > 200) {
-		consoleLines.shift();
-	}
-	updateConsoleOutput(consoleLines);
-
-	// Send log to main process for file writing
-	ipcRenderer.send("log-to-file", logMessage);
-};
 
 module.exports = {
 	initializeApp,
