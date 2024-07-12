@@ -3,14 +3,18 @@
 const { ipcRenderer } = require("electron");
 const { showToast } = require("./utils/toast");
 const logger = require("./utils/logger");
-const { adjustConsoleHeight } = require("./utils/domUtils");
 const {
 	initializeConsoleLogger,
 	clearConsoleLogs,
 	logWebhookFailure,
 } = require("./utils/consoleLogger");
 const { initializeCharacterCounters } = require("./utils/characterCounter");
-const { updateModCount, updateConsoleOutput } = require("./utils/domUtils");
+const {
+	updateModCount,
+	updateConsoleOutput,
+	adjustConsoleHeight,
+	scrollConsoleToBottom,
+} = require("./utils/domUtils");
 const {
 	initializeTooltipState,
 	setTooltipState,
@@ -127,6 +131,8 @@ async function initializeApp() {
 	console.log("Window resize event listener set up.");
 
 	console.log("Application initialization completed.");
+
+	setTimeout(scrollConsoleToBottom, 10);
 }
 
 function initializeRenameWebhookModal() {
@@ -633,6 +639,15 @@ function removeAllTooltipListeners() {
 		element.removeEventListener("mouseleave", hideTooltip);
 	});
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+	const consoleTab = document.getElementById("console-tab");
+	if (consoleTab) {
+		consoleTab.addEventListener("click", () => {
+			setTimeout(scrollConsoleToBottom, 100);
+		});
+	}
+});
 
 module.exports = {
 	initializeApp,
