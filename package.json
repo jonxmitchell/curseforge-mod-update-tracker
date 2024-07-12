@@ -23,5 +23,18 @@
 		"autoprefixer": "^10.4.19",
 		"postcss": "^8.4.39",
 		"tailwindcss": "^3.4.4"
+	},
+	"build": {
+		"appId": "curseforge-mod-tracker",
+		"productName": "CurseForge Mod Tracker",
+		"mac": {
+			"icon": "assets/imgs/logo.png"
+		},
+		"win": {
+			"icon": "assets/imgs/logo.png"
+		},
+		"linux": {
+			"icon": "assets/imgs/logo.png"
+		}
 	}
 }
