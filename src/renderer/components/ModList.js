@@ -278,7 +278,7 @@ async function updateWebhookDropdowns() {
 function updateDropdownHeight(webhookList) {
 	const webhookItems = webhookList.querySelectorAll("li");
 	const itemHeight = 40; // Approximate height of each item in pixels
-	const maxHeight = 200; // Maximum height before scrolling
+	const maxHeight = 130; // Maximum height before scrolling
 
 	if (webhookItems.length >= 4) {
 		webhookList.style.maxHeight = `${maxHeight}px`;
