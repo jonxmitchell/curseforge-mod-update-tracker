@@ -1,7 +1,7 @@
 module.exports = function tabNavigation() {
 	return `
-    <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
-      <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="myTab" role="tablist">
+    <nav class="app-tabs mb-4 border-b border-gray-200 dark:border-gray-700 pt-2 bg-dark-bg sticky top-[30px] z-40">
+      <ul class="flex flex-wrap -mb-px text-sm font-medium text-center justify-center" id="myTab" role="tablist">
         <li class="mr-2" role="presentation">
           <button class="inline-flex items-center justify-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="mods-tab" data-tabs-target="#mods" type="button" role="tab" aria-controls="mods" aria-selected="false">
             <svg class="w-4 h-4 mr-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
@@ -43,6 +43,6 @@ module.exports = function tabNavigation() {
           </button>
         </li>
       </ul>
-    </div>
+    </nav>
   `;
 };

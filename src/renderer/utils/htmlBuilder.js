@@ -18,17 +18,17 @@ function buildHTML() {
     <title>Mod Update Tracker</title>
     <link rel="stylesheet" href="styles/styles.css" />
     <link rel="stylesheet" type="text/css" href="../../node_modules/toastify-js/src/toastify.css" />
-    </head>
-  <body class="bg-dark-bg text-white p-6">
-    <div class="container mx-auto max-w-full">
-      ${headerHTML()}
+  </head>
+  <body class="bg-dark-bg text-white">
+    ${headerHTML()}
+    <div class="app-container">
       ${tabNavigationHTML()}
-      <div id="myTabContent">
+      <div id="myTabContent" class="flex-1 overflow-y-auto">
         ${modTrackerHTML()}
         ${webhooksHTML()}
+        ${webhookLayoutHTML()}
         ${settingsHTML()}
         ${consoleHTML()}
-        ${webhookLayoutHTML()}
       </div>
     </div>
     ${footerHTML()}

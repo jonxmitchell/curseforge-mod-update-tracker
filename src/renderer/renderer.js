@@ -205,6 +205,17 @@ async function setupEventListeners() {
 	document
 		.getElementById("tooltipToggle")
 		.addEventListener("change", handleTooltipToggle);
+	document.getElementById("minimizeBtn").addEventListener("click", () => {
+		ipcRenderer.send("minimize-window");
+	});
+
+	document.getElementById("maximizeBtn").addEventListener("click", () => {
+		ipcRenderer.send("maximize-window");
+	});
+
+	document.getElementById("closeBtn").addEventListener("click", () => {
+		ipcRenderer.send("close-window");
+	});
 
 	const filterModInput = document.getElementById("filterModInput");
 	const clearModSearchButton = document.querySelector(".clear-mod-search");

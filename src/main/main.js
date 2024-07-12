@@ -15,7 +15,8 @@ function createWindow() {
 	mainWindow = new BrowserWindow({
 		width: 800,
 		height: 600,
-		icon: path.join(__dirname, "../../assets/imgs/logo.png"), // Add this line
+		icon: path.join(__dirname, "../../assets/imgs/logo.png"),
+		frame: false,
 		webPreferences: {
 			nodeIntegration: true,
 			contextIsolation: false,
@@ -83,4 +84,20 @@ app.on("activate", () => {
 
 ipcMain.on("log-to-file", (event, message) => {
 	logger.log(message);
+});
+
+ipcMain.on("minimize-window", () => {
+	mainWindow.minimize();
+});
+
+ipcMain.on("maximize-window", () => {
+	if (mainWindow.isMaximized()) {
+		mainWindow.unmaximize();
+	} else {
+		mainWindow.maximize();
+	}
+});
+
+ipcMain.on("close-window", () => {
+	mainWindow.close();
 });
