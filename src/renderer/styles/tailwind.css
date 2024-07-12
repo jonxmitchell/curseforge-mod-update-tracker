@@ -215,3 +215,41 @@ header {
 body {
 	overflow: hidden;
 }
+
+/* Add this to the end of src/renderer/styles/tailwind.css */
+
+.window-controls {
+	display: flex;
+	align-items: center;
+	-webkit-app-region: no-drag;
+}
+
+.mac-button {
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	margin-right: 8px;
+	border: none;
+	outline: none;
+	transition: opacity 0.2s;
+}
+
+.mac-button:hover {
+	opacity: 0.7;
+}
+
+.mac-button.close {
+	background-color: #ff5f56;
+}
+
+.mac-button.minimize {
+	background-color: #ffbd2e;
+}
+
+.mac-button.maximize {
+	background-color: #27c93f;
+}
+
+.app-header {
+	-webkit-app-region: drag;
+}
