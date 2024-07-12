@@ -46,21 +46,65 @@ let allMods = [];
 document.addEventListener("DOMContentLoaded", initializeApp);
 
 async function initializeApp() {
+	console.log("Starting application initialization...");
+
+	console.log("Initializing tooltip state...");
 	await initializeTooltipState();
+	console.log("Tooltip state initialized.");
+
+	console.log("Setting up event listeners...");
 	await setupEventListeners();
+	console.log("Event listeners set up.");
+
+	console.log("Loading saved interval...");
 	currentInterval = (await loadSavedInterval()) || DEFAULT_INTERVAL;
+	console.log(`Saved interval loaded: ${currentInterval} seconds`);
+
+	console.log("Loading API key...");
 	await loadApiKey();
+	console.log("API key loaded.");
+
+	console.log("Updating mod list...");
 	await updateModList();
+	console.log("Mod list updated.");
+
+	console.log("Updating webhook list...");
 	await updateWebhookList();
+	console.log("Webhook list updated.");
+
+	console.log("Initializing settings...");
 	initializeSettings();
+	console.log("Settings initialized.");
+
+	console.log("Initializing webhook layout...");
 	initializeWebhookLayout();
+	console.log("Webhook layout initialized.");
+
+	console.log("Updating interval display...");
 	updateIntervalDisplay();
+	console.log("Interval display updated.");
+
+	console.log("Initializing formatted content...");
 	initializeFormattedContent();
+	console.log("Formatted content initialized.");
+
+	console.log("Initializing tabs...");
 	initializeTabs();
+	console.log("Tabs initialized.");
+
+	console.log("Initializing rename webhook modal...");
 	initializeRenameWebhookModal();
+	console.log("Rename webhook modal initialized.");
+
+	console.log("Initializing tooltip toggle...");
 	initializeTooltipToggle();
+	console.log("Tooltip toggle initialized.");
+
+	console.log("Initializing character counters...");
 	initializeCharacterCounters();
-	console.log("Application initialized");
+	console.log("Character counters initialized.");
+
+	console.log("Application initialization completed.");
 }
 
 function initializeRenameWebhookModal() {
