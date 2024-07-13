@@ -47,7 +47,7 @@ function initializeConsoleLogger() {
 			logMessage.includes("Loading") ||
 			logMessage.includes("loaded") ||
 			logMessage.includes("Updating") ||
-			logMessage.includes("updated")
+			logMessage.includes("updated.")
 		) {
 			colorClass = "text-pink-500";
 		}

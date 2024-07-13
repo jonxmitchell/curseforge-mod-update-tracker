@@ -3,7 +3,7 @@
 module.exports = function webhookLayout() {
 	return `
     <div class="hidden p-4 rounded-lg" id="webhook-layout" role="tabpanel" aria-labelledby="webhook-layout-tab">
-      <h3 class="text-xl font-bold mb-4">Webhook Layout</h3>
+      <h3 class="text-xl font-bold mb-4">Webhook Formatter</h3>
       <div class="space-y-4">
         <div class="formatting-container bg-lighter-black p-4 rounded-lg">
           <div class="flex justify-between items-center mb-2">
@@ -214,7 +214,7 @@ module.exports = function webhookLayout() {
         </div>
         
         <div class="flex justify-center w-full">
-          <button id="saveWebhookLayout" class="custom-button w-full">Save Webhook Layout</button>
+          <button id="saveWebhookLayout" class="custom-button w-full">Save Webhook Format</button>
         </div>
       </div>
     </div>
