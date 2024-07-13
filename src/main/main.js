@@ -11,7 +11,7 @@ const logger = require("../renderer/utils/logger");
 const createModBrowserWindow = require("./windows/modBrowserWindow");
 
 let mainWindow;
-let modBrowserView;
+let modBrowserView = null;
 
 function createWindow() {
 	mainWindow = new BrowserWindow({
@@ -68,55 +68,57 @@ app.whenReady().then(() => {
 	});
 
 	ipcMain.on("open-in-app", (event, url) => {
-		console.log("Attempting to open in-app browser");
-		if (modBrowserView) {
-			console.log("Existing modBrowserView found, loading URL");
+		if (modBrowserView && !modBrowserView.window.isDestroyed()) {
 			modBrowserView.view.webContents.loadURL(url);
 			modBrowserView.window.show();
 		} else {
-			console.log("Creating new modBrowserView");
 			const { window, view } = createModBrowserWindow(url);
 			modBrowserView = { window, view };
 
 			modBrowserView.window.on("closed", () => {
-				console.log("modBrowserView closed");
-				modBrowserView = null;
-			});
-
-			modBrowserView.window.webContents.on("did-finish-load", () => {
-				console.log("modBrowserView finished loading");
-			});
-
-			modBrowserView.window.webContents.on("dom-ready", () => {
-				console.log("modBrowserView DOM ready");
-				modBrowserView.window.webContents.executeJavaScript(`
-          console.log('Window controls:', document.querySelector('.window-controls'));
-          console.log('Header:', document.querySelector('.app-header'));
-        `);
-			});
-
-			ipcMain.on("minimize-mod-window", () => modBrowserView.window.minimize());
-			ipcMain.on("maximize-mod-window", () => {
-				if (modBrowserView.window.isMaximized()) {
-					modBrowserView.window.unmaximize();
-				} else {
-					modBrowserView.window.maximize();
+				if (modBrowserView) {
+					modBrowserView.view = null;
+					modBrowserView.window = null;
+					modBrowserView = null;
 				}
 			});
-			ipcMain.on("close-mod-window", () => modBrowserView.window.close());
+
+			ipcMain.on("minimize-mod-window", () => {
+				if (modBrowserView && !modBrowserView.window.isDestroyed()) {
+					modBrowserView.window.minimize();
+				}
+			});
+			ipcMain.on("maximize-mod-window", () => {
+				if (modBrowserView && !modBrowserView.window.isDestroyed()) {
+					if (modBrowserView.window.isMaximized()) {
+						modBrowserView.window.unmaximize();
+					} else {
+						modBrowserView.window.maximize();
+					}
+				}
+			});
+			ipcMain.on("close-mod-window", () => {
+				if (modBrowserView && !modBrowserView.window.isDestroyed()) {
+					modBrowserView.window.close();
+				}
+			});
 			ipcMain.on("load-url", (event, newUrl) => {
-				modBrowserView.view.webContents.loadURL(newUrl);
-				modBrowserView.window.webContents.send("update-url", newUrl);
+				if (modBrowserView && !modBrowserView.window.isDestroyed()) {
+					modBrowserView.view.webContents.loadURL(newUrl);
+					modBrowserView.window.webContents.send("update-url", newUrl);
+				}
 			});
 
 			modBrowserView.window.on("resize", () => {
-				const { width, height } = modBrowserView.window.getBounds();
-				modBrowserView.view.setBounds({
-					x: 0,
-					y: 30,
-					width,
-					height: height - 30,
-				});
+				if (modBrowserView && !modBrowserView.window.isDestroyed()) {
+					const { width, height } = modBrowserView.window.getBounds();
+					modBrowserView.view.setBounds({
+						x: 0,
+						y: 30,
+						width,
+						height: height - 30,
+					});
+				}
 			});
 		}
 	});
@@ -131,6 +133,7 @@ app.whenReady().then(() => {
 });
 
 app.on("window-all-closed", () => {
+	modBrowserView = null;
 	if (process.platform !== "darwin") {
 		app.quit();
 	}
@@ -163,19 +166,27 @@ ipcMain.on("close-window", () => {
 });
 
 ipcMain.on("open-dev-tools", () => {
-	if (modBrowserView) {
+	if (modBrowserView && !modBrowserView.window.isDestroyed()) {
 		modBrowserView.view.webContents.openDevTools();
 	}
 });
 
 ipcMain.on("go-back", () => {
-	if (modBrowserView && modBrowserView.view.webContents.canGoBack()) {
+	if (
+		modBrowserView &&
+		!modBrowserView.window.isDestroyed() &&
+		modBrowserView.view.webContents.canGoBack()
+	) {
 		modBrowserView.view.webContents.goBack();
 	}
 });
 
 ipcMain.on("go-forward", () => {
-	if (modBrowserView && modBrowserView.view.webContents.canGoForward()) {
+	if (
+		modBrowserView &&
+		!modBrowserView.window.isDestroyed() &&
+		modBrowserView.view.webContents.canGoForward()
+	) {
 		modBrowserView.view.webContents.goForward();
 	}
 });

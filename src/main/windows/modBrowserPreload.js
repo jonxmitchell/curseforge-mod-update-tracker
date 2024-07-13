@@ -1,5 +1,3 @@
-// src/main/windows/modBrowserPreload.js
-
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("electron", {
