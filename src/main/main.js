@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Menu } = require("electron");
+const { app, BrowserWindow, ipcMain, shell, Menu } = require("electron");
 const path = require("path");
 const { initDatabase } = require("../database/connection");
 const setupModIPC = require("./ipc/modIPC");
@@ -8,8 +8,10 @@ const { setupUpdateIPC } = require("./ipc/updateIPC");
 const { getWebhooks } = require("../database/webhooksDB");
 const { getModWebhooks } = require("../database/modWebhooksDB");
 const logger = require("../renderer/utils/logger");
+const createModBrowserWindow = require("./windows/modBrowserWindow");
 
 let mainWindow;
+let modBrowserView;
 
 function createWindow() {
 	mainWindow = new BrowserWindow({
@@ -34,7 +36,6 @@ function createWindow() {
 		}
 	};
 
-	// Enable right-click context menu
 	mainWindow.webContents.on("context-menu", (event, params) => {
 		const menu = Menu.buildFromTemplate([
 			{ role: "cut" },
@@ -67,15 +68,61 @@ app.whenReady().then(() => {
 	});
 
 	ipcMain.on("open-in-app", (event, url) => {
-		const win = new BrowserWindow({
-			width: 800,
-			height: 600,
-			webPreferences: {
-				nodeIntegration: false,
-				contextIsolation: true,
-			},
-		});
-		win.loadURL(url);
+		console.log("Attempting to open in-app browser");
+		if (modBrowserView) {
+			console.log("Existing modBrowserView found, loading URL");
+			modBrowserView.view.webContents.loadURL(url);
+			modBrowserView.window.show();
+		} else {
+			console.log("Creating new modBrowserView");
+			const { window, view } = createModBrowserWindow(url);
+			modBrowserView = { window, view };
+
+			modBrowserView.window.on("closed", () => {
+				console.log("modBrowserView closed");
+				modBrowserView = null;
+			});
+
+			modBrowserView.window.webContents.on("did-finish-load", () => {
+				console.log("modBrowserView finished loading");
+			});
+
+			modBrowserView.window.webContents.on("dom-ready", () => {
+				console.log("modBrowserView DOM ready");
+				modBrowserView.window.webContents.executeJavaScript(`
+          console.log('Window controls:', document.querySelector('.window-controls'));
+          console.log('Header:', document.querySelector('.app-header'));
+        `);
+			});
+
+			ipcMain.on("minimize-mod-window", () => modBrowserView.window.minimize());
+			ipcMain.on("maximize-mod-window", () => {
+				if (modBrowserView.window.isMaximized()) {
+					modBrowserView.window.unmaximize();
+				} else {
+					modBrowserView.window.maximize();
+				}
+			});
+			ipcMain.on("close-mod-window", () => modBrowserView.window.close());
+			ipcMain.on("load-url", (event, newUrl) => {
+				modBrowserView.view.webContents.loadURL(newUrl);
+				modBrowserView.window.webContents.send("update-url", newUrl);
+			});
+
+			modBrowserView.window.on("resize", () => {
+				const { width, height } = modBrowserView.window.getBounds();
+				modBrowserView.view.setBounds({
+					x: 0,
+					y: 30,
+					width,
+					height: height - 30,
+				});
+			});
+		}
+	});
+
+	ipcMain.on("open-external", (event, url) => {
+		shell.openExternal(url);
 	});
 
 	mainWindow.webContents.on("did-finish-load", () => {
@@ -113,4 +160,10 @@ ipcMain.on("maximize-window", () => {
 
 ipcMain.on("close-window", () => {
 	mainWindow.close();
+});
+
+ipcMain.on("open-dev-tools", () => {
+	if (modBrowserView) {
+		modBrowserView.view.webContents.openDevTools();
+	}
 });

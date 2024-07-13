@@ -292,7 +292,3 @@ body {
 	transform: translateY(0);
 	transition: transform 0.5s ease;
 }
-
-.hover:border-gray-300 {
-	transition: transform 0.5s ease;
-}
