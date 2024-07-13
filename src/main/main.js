@@ -167,3 +167,15 @@ ipcMain.on("open-dev-tools", () => {
 		modBrowserView.view.webContents.openDevTools();
 	}
 });
+
+ipcMain.on("go-back", () => {
+	if (modBrowserView && modBrowserView.view.webContents.canGoBack()) {
+		modBrowserView.view.webContents.goBack();
+	}
+});
+
+ipcMain.on("go-forward", () => {
+	if (modBrowserView && modBrowserView.view.webContents.canGoForward()) {
+		modBrowserView.view.webContents.goForward();
+	}
+});
