@@ -60,12 +60,12 @@ document.addEventListener("DOMContentLoaded", () => {
 		background: none;
 		border: none;
 		color: #ffffff;
-		padding: 10px;
-		margin: 0 10px;
+		padding: 5px 20px;
+		margin: 0 10px 0 0;
 		cursor: pointer;
 		opacity: 0.7;
 		transition: all 0.2s;
-		border-radius: 4px;
+		border-radius: 0;
 	  }
 	  .nav-button:hover {
 		opacity: 1;
