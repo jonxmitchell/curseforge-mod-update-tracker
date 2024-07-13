@@ -11,7 +11,7 @@ module.exports = function webhookLayout() {
             <span id="webhookTextCounter" class="text-xs text-gray-500 dark:text-gray-400">0/2000</span>
           </div>
           <div class="w-full mb-4 border border-gray-600 rounded-lg bg-darker-surface">
-            <div class="flex items-center justify-between px-3 py-2 border-b border-gray-600 bg-darker-surface">
+            <div class="flex items-center justify-between px-3 py-2 border-b rounded-t-lg border-gray-600 bg-darker-surface">
               <div class="flex flex-wrap items-center divide-gray-600 sm:divide-x sm:rtl:divide-x-reverse">
                 <div class="flex items-center space-x-1 rtl:space-x-reverse sm:pe-4">
                   <button type="button" class="p-2 text-gray-400 rounded cursor-pointer hover:text-white hover:bg-gray-700" data-format="bold">
@@ -89,7 +89,7 @@ module.exports = function webhookLayout() {
                 <span id="embedTextCounter" class="text-xs text-gray-500 dark:text-gray-400">0/4096</span>
               </div>
               <div class="w-full mb-4 border border-gray-600 rounded-lg bg-darker-surface">
-                <div class="flex items-center justify-between px-3 py-2 border-b border-gray-600 bg-darker-surface">
+                <div class="flex items-center justify-between px-3 py-2 border-b rounded-t-lg border-gray-600 bg-darker-surface">
                   <div class="flex flex-wrap items-center divide-gray-600 sm:divide-x sm:rtl:divide-x-reverse">
                     <div class="flex items-center space-x-1 rtl:space-x-reverse sm:pe-4">
                       <button type="button" class="p-2 text-gray-400 rounded cursor-pointer hover:text-white hover:bg-gray-700" data-format="bold">
