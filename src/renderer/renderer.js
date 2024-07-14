@@ -649,6 +649,28 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 });
 
+document.getElementById("openGithub").addEventListener("click", () => {
+	ipcRenderer.send(
+		"open-external-link",
+		"https://github.com/jonxmitchell/curseforge-mod-update-tracker"
+	);
+});
+
+document.getElementById("openKofi").addEventListener("click", () => {
+	ipcRenderer.send("open-external-link", "https://ko-fi.com/artiartificial");
+});
+
+document.getElementById("openArtiDiscord").addEventListener("click", () => {
+	ipcRenderer.send(
+		"open-external-link",
+		"https://discordapp.com/users/727813657949634570"
+	);
+});
+
+document.getElementById("openVasGithub").addEventListener("click", () => {
+	ipcRenderer.send("open-external-link", "https://github.com/vasilejianu");
+});
+
 module.exports = {
 	initializeApp,
 	handlePauseResume,
