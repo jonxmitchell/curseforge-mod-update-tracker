@@ -1,4 +1,4 @@
-const { BrowserWindow, BrowserView } = require("electron");
+const { BrowserWindow, BrowserView, session, Menu } = require("electron");
 const path = require("path");
 
 function createModBrowserWindow(url) {
@@ -18,13 +18,20 @@ function createModBrowserWindow(url) {
 		webPreferences: {
 			nodeIntegration: false,
 			contextIsolation: true,
-			devTools: true,
 		},
 	});
 
 	win.setBrowserView(view);
 	view.setBounds({ x: 0, y: 30, width: 1300, height: 770 });
+	view.setAutoResize({ width: true, height: true });
 
+	const htmlPath = path.join(
+		__dirname,
+		"../../renderer/mod_browser_window/modBrowser.html"
+	);
+	win.loadFile(htmlPath);
+
+	// Define scrollbar CSS
 	const scrollbarCSS = `
         ::-webkit-scrollbar {
             width: 3px !important;
@@ -46,62 +53,60 @@ function createModBrowserWindow(url) {
         }
     `;
 
-	const preloadScript = `
-        (function() {
-            const style = document.createElement('style');
-            style.textContent = ${JSON.stringify(scrollbarCSS)};
-            (document.head || document.documentElement).appendChild(style);
-            
-            const observer = new MutationObserver((mutations) => {
-                mutations.forEach((mutation) => {
-                    if (mutation.addedNodes.length) {
-                        mutation.addedNodes.forEach((node) => {
-                            if (node.nodeType === Node.ELEMENT_NODE) {
-                                node.style.setProperty('scrollbar-width', 'thin', 'important');
-                                node.style.setProperty('scrollbar-color', '#888 #1e1e1e', 'important');
-                            }
-                        });
-                    }
-                });
-            });
-            
-            observer.observe(document.documentElement, { 
-                childList: true, 
-                subtree: true 
-            });
-        })();
-    `;
-
-	view.webContents.on("dom-ready", () => {
-		view.webContents.executeJavaScript(preloadScript);
-	});
-
-	view.webContents.on("did-start-navigation", () => {
+	// Inject CSS as soon as possible
+	view.webContents.on("did-start-loading", () => {
 		view.webContents.insertCSS(scrollbarCSS);
 	});
 
-	view.webContents.on("did-finish-load", () => {
-		view.webContents.insertCSS(scrollbarCSS);
-		if (!win.isVisible()) {
-			win.show();
-		}
-	});
-
+	// Load the URL
 	view.webContents.loadURL(url);
 
-	const htmlPath = path.join(
-		__dirname,
-		"../../renderer/mod_browser_window/modBrowser.html"
-	);
-	win.loadFile(htmlPath);
-
-	win.webContents.on("did-finish-load", () => {
-		win.webContents.send("update-url", url);
+	view.webContents.on("did-finish-load", () => {
+		win.webContents.send("update-url", view.webContents.getURL());
 	});
 
-	win.on("resize", () => {
-		const { width, height } = win.getBounds();
-		view.setBounds({ x: 0, y: 30, width, height: height - 30 });
+	// Handle new window creation
+	view.webContents.setWindowOpenHandler(({ url }) => {
+		view.webContents.loadURL(url);
+		return { action: "deny" };
+	});
+
+	// Allow all navigation
+	view.webContents.on("will-navigate", (event, navigationUrl) => {
+		win.webContents.send("update-url", navigationUrl);
+	});
+
+	win.once("ready-to-show", () => {
+		win.show();
+	});
+
+	// Add context menu
+	view.webContents.on("context-menu", (event, params) => {
+		const menu = Menu.buildFromTemplate([
+			{ role: "cut" },
+			{ role: "copy" },
+			{ role: "paste" },
+			{ type: "separator" },
+			{ role: "selectAll" },
+		]);
+
+		menu.popup(view.webContents);
+	});
+
+	// Clear session data when window is closed
+	win.on("closed", () => {
+		session.defaultSession.clearStorageData({
+			storages: [
+				"appcache",
+				"filesystem",
+				"indexdb",
+				"localstorage",
+				"shadercache",
+				"websql",
+				"serviceworkers",
+				"cachestorage",
+			],
+		});
 	});
 
 	return { window: win, view: view };

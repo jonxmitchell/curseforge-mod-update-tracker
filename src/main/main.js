@@ -1,4 +1,11 @@
-const { app, BrowserWindow, ipcMain, shell, Menu } = require("electron");
+const {
+	app,
+	BrowserWindow,
+	BrowserView,
+	ipcMain,
+	shell,
+	Menu,
+} = require("electron");
 const path = require("path");
 const { initDatabase } = require("../database/connection");
 const setupModIPC = require("./ipc/modIPC");
@@ -11,6 +18,7 @@ const logger = require("../renderer/utils/logger");
 const createModBrowserWindow = require("./windows/modBrowserWindow");
 
 let mainWindow;
+let modBrowserWindow = null;
 let modBrowserView = null;
 
 function createWindow() {
@@ -47,6 +55,16 @@ function createWindow() {
 
 		menu.popup(mainWindow, params.x, params.y);
 	});
+
+	mainWindow.on("close", (event) => {
+		if (modBrowserWindow && !modBrowserWindow.isDestroyed()) {
+			event.preventDefault(); // Prevent the main window from closing immediately
+			modBrowserWindow.close(); // Close the mod browser window
+			modBrowserWindow = null;
+			modBrowserView = null;
+			mainWindow.close(); // Now close the main window
+		}
+	});
 }
 
 app.whenReady().then(() => {
@@ -68,57 +86,17 @@ app.whenReady().then(() => {
 	});
 
 	ipcMain.on("open-in-app", (event, url) => {
-		if (modBrowserView && !modBrowserView.window.isDestroyed()) {
-			modBrowserView.view.webContents.loadURL(url);
-			modBrowserView.window.show();
+		if (modBrowserWindow && !modBrowserWindow.isDestroyed()) {
+			modBrowserView.webContents.loadURL(url);
+			modBrowserWindow.show();
 		} else {
 			const { window, view } = createModBrowserWindow(url);
-			modBrowserView = { window, view };
+			modBrowserWindow = window;
+			modBrowserView = view;
 
-			modBrowserView.window.on("closed", () => {
-				if (modBrowserView) {
-					modBrowserView.view = null;
-					modBrowserView.window = null;
-					modBrowserView = null;
-				}
-			});
-
-			ipcMain.on("minimize-mod-window", () => {
-				if (modBrowserView && !modBrowserView.window.isDestroyed()) {
-					modBrowserView.window.minimize();
-				}
-			});
-			ipcMain.on("maximize-mod-window", () => {
-				if (modBrowserView && !modBrowserView.window.isDestroyed()) {
-					if (modBrowserView.window.isMaximized()) {
-						modBrowserView.window.unmaximize();
-					} else {
-						modBrowserView.window.maximize();
-					}
-				}
-			});
-			ipcMain.on("close-mod-window", () => {
-				if (modBrowserView && !modBrowserView.window.isDestroyed()) {
-					modBrowserView.window.close();
-				}
-			});
-			ipcMain.on("load-url", (event, newUrl) => {
-				if (modBrowserView && !modBrowserView.window.isDestroyed()) {
-					modBrowserView.view.webContents.loadURL(newUrl);
-					modBrowserView.window.webContents.send("update-url", newUrl);
-				}
-			});
-
-			modBrowserView.window.on("resize", () => {
-				if (modBrowserView && !modBrowserView.window.isDestroyed()) {
-					const { width, height } = modBrowserView.window.getBounds();
-					modBrowserView.view.setBounds({
-						x: 0,
-						y: 30,
-						width,
-						height: height - 30,
-					});
-				}
+			modBrowserWindow.on("closed", () => {
+				modBrowserWindow = null;
+				modBrowserView = null;
 			});
 		}
 	});
@@ -133,7 +111,9 @@ app.whenReady().then(() => {
 });
 
 app.on("window-all-closed", () => {
-	modBrowserView = null;
+	if (modBrowserWindow && !modBrowserWindow.isDestroyed()) {
+		modBrowserWindow.destroy();
+	}
 	if (process.platform !== "darwin") {
 		app.quit();
 	}
@@ -166,27 +146,51 @@ ipcMain.on("close-window", () => {
 });
 
 ipcMain.on("open-dev-tools", () => {
-	if (modBrowserView && !modBrowserView.window.isDestroyed()) {
-		modBrowserView.view.webContents.openDevTools();
+	if (modBrowserWindow && !modBrowserWindow.isDestroyed()) {
+		modBrowserWindow.webContents.openDevTools();
+	}
+});
+
+ipcMain.on("minimize-mod-window", () => {
+	if (modBrowserWindow && !modBrowserWindow.isDestroyed()) {
+		modBrowserWindow.minimize();
+	}
+});
+
+ipcMain.on("maximize-mod-window", () => {
+	if (modBrowserWindow && !modBrowserWindow.isDestroyed()) {
+		if (modBrowserWindow.isMaximized()) {
+			modBrowserWindow.unmaximize();
+		} else {
+			modBrowserWindow.maximize();
+		}
+	}
+});
+
+ipcMain.on("close-mod-window", () => {
+	if (modBrowserWindow && !modBrowserWindow.isDestroyed()) {
+		modBrowserWindow.close();
 	}
 });
 
 ipcMain.on("go-back", () => {
-	if (
-		modBrowserView &&
-		!modBrowserView.window.isDestroyed() &&
-		modBrowserView.view.webContents.canGoBack()
-	) {
-		modBrowserView.view.webContents.goBack();
+	if (modBrowserView && modBrowserView.webContents.canGoBack()) {
+		modBrowserView.webContents.goBack();
 	}
 });
 
 ipcMain.on("go-forward", () => {
-	if (
-		modBrowserView &&
-		!modBrowserView.window.isDestroyed() &&
-		modBrowserView.view.webContents.canGoForward()
-	) {
-		modBrowserView.view.webContents.goForward();
+	if (modBrowserView && modBrowserView.webContents.canGoForward()) {
+		modBrowserView.webContents.goForward();
 	}
+});
+
+ipcMain.on("reload", () => {
+	if (modBrowserView) {
+		modBrowserView.webContents.reload();
+	}
+});
+
+ipcMain.on("open-external-link", (event, url) => {
+	shell.openExternal(url);
 });
