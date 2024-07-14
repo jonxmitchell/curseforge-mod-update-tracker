@@ -10,7 +10,7 @@
 		"watch:css": "tailwindcss -i ./src/renderer/styles/tailwind.css -o ./src/renderer/styles/styles.css --watch",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
-	"author": "",
+	"author": "jonxmitchell",
 	"license": "ISC",
 	"dependencies": {
 		"electron": "^13.6.9",
