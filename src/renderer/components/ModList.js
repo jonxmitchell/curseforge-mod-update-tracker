@@ -66,7 +66,7 @@ function renderModList(mods) {
 							mod.mod_id
 						}" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 w-full justify-between" type="button">
                 <span class="selected-webhooks flex flex-wrap gap-2"></span>
-                <svg class="w-2.5 h-2.5 ms-3 flex-shrink-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                <svg class="dropdown-arrow w-2.5 h-2.5 ms-3 flex-shrink-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
                 </svg>
             </button>
@@ -212,7 +212,7 @@ function toggleDropdown(dropdownMenu, button) {
 }
 
 function updateDropdownArrow(button, isOpen) {
-	const svg = button.querySelector("svg");
+	const svg = button.querySelector("svg.dropdown-arrow");
 	if (isOpen) {
 		svg.innerHTML =
 			'<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 5 4-4 4 4"/>';
@@ -339,7 +339,10 @@ async function handleWebhookChange(event) {
 function updateSelectedText(select) {
 	const selectedWebhooks = Array.from(
 		select.querySelectorAll('input[type="checkbox"]:checked'),
-		(checkbox) => checkbox.nextElementSibling.textContent.trim()
+		(checkbox) => ({
+			id: checkbox.value,
+			name: checkbox.nextElementSibling.textContent.trim(),
+		})
 	);
 	const dropdownButton = select.querySelector('[id^="dropdownSearchButton-"]');
 	const selectedWebhooksContainer =
@@ -347,16 +350,38 @@ function updateSelectedText(select) {
 	selectedWebhooksContainer.innerHTML = "";
 
 	if (selectedWebhooks.length > 0) {
-		selectedWebhooks.forEach((webhookName) => {
+		selectedWebhooks.forEach((webhook) => {
 			const bubble = document.createElement("span");
 			bubble.className =
-				"bg-blue-500 text-white text-xs px-2 py-1 rounded-full";
-			bubble.textContent = webhookName;
+				"bg-blue-500 text-white text-xs px-2 py-1 rounded-full flex items-center";
+			bubble.innerHTML = `
+				${webhook.name}
+				<button class="ml-1 focus:outline-none remove-webhook" data-webhook-id="${webhook.id}">
+					<svg class="remove-icon w-3 h-3 text-white opacity-50 hover:opacity-100 transition-opacity duration-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+						<path fill-rule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm7.707-3.707a1 1 0 0 0-1.414 1.414L10.586 12l-2.293 2.293a1 1 0 1 0 1.414 1.414L12 13.414l2.293 2.293a1 1 0 0 0 1.414-1.414L13.414 12l2.293-2.293a1 1 0 0 0-1.414-1.414L12 10.586 9.707 8.293Z" clip-rule="evenodd"/>
+					</svg>
+				</button>
+			`;
 			selectedWebhooksContainer.appendChild(bubble);
+
+			// Add event listener for the remove button
+			bubble.querySelector(".remove-webhook").addEventListener("click", (e) => {
+				e.stopPropagation();
+				removeWebhook(select, webhook.id);
+			});
 		});
 	} else {
 		dropdownButton.querySelector(".selected-webhooks").textContent =
 			"Select Webhooks";
+	}
+}
+
+async function removeWebhook(select, webhookId) {
+	const modId = select.getAttribute("data-mod-id");
+	const checkbox = select.querySelector(`input[value="${webhookId}"]`);
+	if (checkbox) {
+		checkbox.checked = false;
+		await handleWebhookChange({ target: checkbox, stopPropagation: () => {} });
 	}
 }
 
