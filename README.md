@@ -46,7 +46,7 @@ CurseForge Mod Tracker is a useful desktop application designed to help mod enth
 3. **Configuration:**
 
 - `Obtain a CurseForge API key from CurseForge API. get the API key.`
-- `Set up your Discord webhook URLs (optional for notifications). Find out how to set up a discord webhook [here](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks)`
+- `Set up your Discord webhook URLs (optional for notifications).`
 
 4. **Bulid HTML & CSS:**
 
