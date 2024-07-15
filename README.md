@@ -99,6 +99,51 @@ CurseForge Mod Tracker is a useful desktop application designed to help mod enth
 
 - Click on a mod's name to open its CurseForge page in the built-in browser.
 
+## Locating the CFMTData Folder
+
+The application data is stored in the `CFMTData` folder within your system's AppData directory. Here's how to find it:
+
+1.  Press `Win + R` to open the Run dialog.
+2.  Type `%APPDATA%\CFMTData` and press Enter.
+3.  This will open the CFMTData folder in File Explorer.
+
+Alternatively, you can navigate to this folder manually:
+
+- Open File Explorer
+- Navigate to `C:\Users\YourUsername\AppData\Roaming\CFMTData`
+
+Note: The `AppData` folder is hidden by default. You may need to enable "Show hidden files and folders" in File Explorer options to see it.
+
+## Contents of the CFMTData Folder
+
+Inside the CFMTData folder, you'll find several important files and directories:
+
+1.  **mods.db**: This is the SQLite database file that stores information about your tracked mods, webhooks, and application settings.
+2.  **logs/**: This directory contains log files that record application activities and errors. These can be useful for troubleshooting.
+
+    - Log files are named in the format `log_YYYY-MM-DD_HH-MM-SS.txt`.
+
+3.  **config.json**: (If applicable) This file stores user configuration settings that persist between application launches.
+4.  **cache/**: (If applicable) This directory may contain cached data to improve application performance.
+
+## Backing Up Your Data
+
+It's a good practice to periodically back up your CFMTData folder, especially before updating the application or making significant changes. To do this:
+
+1.  Navigate to the CFMTData folder as described above.
+2.  Copy the entire folder to a safe location (e.g., an external drive or cloud storage).
+
+## Resetting the Application
+
+If you need to reset the application to its default state:
+
+1.  Close the CurseForge Mod Tracker application completely.
+2.  Navigate to the CFMTData folder.
+3.  Rename or delete the folder (renaming is safer as it allows you to recover data if needed).
+4.  Restart the application. A new CFMTData folder will be created with default settings.
+
+⚠️ **Warning**: Deleting or modifying files in the CFMTData folder can result in loss of your tracked mods, settings, and webhook configurations. Always create a backup before making changes.
+
 ## Contributing 🤝
 
 Contributions are welcome to the CurseForge Mod Tracker! Here's how you can help:
