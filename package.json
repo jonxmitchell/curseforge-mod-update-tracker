@@ -4,7 +4,7 @@
 	"description": "An application to track and notify updates for CurseForge mods",
 	"main": "src/main/main.js",
 	"scripts": {
-		"start": "npm run build:html && npm run build:css && electron .",
+		"start": "electron .",
 		"build:html": "node src/renderer/utils/htmlBuilder.js",
 		"build:css": "tailwindcss -i ./src/renderer/styles/tailwind.css -o ./src/renderer/styles/styles.css --minify",
 		"watch:css": "tailwindcss -i ./src/renderer/styles/tailwind.css -o ./src/renderer/styles/styles.css --watch",
@@ -12,7 +12,7 @@
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"author": "jonxmitchell",
-	"license": "ISC",
+	"license": "MIT",
 	"dependencies": {
 		"better-sqlite3": "^11.1.2",
 		"flowbite": "^2.4.1",
