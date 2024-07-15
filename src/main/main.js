@@ -227,3 +227,12 @@ ipcMain.on("reload", () => {
 ipcMain.on("open-external-link", (event, url) => {
 	shell.openExternal(url);
 });
+
+function getLogsFolderPath() {
+	return path.join(app.getPath("appData"), "CFMTData", "logs");
+}
+
+ipcMain.on("open-logs-folder", (event) => {
+	const logsFolderPath = getLogsFolderPath();
+	shell.openPath(logsFolderPath);
+});
