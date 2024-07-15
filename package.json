@@ -51,7 +51,8 @@
 			],
 			"icon": "assets/imgs/logo.png",
 			"sign": null,
-			"asar": false
+			"asar": false,
+			"publisherName": "jonxmitchell"
 		},
 		"portable": {
 			"artifactName": "${productName}-portable-${version}.${ext}"
