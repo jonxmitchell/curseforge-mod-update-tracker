@@ -1,9 +1,16 @@
 const fs = require("fs");
 const path = require("path");
+const os = require("os");
 
 class Logger {
 	constructor() {
-		this.logsDir = path.join(__dirname, "../../../logs");
+		this.logsDir = path.join(
+			os.homedir(),
+			"AppData",
+			"Roaming",
+			"CFMTData",
+			"logs"
+		);
 		this.logFile = this.createNewLogFile();
 		this.ensureLogDirectory();
 	}
