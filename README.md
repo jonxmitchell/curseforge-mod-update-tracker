@@ -8,7 +8,7 @@
 
 CurseForge Mod Tracker is a useful desktop application designed to help mod enthusiasts stay up-to-date with their favorite mods. Built with Electron, this app provides real-time tracking and notifications for mod updates from CurseForge.
 
-## Features 🚀
+## Features ✨
 
 - 📊 **Mod Tracking**: Easily add and manage your favorite CurseForge mods.
 - 🔔 **Real-time Notifications**: Get instant alerts when your tracked mods are updated.
@@ -99,7 +99,7 @@ CurseForge Mod Tracker is a useful desktop application designed to help mod enth
 
 - Click on a mod's name to open its CurseForge page in the built-in browser.
 
-## Locating the CFMTData Folder
+## Locating the CFMTData Folder 🔎
 
 The application data is stored in the `CFMTData` folder within your system's AppData directory. Here's how to find it:
 
@@ -114,7 +114,7 @@ Alternatively, you can navigate to this folder manually:
 
 Note: The `AppData` folder is hidden by default. You may need to enable "Show hidden files and folders" in File Explorer options to see it.
 
-## Contents of the CFMTData Folder
+## Contents of the CFMTData Folder 📂
 
 Inside the CFMTData folder, you'll find several important files and directories:
 
@@ -126,14 +126,14 @@ Inside the CFMTData folder, you'll find several important files and directories:
 3.  **config.json**: (If applicable) This file stores user configuration settings that persist between application launches.
 4.  **cache/**: (If applicable) This directory may contain cached data to improve application performance.
 
-## Backing Up Your Data
+## Backing Up Your Data ⤴️
 
 It's a good practice to periodically back up your CFMTData folder, especially before updating the application or making significant changes. To do this:
 
 1.  Navigate to the CFMTData folder as described above.
 2.  Copy the entire folder to a safe location (e.g., an external drive or cloud storage).
 
-## Resetting the Application
+## Resetting the Application 🔄
 
 If you need to reset the application to its default state:
 
