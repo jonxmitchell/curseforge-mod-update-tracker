@@ -12,11 +12,12 @@ const {
 const fetch = require("node-fetch");
 
 function setupWebhookIPC(mainWindow) {
-	ipcMain.on("get-webhooks", async (event) => {
+	ipcMain.on("get-webhooks", (event) => {
 		try {
-			const webhooks = await getWebhooks();
+			const webhooks = getWebhooks();
 			event.reply("get-webhooks-result", { success: true, webhooks });
 		} catch (error) {
+			console.error("Error fetching webhooks:", error);
 			event.reply("get-webhooks-result", {
 				success: false,
 				error: error.message,
@@ -24,9 +25,9 @@ function setupWebhookIPC(mainWindow) {
 		}
 	});
 
-	ipcMain.on("add-webhook", async (event, { name, url }) => {
+	ipcMain.on("add-webhook", (event, { name, url }) => {
 		try {
-			await addWebhook(name, url);
+			addWebhook(name, url);
 			event.reply("add-webhook-result", { success: true });
 		} catch (error) {
 			event.reply("add-webhook-result", {
@@ -36,9 +37,9 @@ function setupWebhookIPC(mainWindow) {
 		}
 	});
 
-	ipcMain.on("delete-webhook", async (event, id) => {
+	ipcMain.on("delete-webhook", (event, id) => {
 		try {
-			await deleteWebhook(id);
+			deleteWebhook(id);
 			event.reply("delete-webhook-result", { success: true, id });
 		} catch (error) {
 			event.reply("delete-webhook-result", {
@@ -50,7 +51,7 @@ function setupWebhookIPC(mainWindow) {
 
 	ipcMain.on("test-webhook", async (event, webhookId) => {
 		try {
-			const webhooks = await getWebhooks();
+			const webhooks = getWebhooks();
 			const webhook = webhooks.find((w) => w.id === webhookId);
 			if (!webhook) {
 				throw new Error("Webhook not found");
@@ -98,9 +99,9 @@ function setupWebhookIPC(mainWindow) {
 		}
 	});
 
-	ipcMain.handle("get-mod-webhooks", async (event, modId) => {
+	ipcMain.handle("get-mod-webhooks", (event, modId) => {
 		try {
-			return await getModWebhooks(modId);
+			return getModWebhooks(modId);
 		} catch (error) {
 			console.error("Error getting mod webhooks:", error);
 			throw error;
@@ -109,9 +110,9 @@ function setupWebhookIPC(mainWindow) {
 
 	ipcMain.handle(
 		"assign-webhooks",
-		async (event, { modId, webhookIds, previousWebhookIds }) => {
+		(event, { modId, webhookIds, previousWebhookIds }) => {
 			try {
-				await assignWebhooks(modId, webhookIds);
+				assignWebhooks(modId, webhookIds);
 
 				const assignedWebhooks = webhookIds.filter(
 					(id) => !previousWebhookIds.includes(id)
@@ -124,14 +125,14 @@ function setupWebhookIPC(mainWindow) {
 					const assignLogMessage = `Webhooks assigned to mod ${modId}: ${assignedWebhooks.join(
 						", "
 					)}`;
-					console.log(assignLogMessage);
+					// console.log(assignLogMessage);
 				}
 
 				if (unassignedWebhooks.length > 0) {
 					const unassignLogMessage = `Webhooks unassigned from mod ${modId}: ${unassignedWebhooks.join(
 						", "
 					)}`;
-					console.log(unassignLogMessage);
+					// console.log(unassignLogMessage);
 				}
 
 				return { success: true };
@@ -142,9 +143,9 @@ function setupWebhookIPC(mainWindow) {
 		}
 	);
 
-	ipcMain.handle("rename-webhook", async (event, { id, newName }) => {
+	ipcMain.handle("rename-webhook", (event, { id, newName }) => {
 		try {
-			await renameWebhook(id, newName);
+			renameWebhook(id, newName);
 			return { success: true };
 		} catch (error) {
 			console.error("Error renaming webhook:", error);

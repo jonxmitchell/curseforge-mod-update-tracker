@@ -1,43 +1,26 @@
 const { getDb } = require("./connection");
 
 function saveSetting(key, value) {
-	return new Promise((resolve, reject) => {
-		const db = getDb();
-		db.run(
-			`INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)`,
-			[key, value],
-			(err) => {
-				if (err) {
-					console.error("Error saving setting:", err);
-					reject(err);
-				} else {
-					resolve();
-				}
-			}
-		);
-	});
+	const db = getDb();
+	const stmt = db.prepare(
+		"INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)"
+	);
+	stmt.run(key, value);
 }
 
 function getSetting(key) {
-	return new Promise((resolve, reject) => {
-		const db = getDb();
-		db.get(`SELECT value FROM settings WHERE key = ?`, [key], (err, row) => {
-			if (err) {
-				console.error("Error getting setting:", err);
-				reject(err);
-			} else {
-				resolve(row ? row.value : null);
-			}
-		});
-	});
+	const db = getDb();
+	const stmt = db.prepare("SELECT value FROM settings WHERE key = ?");
+	const result = stmt.get(key);
+	return result ? result.value : null;
 }
 
 function saveWebhookLayout(layout) {
 	return saveSetting("webhook_layout", JSON.stringify(layout));
 }
 
-async function getWebhookLayout() {
-	const layout = await getSetting("webhook_layout");
+function getWebhookLayout() {
+	const layout = getSetting("webhook_layout");
 	return layout
 		? JSON.parse(layout)
 		: {

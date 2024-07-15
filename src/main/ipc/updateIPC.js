@@ -34,7 +34,7 @@ function setupUpdateIPC(mainWindow) {
 }
 
 async function checkForUpdates(mainWindow) {
-	const apiKey = await getSetting("curseforge_api_key");
+	const apiKey = getSetting("curseforge_api_key");
 	if (!apiKey) {
 		console.error("CurseForge API key not set");
 		return;
@@ -45,40 +45,44 @@ async function checkForUpdates(mainWindow) {
 	const updatedMods = [];
 
 	try {
-		const mods = await getMods();
+		const mods = getMods();
 		for (const mod of mods) {
-			const response = await fetch(
-				`https://api.curseforge.com/v1/mods/${mod.mod_id}`,
-				{
-					headers: { "x-api-key": apiKey },
-				}
-			);
-			const data = await response.json();
-			const latestReleased = data.data.dateReleased || "N/A";
-			const lastUpdated = data.data.dateModified || new Date().toISOString();
+			try {
+				const response = await fetch(
+					`https://api.curseforge.com/v1/mods/${mod.mod_id}`,
+					{
+						headers: { "x-api-key": apiKey },
+					}
+				);
 
-			if (latestReleased !== mod.current_released) {
-				updatesFound = true;
-				await updateMod(
-					mod.mod_id,
-					latestReleased,
-					latestReleased,
-					lastUpdated
-				);
-				mainWindow.webContents.send("mod-updated", {
-					id: mod.mod_id,
-					name: mod.name,
-					newReleased: latestReleased,
-					oldReleased: mod.current_released,
-				});
-				updatedMods.push({ ...mod, newReleased: latestReleased });
-			} else {
-				await updateMod(
-					mod.mod_id,
-					mod.current_released,
-					latestReleased,
-					mod.last_updated
-				);
+				if (!response.ok) {
+					throw new Error(`HTTP error! status: ${response.status}`);
+				}
+
+				const data = await response.json();
+				const latestReleased = data.data.dateReleased || "N/A";
+				const lastUpdated = data.data.dateModified || new Date().toISOString();
+
+				if (latestReleased !== mod.current_released) {
+					updatesFound = true;
+					updateMod(mod.mod_id, latestReleased, latestReleased, lastUpdated);
+					mainWindow.webContents.send("mod-updated", {
+						id: mod.mod_id,
+						name: mod.name,
+						newReleased: latestReleased,
+						oldReleased: mod.current_released,
+					});
+					updatedMods.push({ ...mod, newReleased: latestReleased });
+				} else {
+					updateMod(
+						mod.mod_id,
+						mod.current_released,
+						latestReleased,
+						mod.last_updated
+					);
+				}
+			} catch (error) {
+				console.error(`Error checking mod ${mod.mod_id}:`, error);
 			}
 		}
 
@@ -89,9 +93,9 @@ async function checkForUpdates(mainWindow) {
 
 		// Send webhooks for updated mods
 		if (updatesFound) {
-			const totalWebhooks = await getTotalWebhooksForMods(updatedMods);
+			const totalWebhooks = getTotalWebhooksForMods(updatedMods);
 			for (const mod of updatedMods) {
-				await sendDiscordNotifications(
+				sendDiscordNotifications(
 					mod.name,
 					mod.newReleased,
 					mod.current_released,
@@ -104,13 +108,14 @@ async function checkForUpdates(mainWindow) {
 		}
 	} catch (error) {
 		console.error("Error checking for updates:", error);
+		mainWindow.webContents.send("update-check-error", error.message);
 	}
 }
 
-async function getTotalWebhooksForMods(mods) {
+function getTotalWebhooksForMods(mods) {
 	let total = 0;
 	for (const mod of mods) {
-		const webhookIds = await getModWebhooks(mod.mod_id);
+		const webhookIds = getModWebhooks(mod.mod_id);
 		total += webhookIds.length;
 	}
 	return total;
@@ -126,14 +131,14 @@ async function sendDiscordNotifications(
 	totalWebhooks
 ) {
 	try {
-		const webhookIds = await getModWebhooks(modId);
-		const webhooks = await getWebhooks();
-		const layout = await getWebhookLayout();
+		const webhookIds = getModWebhooks(modId);
+		const webhooks = getWebhooks();
+		const layout = getWebhookLayout();
 
 		for (const webhookId of webhookIds) {
 			const webhook = webhooks.find((w) => w.id === webhookId);
 			if (webhook) {
-				const message = await createWebhookMessage(
+				const message = createWebhookMessage(
 					layout,
 					modName,
 					newReleased,
@@ -202,7 +207,7 @@ async function sendDiscordNotifications(
 	}
 }
 
-async function createWebhookMessage(
+function createWebhookMessage(
 	layout,
 	modName,
 	newReleased,
@@ -382,11 +387,11 @@ function startCountdown(duration, mainWindow) {
 	}, 1000);
 }
 
-async function initializeSettings(mainWindow) {
-	let interval = await getSetting("update_interval");
+function initializeSettings(mainWindow) {
+	let interval = getSetting("update_interval");
 	if (!interval) {
 		interval = 3600; // Default to 1 hour
-		await saveSetting("update_interval", interval);
+		saveSetting("update_interval", interval);
 	}
 	startCountdown(interval, mainWindow);
 }

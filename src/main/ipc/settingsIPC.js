@@ -3,10 +3,10 @@ const { saveSetting, getSetting } = require("../../database/settingsDB");
 const { startCountdown } = require("./updateIPC");
 
 function setupSettingsIPC(mainWindow) {
-	ipcMain.handle("save-interval", async (event, interval) => {
+	ipcMain.handle("save-interval", (event, interval) => {
 		try {
-			await saveSetting("update_interval", interval);
-			startCountdown(interval, mainWindow);
+			saveSetting("update_interval", interval.toString());
+			startCountdown(parseInt(interval), mainWindow);
 			return { success: true };
 		} catch (error) {
 			console.error("Error saving interval:", error);
@@ -14,36 +14,39 @@ function setupSettingsIPC(mainWindow) {
 		}
 	});
 
-	ipcMain.handle("get-interval", async (event) => {
+	ipcMain.handle("get-interval", (event) => {
 		try {
-			const interval = await getSetting("update_interval");
-			return { success: true, interval };
+			const interval = getSetting("update_interval");
+			return { success: true, interval: parseInt(interval) || 3600 };
 		} catch (error) {
+			console.error("Error getting interval:", error);
 			return { success: false, error: error.message };
 		}
 	});
 
-	ipcMain.handle("save-api-key", async (event, apiKey) => {
+	ipcMain.handle("save-api-key", (event, apiKey) => {
 		try {
-			await saveSetting("curseforge_api_key", apiKey);
+			saveSetting("curseforge_api_key", apiKey);
 			return { success: true };
 		} catch (error) {
+			console.error("Error saving API key:", error);
 			return { success: false, error: error.message };
 		}
 	});
 
-	ipcMain.handle("get-api-key", async (event) => {
+	ipcMain.handle("get-api-key", (event) => {
 		try {
-			const apiKey = await getSetting("curseforge_api_key");
+			const apiKey = getSetting("curseforge_api_key");
 			return { success: true, apiKey };
 		} catch (error) {
+			console.error("Error getting API key:", error);
 			return { success: false, error: error.message };
 		}
 	});
 
-	ipcMain.handle("save-open-link-preference", async (event, preference) => {
+	ipcMain.handle("save-open-link-preference", (event, preference) => {
 		try {
-			await saveSetting("open_link_preference", preference);
+			saveSetting("open_link_preference", preference);
 			console.log(`Open mod links preference changed to: ${preference}`);
 			return { success: true };
 		} catch (error) {
@@ -52,18 +55,19 @@ function setupSettingsIPC(mainWindow) {
 		}
 	});
 
-	ipcMain.handle("get-open-link-preference", async (event) => {
+	ipcMain.handle("get-open-link-preference", (event) => {
 		try {
-			const preference = await getSetting("open_link_preference");
+			const preference = getSetting("open_link_preference");
 			return { success: true, preference: preference || "inApp" };
 		} catch (error) {
+			console.error("Error getting open link preference:", error);
 			return { success: false, error: error.message };
 		}
 	});
 
 	ipcMain.handle("save-webhook-layout", async (event, layout) => {
 		try {
-			await saveSetting("webhook_layout", JSON.stringify(layout));
+			saveSetting("webhook_layout", JSON.stringify(layout));
 			console.log("Webhook layout updated");
 			return { success: true };
 		} catch (error) {
@@ -74,7 +78,7 @@ function setupSettingsIPC(mainWindow) {
 
 	ipcMain.handle("get-webhook-layout", async (event) => {
 		try {
-			const layoutString = await getSetting("webhook_layout");
+			const layoutString = getSetting("webhook_layout");
 			const layout = layoutString ? JSON.parse(layoutString) : null;
 			return { success: true, layout };
 		} catch (error) {
@@ -85,7 +89,7 @@ function setupSettingsIPC(mainWindow) {
 
 	ipcMain.handle("save-tooltip-preference", async (event, isEnabled) => {
 		try {
-			await saveSetting("tooltip_enabled", isEnabled.toString());
+			saveSetting("tooltip_enabled", isEnabled.toString());
 			return { success: true };
 		} catch (error) {
 			console.error("Error saving tooltip preference:", error);
@@ -95,7 +99,7 @@ function setupSettingsIPC(mainWindow) {
 
 	ipcMain.handle("get-tooltip-preference", async (event) => {
 		try {
-			const tooltipEnabled = await getSetting("tooltip_enabled");
+			const tooltipEnabled = getSetting("tooltip_enabled");
 			return { success: true, isEnabled: tooltipEnabled === "true" };
 		} catch (error) {
 			console.error("Error getting tooltip preference:", error);

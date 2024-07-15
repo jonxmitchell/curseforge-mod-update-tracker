@@ -155,3 +155,4 @@ to do.txt
 # Ignore styles.css and index.html
 src/renderer/styles/styles.css
 src/renderer/index.html
+package-lock.json

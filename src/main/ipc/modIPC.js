@@ -4,18 +4,19 @@ const { getSetting } = require("../../database/settingsDB");
 const fetch = require("node-fetch");
 
 function setupModIPC(mainWindow) {
-	ipcMain.on("get-mods", async (event) => {
+	ipcMain.on("get-mods", (event) => {
 		try {
-			const mods = await getMods();
+			const mods = getMods();
 			event.reply("get-mods-result", { success: true, mods });
 		} catch (error) {
+			console.error("Error fetching mods:", error);
 			event.reply("get-mods-result", { success: false, error: error.message });
 		}
 	});
 
 	ipcMain.on("add-mod", async (event, modId) => {
 		try {
-			const apiKey = await getSetting("curseforge_api_key");
+			const apiKey = getSetting("curseforge_api_key");
 			if (!apiKey) {
 				throw new Error("CurseForge API key not set");
 			}
@@ -51,7 +52,7 @@ function setupModIPC(mainWindow) {
 
 			const gameName = gameData.data.name;
 
-			await addMod(
+			addMod(
 				modId,
 				data.data.name,
 				gameName,
@@ -65,15 +66,17 @@ function setupModIPC(mainWindow) {
 			);
 			event.reply("add-mod-result", { success: true, mod: data.data });
 		} catch (error) {
+			console.error("Error adding mod:", error);
 			event.reply("add-mod-result", { success: false, error: error.message });
 		}
 	});
 
-	ipcMain.on("delete-mod", async (event, modId) => {
+	ipcMain.on("delete-mod", (event, modId) => {
 		try {
-			await deleteMod(modId);
+			deleteMod(modId);
 			event.reply("delete-mod-result", { success: true, modId });
 		} catch (error) {
+			console.error("Error deleting mod:", error);
 			event.reply("delete-mod-result", {
 				success: false,
 				error: error.message,

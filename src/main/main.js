@@ -1,3 +1,5 @@
+// src/main/main.js
+
 const {
 	app,
 	BrowserWindow,
@@ -7,6 +9,8 @@ const {
 	Menu,
 } = require("electron");
 const path = require("path");
+const fs = require("fs");
+const os = require("os");
 const { initDatabase } = require("../database/connection");
 const setupModIPC = require("./ipc/modIPC");
 const setupWebhookIPC = require("./ipc/webhookIPC");
@@ -20,6 +24,35 @@ const createModBrowserWindow = require("./windows/modBrowserWindow");
 let mainWindow;
 let modBrowserWindow = null;
 let modBrowserView = null;
+
+function getAppDataPath() {
+	if (process.env.PORTABLE_EXECUTABLE_DIR) {
+		return path.join(app.getPath("appData"), "CFMTData");
+	}
+	return path.join(app.getPath("appData"), "CFMTData");
+}
+
+const appDataPath = getAppDataPath();
+
+// Ensure our custom app data directory exists
+if (!fs.existsSync(appDataPath)) {
+	fs.mkdirSync(appDataPath, { recursive: true });
+}
+
+// Set the userData path to our custom directory
+app.setPath("userData", appDataPath);
+
+// Modify the paths that Electron allows us to change
+const modifiablePaths = ["sessionData", "crashDumps"];
+
+modifiablePaths.forEach((pathName) => {
+	const customPath = path.join(os.tmpdir(), `electron-${pathName}`);
+	try {
+		app.setPath(pathName, customPath);
+	} catch (error) {
+		console.warn(`Failed to set path for ${pathName}: ${error.message}`);
+	}
+});
 
 function createWindow() {
 	mainWindow = new BrowserWindow({
@@ -76,9 +109,9 @@ app.whenReady().then(() => {
 	setupSettingsIPC(mainWindow);
 	setupUpdateIPC(mainWindow);
 
-	ipcMain.handle("get-webhooks", async () => {
+	ipcMain.handle("get-webhooks", () => {
 		try {
-			return await getWebhooks();
+			return getWebhooks();
 		} catch (error) {
 			console.error("Error getting webhooks:", error);
 			throw error;

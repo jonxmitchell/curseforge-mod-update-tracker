@@ -1,118 +1,49 @@
 const { getDb } = require("./connection");
 
 function getWebhooks() {
-	return new Promise((resolve, reject) => {
-		const db = getDb();
-		db.all(`SELECT id, name, url FROM webhooks`, (err, rows) => {
-			if (err) {
-				console.error("Error fetching webhooks:", err);
-				reject(err);
-			} else {
-				resolve(rows);
-			}
-		});
-	});
+	const db = getDb();
+	return db.prepare("SELECT id, name, url FROM webhooks").all();
 }
 
 function addWebhook(name, url) {
-	return new Promise((resolve, reject) => {
-		const db = getDb();
-		db.get(
-			`SELECT * FROM webhooks WHERE name = ? OR url = ?`,
-			[name, url],
-			(err, row) => {
-				if (err) {
-					reject(err);
-				} else if (row) {
-					if (row.name === name) {
-						reject(new Error("Webhook name already exists"));
-					} else {
-						reject(new Error("Webhook URL already exists"));
-					}
-				} else {
-					db.run(
-						`INSERT INTO webhooks (name, url) VALUES (?, ?)`,
-						[name, url],
-						(err) => {
-							if (err) {
-								reject(err);
-							} else {
-								resolve();
-							}
-						}
-					);
-				}
+	const db = getDb();
+	const stmt = db.prepare("INSERT INTO webhooks (name, url) VALUES (?, ?)");
+	try {
+		stmt.run(name, url);
+	} catch (err) {
+		if (err.code === "SQLITE_CONSTRAINT") {
+			if (err.message.includes("name")) {
+				throw new Error("Webhook name already exists");
+			} else if (err.message.includes("url")) {
+				throw new Error("Webhook URL already exists");
 			}
-		);
-	});
+		}
+		throw err;
+	}
 }
 
 function deleteWebhook(id) {
-	return new Promise((resolve, reject) => {
-		const db = getDb();
-		db.serialize(() => {
-			db.run("BEGIN TRANSACTION", (err) => {
-				if (err) {
-					console.error("Error starting transaction:", err);
-					reject(err);
-					return;
-				}
+	const db = getDb();
+	db.transaction(() => {
+		// First, delete related entries in mod_webhooks
+		db.prepare("DELETE FROM mod_webhooks WHERE webhook_id = ?").run(id);
 
-				db.run(`DELETE FROM webhooks WHERE id = ?`, [id], (err) => {
-					if (err) {
-						console.error("Error deleting webhook:", err);
-						db.run("ROLLBACK", () => {
-							reject(err);
-						});
-						return;
-					}
+		// Then, delete the webhook itself
+		const result = db.prepare("DELETE FROM webhooks WHERE id = ?").run(id);
 
-					db.run(
-						`DELETE FROM mod_webhooks WHERE webhook_id = ?`,
-						[id],
-						(err) => {
-							if (err) {
-								console.error("Error deleting mod_webhooks:", err);
-								db.run("ROLLBACK", () => {
-									reject(err);
-								});
-								return;
-							}
-
-							db.run("COMMIT", (err) => {
-								if (err) {
-									console.error("Error committing transaction:", err);
-									db.run("ROLLBACK", () => {
-										reject(err);
-									});
-									return;
-								}
-								resolve();
-							});
-						}
-					);
-				});
-			});
-		});
-	});
+		if (result.changes === 0) {
+			throw new Error("Webhook not found");
+		}
+	})();
 }
 
 function renameWebhook(id, newName) {
-	return new Promise((resolve, reject) => {
-		const db = getDb();
-		db.run(
-			`UPDATE webhooks SET name = ? WHERE id = ?`,
-			[newName, id],
-			(err) => {
-				if (err) {
-					console.error("Error renaming webhook:", err);
-					reject(err);
-				} else {
-					resolve();
-				}
-			}
-		);
-	});
+	const db = getDb();
+	const stmt = db.prepare("UPDATE webhooks SET name = ? WHERE id = ?");
+	const result = stmt.run(newName, id);
+	if (result.changes === 0) {
+		throw new Error("Webhook not found");
+	}
 }
 
 module.exports = {
