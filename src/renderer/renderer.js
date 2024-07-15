@@ -1,6 +1,6 @@
 // src/renderer/renderer.js
 
-const { ipcRenderer } = require("electron");
+const { ipcRenderer, shell } = require("electron");
 const { showToast } = require("./utils/toast");
 const logger = require("./utils/logger");
 const {
@@ -235,14 +235,15 @@ async function setupEventListeners() {
 	document.getElementById("minimizeBtn").addEventListener("click", () => {
 		ipcRenderer.send("minimize-window");
 	});
-
 	document.getElementById("maximizeBtn").addEventListener("click", () => {
 		ipcRenderer.send("maximize-window");
 	});
-
 	document.getElementById("closeBtn").addEventListener("click", () => {
 		ipcRenderer.send("close-window");
 	});
+	document
+		.getElementById("openLogsFolder")
+		.addEventListener("click", openLogsFolder);
 
 	const filterModInput = document.getElementById("filterModInput");
 	const clearModSearchButton = document.querySelector(".clear-mod-search");
@@ -297,6 +298,10 @@ function handlePauseResume() {
 		button.textContent = "Pause";
 		console.log("Timer resumed");
 	}
+}
+
+function openLogsFolder() {
+	ipcRenderer.send("open-logs-folder");
 }
 
 function addMod() {
