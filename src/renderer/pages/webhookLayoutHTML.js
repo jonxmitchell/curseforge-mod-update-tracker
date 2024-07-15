@@ -217,9 +217,10 @@ module.exports = function webhookLayout() {
           </ul>
         </div>
         
-        <div class="flex justify-center w-full">
+        
+        <div class="bg-lighter-black p-4 rounded-lg">
           <button id="saveWebhookLayout" class="custom-button w-full">Save Webhook Format</button>
-        </div>
+        </div>        
       </div>
     </div>
   `;
