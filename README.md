@@ -45,27 +45,27 @@ CurseForge Mod Tracker is a useful desktop application designed to help mod enth
 
 3. **Configuration:**
 
-- `Obtain a CurseForge API key from CurseForge API. get the API key.`
-- `Set up your Discord webhook URLs (optional for notifications).`
+   - `Obtain a CurseForge API key from CurseForge API. get the API key.`
+   - `Set up your Discord webhook URLs (optional for notifications).`
 
 4. **Bulid HTML & CSS:**
 
-```bash
-npm run build:html
-npm run build:css
-```
+   ```bash
+   npm run build:html
+   npm run build:css
+   ```
 
 5. **Running the Application:**
 
-```bash
-npm start
-```
+   ```bash
+   npm start
+   ```
 
 6. **Building for Production:**
 
-```bash
-npm run build:win
-```
+   ```bash
+   npm run build:win
+   ```
 
 ## Configuration ⚙️
 
@@ -111,7 +111,7 @@ Contributions are welcome to the CurseForge Mod Tracker! Here's how you can help
 
 Please read our Contributing Guidelines for more details.
 
-### Troubleshooting 🔧
+## Troubleshooting 🔧
 
 - **API Key Issues:** Ensure your CurseForge API key is correctly entered in the settings.
 - **Update Check Failures:** Check your internet connection and firewall settings.
