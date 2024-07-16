@@ -254,5 +254,3 @@ _In-app console so you can keep track of whats happening within the application_
 _Customise your webhooks to look the way you want_
 ![Webhook Formatter](/assets/imgs/app_screenshots/webhook%20formatter%201.png)
 ![Webhook Formatter](/assets/imgs/app_screenshots/webhook%20formatter%202.png)
-
-For more visual previews, check out our [Gallery](link-to-gallery) or watch our [Demo Video](link-to-video).
