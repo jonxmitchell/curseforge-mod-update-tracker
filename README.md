@@ -173,6 +173,44 @@ This project is licensed under the MIT License.
 - Get your CurseForge API key [here](https://support.curseforge.com/en/support/solutions/articles/9000208346-about-the-curseforge-api-and-how-to-apply-for-a-key).
 - How to set up a discord webhook [here](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks)
 
+## Security and SmartScreen Alert 🛡️
+
+### Microsoft Defender SmartScreen Warning
+
+When you first run CurseForge Mod Tracker, you may encounter a warning from Microsoft Defender SmartScreen. This is a common occurrence for new or less common applications, especially those distributed outside the Microsoft Store.
+
+### Why Does This Happen?
+
+1. **New Application**: Our application is relatively new and may not have established a reputation with Microsoft yet.
+2. **Code Signing**: As an open-source project, we currently do not use an expensive code signing certificate.
+3. **Distribution Method**: We distribute directly rather than through the Microsoft Store, which can trigger additional scrutiny.
+
+### Is CurseForge Mod Tracker Safe?
+
+**Yes, CurseForge Mod Tracker is safe to use.** Here's why you can trust our application:
+
+1. **Open Source**: Our entire codebase is open source and available for review on GitHub. You can inspect every line of code we use.
+2. **Transparent Development**: All development is done in the open, with public pull requests and issue discussions.
+3. **No Data Collection**: We do not collect any personal data or telemetry from your system.
+4. **Local Operation**: The app operates locally on your machine, only connecting to CurseForge APIs for mod data.
+
+### How to Bypass the SmartScreen Warning
+
+If you encounter the SmartScreen warning, you can safely bypass it:
+
+1. Click on "More info" in the SmartScreen popup.
+2. Then click on "Run anyway".
+
+### Build It Yourself
+
+For maximum security assurance, you can build the application yourself:
+
+1. Clone the repository: `git clone https://github.com/your-username/curseforge-mod-tracker.git`
+2. Install dependencies: `npm install`
+3. Build the application: `npm run build:win` (or relevant command for your OS)
+
+This way, you're running a version of the software that you've personally built from the source code.
+
 ## Support the Project ❤️
 
 If you find this tool useful, consider:
@@ -181,3 +219,40 @@ If you find this tool useful, consider:
 - Reporting bugs or suggesting features
 - Contributing to the codebase
 - Sharing the project with other mod enthusiasts
+
+## Screenshots 📸
+
+Here are some screenshots of CurseForge Mod Tracker in action:
+
+### Main Interface
+
+_The main interface showing the mod list and update status._
+![Main Interface](/assets/imgs/app_screenshots/mod%20tracker.png)
+
+### Webhook Configuration
+
+_Setting up Discord webhooks for mod update notifications._
+![Webhook Setup](/assets/imgs/app_screenshots/Webhooks.png)
+
+### In-App Browser
+
+_The built-in browser for viewing mod pages without leaving the application._
+![In-App Browser](screenshots/in_app_browser.png)
+
+### Settings Panel
+
+_Customizable settings to tailor the application to your needs._
+![Settings](/assets/imgs/app_screenshots/settings.png)
+
+### In- App Console
+
+_In-app console so you can keep track of whats happening within the application_
+![In-App Console](/assets/imgs/app_screenshots/console.png)
+
+### Webhook Formatter
+
+_Customise your webhooks to look the way you want_
+![Webhook Formatter](/assets/imgs/app_screenshots/webhook%20formatter%201.png)
+![Webhook Formatter](/assets/imgs/app_screenshots/webhook%20formatter%202.png)
+
+For more visual previews, check out our [Gallery](link-to-gallery) or watch our [Demo Video](link-to-video).
