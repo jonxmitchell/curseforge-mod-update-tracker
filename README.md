@@ -237,7 +237,7 @@ _Setting up Discord webhooks for mod update notifications._
 ### In-App Browser
 
 _The built-in browser for viewing mod pages without leaving the application._
-![In-App Browser](screenshots/in_app_browser.png)
+![In-App Browser](/assets/imgs/app_screenshots/In%20App%20Browser.png)
 
 ### Settings Panel
 
