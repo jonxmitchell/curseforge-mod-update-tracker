@@ -123,9 +123,6 @@ Inside the CFMTData folder, you'll find several important files and directories:
 
     - Log files are named in the format `log_YYYY-MM-DD_HH-MM-SS.txt`.
 
-3.  **config.json**: (If applicable) This file stores user configuration settings that persist between application launches.
-4.  **cache/**: (If applicable) This directory may contain cached data to improve application performance.
-
 ## Backing Up Your Data ⤴️
 
 It's a good practice to periodically back up your CFMTData folder, especially before updating the application or making significant changes. To do this:
