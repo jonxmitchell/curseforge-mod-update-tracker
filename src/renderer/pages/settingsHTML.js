@@ -64,7 +64,6 @@ module.exports = function settings() {
           <h4 class="text-lg font-semibold mb-2">Credits</h4>
           <p class="text-sm text-gray-300 mb-2">Developed by <a id="openArtiDiscord" rel="noopener noreferrer" class="cursor-pointer text-blue-400 hover:text-blue-300">arti.artificial</a></p>
           <p class="text-sm text-gray-300 mb-2">Code logic assistance by <a id="openVasGithub" rel="noopener noreferrer" class="cursor-pointer text-blue-400 hover:text-blue-300">vasilejianu</a></p>
-          <p class="text-sm text-gray-300 mb-4">Special thanks to my girlfriend for her support while I use our free time to develop these little projects ❤️</p>
           <div class="flex space-x-4">
             <button id="openGithub" class="text-blue-500 hover:text-blue-400 transition-colors">
               <svg class="w-6 h-6 inline-block mr-1" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
